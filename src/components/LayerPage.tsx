@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Segmented, Select, Typography } from "antd";
+import { Button, Segmented, Typography } from "antd";
 import { ExpandOutlined, CompressOutlined } from "@ant-design/icons";
 import type { PageId, SegmentGroup } from "../types";
 import { CardView } from "./CardView";
+import { TopicPager } from "./TopicPager";
 import {
   isLayerPageId,
   markCardVisited,
@@ -56,6 +57,12 @@ export function LayerPage({
 
   const stageRef = useRef<HTMLElement>(null);
   const scrollBehavior = useRef<ScrollBehavior>("smooth");
+  const swipeRef = useRef({
+    tracking: false,
+    startX: 0,
+    startY: 0,
+    startAt: 0,
+  });
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -78,7 +85,9 @@ export function LayerPage({
       }
       const forward = e.key === "ArrowRight" || e.key === "j";
       const back = e.key === "ArrowLeft" || e.key === "k";
-      if (!forward && !back) return;
+      const home = e.key === "Home";
+      const end = e.key === "End";
+      if (!forward && !back && !home && !end) return;
 
       const target = e.target instanceof Element ? e.target : null;
       if (target) {
@@ -91,32 +100,79 @@ export function LayerPage({
         ) {
           return;
         }
-        if (
-          target.closest(
-            ".ant-select, .ant-segmented, .ant-select-dropdown, [role='listbox'], [role='combobox']",
-          )
-        ) {
-          return;
-        }
+        // Segmented and the open directory own their keys.
+        if (target.closest(".ant-segmented, [data-topic-directory]")) return;
       }
-      if (
-        document.querySelector(".ant-select-open") ||
-        document.querySelector(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
-      ) {
-        return;
-      }
+      if (document.querySelector("[data-topic-directory]")) return;
 
       const cards = group.cards;
       const idx = cards.findIndex((c) => c.id === card.id);
       if (idx < 0) return;
-      const next = forward ? idx + 1 : idx - 1;
-      if (next < 0 || next >= cards.length) return;
+      let next = idx;
+      if (home) next = 0;
+      else if (end) next = cards.length - 1;
+      else if (forward) next = idx + 1;
+      else next = idx - 1;
+      if (next < 0 || next >= cards.length || next === idx) return;
       e.preventDefault();
       scrollBehavior.current = "auto";
       onTopic(cards[next].id);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [group, card.id, onTopic]);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const swipe = swipeRef.current;
+
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      if (document.querySelector("[data-topic-directory]")) return;
+      const target = e.target instanceof Element ? e.target : null;
+      const oral = target?.closest(".oral-hero");
+      if (!oral || !stage.contains(oral)) return;
+      swipe.tracking = true;
+      swipe.startX = e.touches[0].clientX;
+      swipe.startY = e.touches[0].clientY;
+      swipe.startAt = Date.now();
+    };
+
+    const onEnd = (e: TouchEvent) => {
+      if (!swipe.tracking) return;
+      swipe.tracking = false;
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+      const dx = touch.clientX - swipe.startX;
+      const dy = touch.clientY - swipe.startY;
+      // Functional swipe only. Card motion stays in CSS and already
+      // drops out under prefers-reduced-motion.
+      if (Date.now() - swipe.startAt > 700) return;
+      if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && sel.toString().trim()) return;
+      const cards = group.cards;
+      const idx = cards.findIndex((c) => c.id === card.id);
+      if (idx < 0) return;
+      const next = dx < 0 ? idx + 1 : idx - 1;
+      if (next < 0 || next >= cards.length) return;
+      scrollBehavior.current = "auto";
+      onTopic(cards[next].id);
+    };
+
+    const onCancel = () => {
+      swipe.tracking = false;
+    };
+
+    stage.addEventListener("touchstart", onStart, { passive: true });
+    stage.addEventListener("touchend", onEnd);
+    stage.addEventListener("touchcancel", onCancel);
+    return () => {
+      stage.removeEventListener("touchstart", onStart);
+      stage.removeEventListener("touchend", onEnd);
+      stage.removeEventListener("touchcancel", onCancel);
+    };
   }, [group, card.id, onTopic]);
 
   useEffect(() => {
@@ -179,20 +235,13 @@ export function LayerPage({
               {focusMode ? "退出焦点" : "今日口播"}
             </Button>
           </div>
-          <Select
-            className="train-select"
-            style={{ width: "100%" }}
+          <TopicPager
+            key={`${page}:${group.id}`}
+            items={group.cards}
             value={card.id}
-            options={group.cards.map((c) => ({
-              value: c.id,
-              label: `${group.label} · ${c.label}`,
-            }))}
             onChange={onTopic}
-            showSearch
-            optionFilterProp="label"
-            placeholder="选择知识点"
-            aria-label="知识点"
-            classNames={{ popup: { root: "train-select-dropdown" } }}
+            ariaLabel="知识点"
+            scopeLabel={group.label}
           />
           <div className="train-bar__meta">
             <div
@@ -218,6 +267,10 @@ export function LayerPage({
               <span className="train-hint__or">或</span>
               <kbd>j</kbd>
               <kbd>k</kbd>
+              <span className="train-hint__or">·</span>
+              <kbd>Home</kbd>
+              <kbd>End</kbd>
+              <span className="train-hint__swipe">口播区可左右滑</span>
             </p>
           </div>
         </div>
@@ -227,7 +280,7 @@ export function LayerPage({
         ref={stageRef}
         className="card-stage"
         aria-label={`${pageLabel}知识点`}
-        aria-keyshortcuts="ArrowLeft ArrowRight j k"
+        aria-keyshortcuts="ArrowLeft ArrowRight j k Home End"
         aria-describedby="card-kbd-hint"
       >
         <div key={card.id} className="card-transition">

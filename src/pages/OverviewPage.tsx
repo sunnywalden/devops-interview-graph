@@ -5,7 +5,6 @@ import {
   List,
   Row,
   Segmented,
-  Select,
   Space,
   Typography,
   Spin,
@@ -24,6 +23,7 @@ import {
   sprintTips,
   checklist,
 } from "../data/overview";
+import { TopicPager } from "../components/TopicPager";
 
 const OverviewFlow = lazy(() =>
   import("../components/diagrams/OverviewFlow").then((m) => ({
@@ -130,13 +130,15 @@ export function OverviewPage({
         <Paragraph type="secondary" style={{ marginBottom: 16 }}>
           主攻 CMDB、资源效能、运维平台；配置交付与 HPC 备份补强。讲 STAR 时点出落到哪一层。
         </Paragraph>
-        <Select
-          style={{ width: "100%", maxWidth: 420, marginBottom: 16 }}
-          value={story.id}
-          options={starStories.map((s) => ({ value: s.id, label: s.label }))}
-          onChange={onStar}
-          aria-label="项目"
-        />
+        <div className="star-pager">
+          <TopicPager
+            items={starStories}
+            value={story.id}
+            onChange={onStar}
+            ariaLabel="项目"
+            scopeLabel="STAR"
+          />
+        </div>
         <Row gutter={[16, 16]}>
           <Col xs={24} md={10}>
             <Card title="角色 / 层映射">
