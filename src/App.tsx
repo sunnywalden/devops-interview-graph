@@ -192,10 +192,11 @@ export default function App() {
   useEffect(() => {
     if (!focusMode) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setFocusModePersist(false);
-      }
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      // The topic directory handles Escape first and marks the event handled.
+      if (document.querySelector("[data-topic-directory]")) return;
+      e.preventDefault();
+      setFocusModePersist(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

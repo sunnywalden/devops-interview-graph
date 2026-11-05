@@ -1,6 +1,6 @@
 # 面试作战台 · DevOps 面试知识图谱（离线版）
 
-从 Cursor Canvas 迁移的**完整离线**前端：Vite + React + TypeScript + **Ant Design 5（暗色）**。打开后可按「语言 → 中间件 → 场景」刷卡；**换页 / 切换 Segmented / 换下拉知识点会立刻写入本机 localStorage**，刷新或下次打开自动落到 Segmented + Select 成对位置，无需聊天助手「记到」。
+从 Cursor Canvas 迁移的**完整离线**前端：Vite + React + TypeScript + **Ant Design 5（暗色）**。打开后可按「语言 → 中间件 → 场景」刷卡；**换页 / 切换 Segmented / 翻页或目录换知识点会立刻写入本机 localStorage**，刷新或下次打开自动落到 Segmented + 当前知识点，无需聊天助手「记到」。
 
 ## 快速开始
 
@@ -26,9 +26,9 @@ npm run preview      # 本地预览 dist
 
 | 行为 | 效果 |
 |------|------|
-| 切换顶栏页（总览 / 语言 / 中间件 / 场景） | 写入 `current` + `byPage[该页]`；若点的是裸 `#/mid`，**恢复该页上次 Segmented+Select**，并 `replaceState` 成完整深链 |
-| 切换 Segmented（如 Golang↔Python） | **跳到该组第一张卡**，并保存这一对状态 |
-| 换知识点下拉 | 立刻保存当前卡到本页槽位 |
+| 切换顶栏页（总览 / 语言 / 中间件 / 场景） | 写入 `current` + `byPage[该页]`；若点的是裸 `#/mid`，**恢复该页上次分段 + 知识点**，并 `replaceState` 成完整深链 |
+| 切换 Segmented（如 Golang↔Python） | **回到该组 `defaultTopic`**（Docker/K8s 是「K8s 架构与组件」），并保存这一对状态 |
+| 翻页、圆点或目录点选知识点 | 立刻保存当前卡到本页槽位 |
 | 刷新 / 关闭再打开 | 读 localStorage；若 URL 带完整 hash 则 **hash 优先**；裸 hash 用 `byPage` |
 | 总览「继续上次」 | 跳到全局 `current` 的完整深链 |
 
@@ -88,12 +88,24 @@ npm run preview      # 本地预览 dist
 - 图示按 `${groupId}/${cardId}` 写在 `src/data/visuals-*.ts`，经 `attachVisuals` 挂到卡片
 - 高频卡（约 60+）带图；偏薄的卡可仍为纯文字
 - 内容以 Typed TS 模块内嵌，构建后全部打进静态 JS
-- Layout / Menu / Card / Segmented / Select / Alert / Collapse / Descriptions / Row·Col 等 Ant 组件
+- Layout / Menu / Card / Segmented / 自绘翻页条与目录 / Alert / Collapse / Descriptions / Row·Col 等 Ant 组件
 - 深色可读 UI，手机可刷；顶栏 sticky Header
 
 ## 与 Cursor Canvas 的关系
 
-本项目用于**脱离 Canvas / Bot 会话**练习：Canvas 无法跨 Bot 自动恢复 Segmented+Select，本站用 localStorage + hash 补齐。内容自四页 Canvas 迁移，不另起炉灶改口径。
+本项目用于**脱离 Canvas / Bot 会话**练习：Canvas 无法跨 Bot 自动恢复分段和知识点，本站用 localStorage + hash 补齐。内容自四页 Canvas 迁移，不另起炉灶改口径。
+
+## 知识点导航
+
+层页（语言 / 中间件 / 场景）和总览 STAR 用翻页条 + 目录选题，不再用下拉框。
+
+- 分段 Segmented 保留。切到一组时回到该组 `defaultTopic`。
+- 翻页条：`‹` 当前标题 · n/N `›`，旁边「目录」。第一张禁用 ‹，最后一张禁用 ›。点标题也会打开目录。
+- 本组 2–12 张时，翻页条下有可点圆点；多于 12 张只保留 n/N 和一条细进度轨（不铺圆点）。
+- 目录列出**当前分段**的知识点，可筛选。点一项即跳转并关闭。当前行左侧是琥珀条。Esc 关闭；打开时焦点在筛选框，当前项滚入视野。
+- 键盘：`←` `→` 或 `j` `k` 在本组内相邻切换；`Home` / `End` 到本组首尾。焦点在 Segmented 或打开的目录里时，这些键不改卡。
+- 口播区可左右滑到相邻卡。系统开启「减少动态效果」时仍会切卡，但不播放换卡动画。
+- 深链和书签 v2 不变。`#/lang/go/chan` 直接打开该卡；翻页、目录、分段都会写入 `devops-kg-bookmark`。
 
 ## 评审闭环
 
