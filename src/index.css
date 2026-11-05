@@ -1,0 +1,732 @@
+/* Night Briefing — design tokens + chrome */
+:root {
+  --bg-canvas: #0b0f14;
+  --bg-elevated: #121821;
+  --bg-card: #161e29;
+  --bg-oral: #18150f;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --accent: #e6a23c;
+  --accent-hover: #f0b24f;
+  --accent-active: #c88a2a;
+  --success: #3db88a;
+  --warn: #d4a017;
+  --text-primary: #e8eef4;
+  --text-secondary: #8b9bb0;
+  --text-muted: #667788;
+  --space-section: 28px;
+  --space-block: 24px;
+  --header-h: 56px;
+  --content-max: 1000px;
+  --diagram-max: 1120px;
+  --radius: 10px;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.page-content {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.page-section {
+  margin-bottom: var(--space-section);
+}
+
+.card-stage {
+  scroll-margin-top: calc(var(--header-h) + 72px);
+}
+
+/* —— Header —— */
+.ant-layout-header.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  line-height: 1;
+  height: auto;
+  min-height: var(--header-h);
+  flex-wrap: wrap;
+  background: var(--bg-elevated) !important;
+}
+
+.app-brand {
+  color: var(--text-primary) !important;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-right: 4px;
+  font-size: 15px;
+}
+
+.app-header .ant-menu {
+  flex: 1;
+  min-width: 0;
+  border-bottom: none !important;
+  background: transparent !important;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* —— Progress chip (replaces Alert bookmark) —— */
+.progress-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(420px, 72vw);
+  padding: 6px 10px 6px 12px;
+  border-radius: 999px;
+  background: rgba(230, 162, 60, 0.1);
+  border: 1px solid rgba(230, 162, 60, 0.28);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.progress-chip--empty {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.progress-chip__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.progress-chip__meta {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.progress-chip__btn.ant-btn {
+  flex-shrink: 0;
+  height: 28px;
+  padding-inline: 10px;
+  font-size: 12px;
+  border-radius: 999px;
+}
+
+.progress-chip-inline {
+  margin-bottom: var(--space-block);
+}
+
+/* —— Callout (no Ant Alert) —— */
+.callout {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  margin-bottom: var(--space-block);
+}
+
+.callout--warn {
+  border-left-color: var(--warn);
+  background: rgba(212, 160, 23, 0.08);
+}
+
+.callout__lead {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.callout__body {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* —— Sticky layer toolbar —— */
+.layer-toolbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 50;
+  margin: 0 -4px 20px;
+  padding: 12px 4px 14px;
+  background: rgba(11, 15, 20, 0.96);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
+}
+
+.layer-toolbar .ant-segmented {
+  border-radius: 10px;
+}
+
+.segmented-wrap {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+.segmented-wrap .ant-segmented {
+  flex-wrap: wrap;
+}
+
+/* —— Card header / oral hero —— */
+.card-head {
+  padding: 4px 0 8px;
+  margin-bottom: 8px;
+}
+
+.card-head__title {
+  margin: 0 0 8px !important;
+  font-size: 18px !important;
+  font-weight: 650 !important;
+  color: var(--text-primary) !important;
+}
+
+.card-head__one {
+  margin: 0 0 6px !important;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+
+.card-head__resume {
+  margin: 0 !important;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.oral-hero {
+  position: relative;
+  padding: 20px 22px 20px 24px;
+  border-radius: var(--radius);
+  background: var(--bg-oral);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  margin-bottom: var(--space-block);
+}
+
+.oral-hero__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.oral-block {
+  white-space: pre-wrap;
+  line-height: 1.8;
+  font-size: 16.5px;
+  max-width: 46rem;
+  color: var(--text-primary);
+}
+
+/* —— Diagram panel —— */
+.diagram-panel {
+  margin-bottom: var(--space-block);
+  max-width: var(--diagram-max);
+}
+
+.diagram-panel .ant-card-head {
+  min-height: 44px;
+  border-bottom-color: var(--border-subtle);
+}
+
+.diagram-panel__extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.diagram-skip {
+  font-size: 12px;
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+}
+
+.diagram-skip:hover {
+  color: var(--accent) !important;
+}
+
+.diagram-panel__toggle {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.diagram-stack .ant-card {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+}
+
+.mermaid-host {
+  overflow-x: auto;
+  padding: 8px 4px;
+}
+
+.mermaid-host svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.flow-graph-host {
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  background: var(--bg-canvas);
+}
+
+.flow-graph-host .react-flow__attribution {
+  display: none;
+}
+
+.overview-flow-wrap {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.overview-flow-wrap .flow-graph-host {
+  border-radius: 0;
+  height: clamp(320px, 58vh, 560px);
+}
+
+.overview-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.overview-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: var(--accent);
+  opacity: 0.85;
+}
+
+.overview-legend .lg-l1::before { background: #e6a23c; }
+.overview-legend .lg-l2::before { background: #c4a35a; }
+.overview-legend .lg-l3::before { background: #a89060; }
+
+.overview-legend .lg-edge::before {
+  background: #6b7788;
+  border-radius: 0;
+  height: 2px;
+  width: 14px;
+  vertical-align: middle;
+}
+
+/* —— Layer entry chips / related —— */
+.layer-portals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--space-block);
+}
+
+.layer-portal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary) !important;
+  font-size: 13px;
+  text-decoration: none !important;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.layer-portal:hover {
+  border-color: rgba(230, 162, 60, 0.45);
+  background: rgba(230, 162, 60, 0.08);
+}
+
+.layer-portal__num {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.related-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.related-links a {
+  color: var(--text-secondary) !important;
+}
+
+.related-links a:hover {
+  color: var(--accent) !important;
+}
+
+.page-subtitle {
+  margin: 0 0 4px !important;
+  color: var(--text-secondary) !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+}
+
+.app-footer {
+  text-align: center;
+  opacity: 0.55;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 16px !important;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sprint-day-card {
+  border: 1px solid var(--border-subtle) !important;
+  height: 100%;
+}
+
+.sprint-day-card .sprint-item-label {
+  display: inline-block;
+  min-width: 3.5em;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-right: 6px;
+}
+
+.star-oral-block {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 14.5px;
+}
+
+@media (max-width: 640px) {
+  .ant-layout-header.app-header {
+    padding-inline: 10px;
+    gap: 8px;
+  }
+  .app-brand {
+    font-size: 13px;
+  }
+  .app-header .ant-menu {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .progress-chip {
+    max-width: min(100%, 260px);
+    padding: 4px 8px 4px 10px;
+    font-size: 12px;
+  }
+  .progress-chip__meta {
+    display: none;
+  }
+  .app-header-actions {
+    margin-left: auto;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .oral-block {
+    font-size: 16px;
+  }
+  .page-content {
+    padding: 16px 14px 32px;
+  }
+  .overview-flow-wrap .flow-graph-host {
+    height: clamp(280px, 52vh, 420px);
+  }
+}
+
+
+/* Comfortable collapse rhythm */
+.ant-collapse .ant-collapse-header {
+  padding: 14px 0 !important;
+  align-items: center !important;
+}
+
+.ant-collapse .ant-collapse-content-box {
+  padding: 4px 0 16px !important;
+}
+
+#card-followups {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+/* —— Phase 3: card transition —— */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-transition {
+  animation: card-enter 150ms ease-out;
+}
+
+.card-transition .oral-hero,
+.card-transition .diagram-panel {
+  animation: card-enter 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-transition,
+  .card-transition .oral-hero,
+  .card-transition .diagram-panel {
+    animation: none;
+  }
+}
+
+/* —— Phase 3: focus mode —— */
+.app-shell--focus .app-header {
+  min-height: 48px;
+}
+
+.app-shell--focus .app-brand {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.app-shell--focus .layer-toolbar {
+  top: 48px;
+}
+
+.app-shell--focus .page-content {
+  padding-top: 12px;
+  max-width: 46rem;
+}
+
+.app-shell--focus .oral-hero {
+  border-left-width: 4px;
+  padding: 24px 24px 24px 26px;
+}
+
+.app-shell--focus .oral-block {
+  font-size: 17px;
+  max-width: none;
+}
+
+.app-shell--focus .diagram-panel {
+  /* still available but quieter */
+  opacity: 0.92;
+}
+
+.app-shell--focus .card-stage {
+  scroll-margin-top: calc(48px + 88px);
+}
+
+.focus-exit-btn.ant-btn {
+  border-radius: 999px;
+  height: 30px;
+  font-size: 12px;
+}
+
+.focus-toggle-btn.ant-btn {
+  flex-shrink: 0;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.layer-toolbar__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.layer-toolbar__seg {
+  flex: 1;
+  min-width: 0;
+}
+
+/* —— Phase 3: layer visit weak progress —— */
+.layer-visit-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.layer-visit-progress__track {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.layer-visit-progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(230, 162, 60, 0.55);
+  transition: width 180ms ease-out;
+}
+
+.layer-visit-progress__label {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  min-width: 4.5em;
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer-visit-progress__fill {
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .layer-toolbar__row {
+    flex-wrap: wrap;
+  }
+  .focus-toggle-btn.ant-btn {
+    width: 100%;
+  }
+  .layer-visit-progress__label {
+    font-size: 10px;
+  }
+}
+
+/* —— Phase 3: print — oral + title —— */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  html,
+  body,
+  #root {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: economy;
+    print-color-adjust: economy;
+  }
+
+  .app-header,
+  .app-footer,
+  .layer-toolbar,
+  .related-links,
+  .progress-chip,
+  .print-hide,
+  .diagram-panel,
+  .overview-flow-wrap,
+  .layer-portals,
+  .focus-exit-btn,
+  .focus-toggle-btn,
+  .layer-visit-progress,
+  .ant-menu,
+  .app-header-actions {
+    display: none !important;
+  }
+
+  .page-content {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .card-head__title {
+    color: #111 !important;
+    font-size: 18pt !important;
+  }
+
+  .card-head__one {
+    color: #333 !important;
+    font-size: 11pt !important;
+  }
+
+  .oral-hero {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    border-left: 3px solid #e6a23c !important;
+    padding: 12pt !important;
+    break-inside: avoid;
+  }
+
+  .oral-hero__label {
+    color: #a06a10 !important;
+  }
+
+  .oral-block {
+    color: #111 !important;
+    font-size: 12pt !important;
+    line-height: 1.65 !important;
+    max-width: none !important;
+    white-space: pre-wrap !important;
+  }
+
+  .callout--warn {
+    border: 1px solid #999 !important;
+    background: #fff !important;
+    color: #333 !important;
+  }
+
+  .card-transition {
+    animation: none !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}
