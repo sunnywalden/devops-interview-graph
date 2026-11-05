@@ -296,6 +296,103 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
   CoreDNS --> Upstream[上游 DNS]`,
     },
   ],
+  "container/arch": [
+    {
+      kind: "mermaid",
+      title: "请求进入集群",
+      source: `flowchart TB
+  Client[kubectl / 控制器] --> API[kube-apiserver]
+  API --> ETCD[(etcd)]
+  API --> Sched[kube-scheduler]
+  API --> CM[controller-manager]
+  Sched -->|写回绑定| API
+  Kubelet[kubelet] -->|watch / 上报| API
+  Kubelet --> CRI[容器运行时]
+  Proxy[kube-proxy] -->|watch Service| API`,
+    },
+    {
+      kind: "flow",
+      title: "控制面与节点",
+      nodes: [
+        { id: "api", label: "apiserver", detail: "认证鉴权准入", x: 220, y: 16 },
+        { id: "etcd", label: "etcd", detail: "期望状态", x: 460, y: 16 },
+        { id: "sched", label: "scheduler", detail: "只绑定节点", x: 40, y: 150 },
+        { id: "cm", label: "控制器", detail: "补齐 Pod", x: 250, y: 150 },
+        { id: "kubelet", label: "kubelet", detail: "本节点执行", x: 40, y: 290 },
+        { id: "cri", label: "运行时", detail: "起容器", x: 250, y: 290 },
+        { id: "proxy", label: "kube-proxy", detail: "Service 转发", x: 460, y: 290 },
+      ],
+      edges: [
+        { from: "api", to: "etcd", label: "落库" },
+        { from: "sched", to: "api", label: "绑定" },
+        { from: "cm", to: "api", label: "watch" },
+        { from: "kubelet", to: "api", label: "上报" },
+        { from: "kubelet", to: "cri" },
+        { from: "proxy", to: "api", label: "watch" },
+      ],
+    },
+  ],
+  "container/workload": [
+    {
+      kind: "mermaid",
+      title: "控制器边界",
+      source: `flowchart TB
+  Dep[Deployment] --> RS[ReplicaSet]
+  RS --> Pod[可替换 Pod]
+  STS[StatefulSet] --> Stable[稳定序号 + 独立盘]
+  DS[DaemonSet] --> PerNode[每节点一份]
+  Job[Job / CronJob] --> Done[跑完即走]`,
+    },
+  ],
+  "container/cni": [
+    {
+      kind: "mermaid",
+      title: "Pod IP 与 Service",
+      source: `flowchart LR
+  CNI[CNI 分配 Pod IP] --> A[Pod]
+  CNI --> B[Pod]
+  A -->|按 IP 直连| B
+  Svc[Service] --> Proxy[kube-proxy]
+  Proxy -->|只转发就绪端点| A
+  Proxy --> B`,
+    },
+  ],
+  "container/volume": [
+    {
+      kind: "mermaid",
+      title: "PVC 绑定",
+      source: `flowchart LR
+  PVC[PVC 申请] --> SC{存储类}
+  SC -->|动态| Prov[供给器]
+  Prov --> PV[PV]
+  SC -->|静态匹配| PV
+  PV --> Bound[Bound]
+  Bound --> Pod[Pod 挂载]`,
+    },
+  ],
+  "mysql/repl": [
+    {
+      kind: "mermaid",
+      title: "主从复制",
+      source: `flowchart LR
+  App[写] --> Src[主库 binlog]
+  Src --> IO[从库 IO 线程]
+  IO --> Relay[中继日志]
+  Relay --> SQL[SQL 线程]
+  SQL --> Read[读从库需接受延迟]`,
+    },
+  ],
+  "net/coredns": [
+    {
+      kind: "mermaid",
+      title: "集群解析",
+      source: `flowchart LR
+  Pod[Pod] -->|搜索域 / ndots| DNS[CoreDNS]
+  DNS --> Svc[Service 虚拟地址]
+  DNS --> Head[无头 Service 的 Pod IP]
+  DNS --> Up[上游]`,
+    },
+  ],
   "net/tls": [
     {
       kind: "mermaid",

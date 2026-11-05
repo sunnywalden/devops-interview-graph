@@ -69,6 +69,17 @@ export const languageVisuals: Record<string, CardVisual[]> = {
   Sel -->|取到任务| Work[处理]`,
     },
   ],
+  "go/gomodel": [
+    {
+      kind: "mermaid",
+      title: "happens-before",
+      source: `flowchart LR
+  Send[通道发送] --> Recv[对应接收完成]
+  Unlock[Unlock] --> Lock[之后的 Lock 返回]
+  Write[先写完数据] --> Flag[再原子发布标志]
+  Flag --> Read[读者看见数据]`,
+    },
+  ],
   "go/mem": [
     {
       kind: "mermaid",
