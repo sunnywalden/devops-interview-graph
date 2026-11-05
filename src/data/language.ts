@@ -12,7 +12,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "gmp",
         label: "GMP 调度",
         oneLiner: "Go 用 GMP 用户态调度：G 是协程，P 管本地队列，M 是系统线程，闲了就去别的 P 偷活。",
-        resumeAnchor: "明赋云资产预计算 Worker。特赞审计隔离是 Python 协程配额，对比时分开讲。",
+        resumeAnchor: "CMDB 资产预计算 Worker。多租户 SQL 审计隔离是 Python 协程配额，对比时分开讲。",
         principles: [
           "G 是用户态协程，栈可以增长，创建成本远低于系统线程。",
           "P 是逻辑处理器，默认大约等于 GOMAXPROCS，各自挂着本地 runq。",
@@ -32,7 +32,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           "用 sleep 忙等代替 channel/ctx 同步，把调度器当定时器误用。",
           "把『能开很多 goroutine』理解成『不用做背压』，下游先被打穿。",
         ],
-        oral: "我一般这么讲：Go 不是一个协程绑一个系统线程。G 是协程，P 管本地队列，M 才是线程；谁闲了就去别的 P 偷活。所以预计算 Worker 我敢开很多任务，但必须有超时取消，队列也要有界，不然内存和下游先扛不住。明赋云资产概览就是这么跑的——并发度我控在信号量或有界 channel 上，不让 goroutine 无限涨。面试官要听的是『我控什么』，不是背三个字母。",
+        oral: "我一般这么讲：Go 不是一个协程绑一个系统线程。G 是协程，P 管本地队列，M 才是线程；谁闲了就去别的 P 偷活。所以预计算 Worker 我敢开很多任务，但必须有超时取消，队列也要有界，不然内存和下游先扛不住。资产概览就是这么跑的——并发度我控在信号量或有界 channel 上，不让 goroutine 无限涨。面试官要听的是『我控什么』，不是背三个字母。",
         followUps: [
           { q: "和 Java 线程池？", a: "Java 那边线程池大小、队列、拒绝策略基本要自己管。Go 运行时帮你调度，阻塞了还可能再拉 M。业务上我更关心并发度上限：用信号量或有界队列卡住，而不是手写池子。面试官要听的是『我控什么』，不是背 GMP 三个字母。" },
           { q: "如何看 G 数？", a: "我看 pprof 的 goroutine，或者 runtime.NumGoroutine。突然涨一截，先查是不是卡住了、是不是忘了 cancel，再查有没有只发不收的 channel。别先去调 GOMAXPROCS，那通常不是根因。" },
@@ -144,7 +144,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "gozero",
         label: "go-zero 服务",
         oneLiner: "go-zero 用 api/rpc 代码生成加中间件链扛平台服务：限流熔断、超时、鉴权、可观测开箱。",
-        resumeAnchor: "明赋云 CMDB/资产服务基于 go-zero；配置走 Nacos。",
+        resumeAnchor: "CMDB/资产服务基于 go-zero；配置走 Nacos。",
         principles: [
           ".api 定义路由与类型，goctl 生成 handler、logic、svc 三层。",
           "rpc 用 zRPC 包一层 gRPC，服务发现可以对 etcd、k8s 或 Nacos。",
@@ -177,7 +177,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "graphql",
         label: "GraphQL/多协议",
         oneLiner: "对内 gRPC、对外 REST/GraphQL：GraphQL 适合多形聚合查询，但要控 N+1 与权限。",
-        resumeAnchor: "明赋云多协议：gRPC/REST/GraphQL。",
+        resumeAnchor: "CMDB 多协议：gRPC/REST/GraphQL。",
         principles: [
           "客户端声明需要的字段，减少 over-fetch。",
           "Schema 先于实现，类型就是契约。",
@@ -415,7 +415,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "gil",
         label: "GIL",
         oneLiner: "CPython 同进程同时基本只有一个线程在跑字节码；IO 会放 GIL，CPU 密集用多进程或换 Go。",
-        resumeAnchor: "特赞 SQL 审计：重任务靠配额隔离，不幻想多线程线性加速。",
+        resumeAnchor: "多租户 SQL 审计：重任务靠配额隔离，不幻想多线程线性加速。",
         principles: [
           "GIL 保护解释器内部结构，比如引用计数这类共享状态。",
           "阻塞 IO 和部分 C 扩展会释放 GIL，所以 IO 密集还能叠等待。",
@@ -435,7 +435,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           "忽略进程间通信成本，乱上多进程。",
           "用『未来无 GIL』回避当前架构问题。",
         ],
-        oral: "说白了，CPython 同一个进程里字节码基本是轮着跑的。IO 会放开 GIL，所以爬虫还能快；真算得重，多线程帮不上多少。特赞做 SQL 审计，我靠租户配额隔离；再重就往 Go 沉。面试官听的是我对约束的判断：先限流隔离，再谈多进程或换语言，不空喊破 GIL。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "说白了，CPython 同一个进程里字节码基本是轮着跑的。IO 会放开 GIL，所以爬虫还能快；真算得重，多线程帮不上多少。多租户 SQL 审计，我靠租户配额隔离；再重就往 Go 沉。面试官听的是我对约束的判断：先限流隔离，再谈多进程或换语言，不空喊破 GIL。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "爬虫为何快？", a: "瓶颈在等网络。IO 等待时 GIL 会放，很多请求的等待可以叠在一起。吃的是 IO 重叠，不是多核并行。" },
           { q: "怎么破 GIL？", a: "多进程、写扩展、热点换 Go，或者业务上限流。别死磕多线程。很多时候限流加队列比硬刚并行更管用。" },
@@ -481,7 +481,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "django",
         label: "Django 权限多租户",
         oneLiner: "角色定动作，租户定数据范围；中间件注入加 QuerySet 强制过滤。",
-        resumeAnchor: "特赞运维平台 Django 权限，按角色开放能力。",
+        resumeAnchor: "运维平台 Django 权限，按角色开放能力。",
         principles: [
           "Authentication 认人，Permission 认动作，两层别混。",
           "视图或 DRF permission 类在入口拦截未授权请求。",
@@ -501,7 +501,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           "Admin 未接同一套过滤，成了旁路。",
           "超级账号满天飞，审计形同虚设。",
         ],
-        oral: "权限我拆两层：角色决定你能干什么，租户决定你能看见哪些数据。请求进来中间件绑租户，QuerySet 默认带过滤，别指望每个开发都记得写 where。特赞运维平台就是按角色开能力，工具不能裸奔。跨租户管理员单独开平台角色，默认拒绝，操作打审计。前端隐藏从来不是安全边界。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "权限我拆两层：角色决定你能干什么，租户决定你能看见哪些数据。请求进来中间件绑租户，QuerySet 默认带过滤，别指望每个开发都记得写 where。运维平台就是按角色开能力，工具不能裸奔。跨租户管理员单独开平台角色，默认拒绝，操作打审计。前端隐藏从来不是安全边界。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "行级权限？", a: "对象级权限或关系表都行，但列表过滤必须在服务端做。前端隐藏只是体验，真正边界在 QuerySet 和 permission 类。" },
           { q: "跨租户管理员？", a: "单独开平台角色，默认拒绝，操作必须打审计。不能悄悄给万能账号。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
@@ -514,7 +514,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "exp",
         label: "Exporter",
         oneLiner: "Python Exporter 暴露 /metrics：低基数标签、轻采集、超时与缓存，再挂联邦。",
-        resumeAnchor: "特赞：Python Exporter 接入 Influx/Prom/Grafana 联邦。",
+        resumeAnchor: "Python Exporter 接入 Influx/Prom/Grafana 联邦。",
         principles: [
           "按 Prometheus 文本格式暴露；Counter、Gauge、Histogram 按语义选型。",
           "标签只放服务、环境、接口这类有限枚举，严禁 user_id。",
@@ -580,7 +580,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         id: "vsgo",
         label: "Python vs Go",
         oneLiner: "两门都是主开发语言：Python 常见于权限后台、平台与 Exporter；Go 常见于高并发服务与长驻 Worker——按场景分工，不是主附。",
-        resumeAnchor: "特赞 Django 平台加审计/Exporter；明赋云核心服务 Go。",
+        resumeAnchor: "Django 运维平台加审计/Exporter；CMDB 核心服务用 Go。",
         principles: [
           "一边是生态和上手速度，一边是运行时性能和并发模型。",
           "Python 做 CRUD、权限、脚本快，验证成本低。",
@@ -600,13 +600,13 @@ const rawLanguageGroups: SegmentGroup[] = [
           "Python 平台里塞进不适合的 CPU 热路径还硬扛。",
           "Go 服务里重复实现一套权限模型不同步。",
         ],
-        oral: "两门语言我都当主开发语言用，不是站队。权限后台、平台、Exporter 我常用 Python；CMDB 核心服务、预计算 Worker 我常用 Go。特赞权限走 Django；审计执行器压力上来先限流，再评估要不要用 Go 做热点。面试官听的是场景取舍和边界治理，不是谁附属谁。目标岗我也按这个叙事：都能写，按约束选。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "两门语言我都当主开发语言用，不是站队。权限后台、平台、Exporter 我常用 Python；CMDB 核心服务、预计算 Worker 我常用 Go。平台权限走 Django；审计执行器压力上来先限流，再评估要不要用 Go 做热点。面试官听的是场景取舍和边界治理，不是谁附属谁。目标岗我也按这个叙事：都能写，按约束选。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "双语言成本？", a: "边界要清，API 契约定死，部署和观测统一，业务规则别两边各写一份。热路径确认了再重写，别一上来全量迁移。" },
           { q: "如何决定下沉 Go？", a: "看 CPU、延迟、并发隔离是否已成为瓶颈，且优化 Python 侧收益见顶。先配额限流，再局部重写，保留契约。" },
           { q: "团队只会一门？", a: "平台核心路径集中在更熟的语言，另一门做清晰边界的工具。培训与代码规范要跟上，不然双语言变双标准。" },
           { q: "共享模型？", a: "Protobuf/OpenAPI 做契约；数据所有权单边。不要共享数据库当集成。" },
-          { q: "简历怎么写？", a: "并列主语言，用项目证明：特赞 Python 平台，明赋云 Go 服务。避免『精通万门』。" },
+          { q: "简历怎么写？", a: "并列主语言，用项目证明：Python 运维平台，Go 的 CMDB 服务。避免『精通万门』。" },
         ],
       },
       {

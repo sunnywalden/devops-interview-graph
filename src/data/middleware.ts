@@ -12,8 +12,8 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "basic",
         label: "索引·事务·慢查（基础）",
         oneLiner: "按查询建索引，事务尽量短，慢查询先 explain 再动手。",
-        resumeAnchor: "B 站资源效能：SQL/索引优化与二级缓存一起做；具体库表细节简历未展开。",
-        warning: "简历里 MySQL 多和『SQL 优化 + 二级缓存』一起出现（B 站效能），细节厚度不如 Mongo/CMDB。下面是面试基础口径，不编造未有的项目指标。",
+        resumeAnchor: "资源效能：SQL/索引优化与二级缓存一起做；具体库表细节简历未展开。",
+        warning: "简历里 MySQL 多和『SQL 优化 + 二级缓存』一起出现（资源效能），细节厚度不如 Mongo/CMDB。下面是面试基础口径，不编造未有的项目指标。",
         principles: [
           "B+ 树索引适合范围和排序；最左前缀决定复合索引能不能用上。",
           "等值、排序、范围的字段顺序要和真实 SQL 对齐，别盲目把『高选择度』塞最前。",
@@ -33,7 +33,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           "函数包列导致索引失效还不自知。",
           "只看执行时间平均值，忽略偶发锁等待。",
         ],
-        oral: "MySQL 我按基础功来讲：先看 SQL 长什么样，再谈索引顺序；慢了先 explain，不先加索引。事务能短则短，别在事务里打外部调用。B 站那段我更多是 SQL 优化和缓存一起做，简历没展开到具体分库分表数字，我不编。深分页和隐式转换这类坑我会主动提。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "MySQL 我按基础功来讲：先看 SQL 长什么样，再谈索引顺序；慢了先 explain，不先加索引。事务能短则短，别在事务里打外部调用。资源效能那段我更多是 SQL 优化和缓存一起做，简历没展开到具体分库分表数字，我不编。深分页和隐式转换这类坑我会主动提。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "和 Mongo 怎么选？", a: "强关系、复杂事务、报表型查询，我更倾向 MySQL；文档模型、灵活字段、CMDB 那种资源画像，Mongo 更顺手。选型看数据形态和事务边界，不看信仰。" },
           { q: "深分页？", a: "大偏移 limit 很伤。能用的话按上一页最后 ID 继续翻，或者先查主键再回表。具体用哪套，取决于产品能不能接受游标语义。" },
@@ -46,7 +46,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "with-cache",
         label: "与 Redis 协作",
         oneLiner: "读多写少时，SQL 优化和二级缓存一起做；缓存不是真相。",
-        resumeAnchor: "B 站：本地+Redis 二级缓存 + SQL 优化；可用性 99.9999%，成本约 -40%。",
+        resumeAnchor: "资源效能：本地+Redis 二级缓存 + SQL 优化；可用性 99.9999%，成本约 -40%。",
         principles: [
           "先把慢 SQL 和索引抠掉，再靠缓存放大收益，顺序别反。",
           "写库后删缓存，接受极短不一致。",
@@ -66,7 +66,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           "缓存与库双写无顺序约定。",
           "穿透无防护，恶意 key 打爆库。",
         ],
-        oral: "B 站那段我是两条线一起推：SQL 和索引先抠，再上本地加 Redis 二级缓存。写后删缓存，击穿单飞，穿透垫空值。简历数字就两个：可用性 99.9999%，成本大概降了 40%。缓存再快也不能当唯一真相，关键路径要能回源和对账。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。关键路径我还会主动提可观测、超时取消和回滚，避免只讲开心路径。",
+        oral: "缓存降本那段我是两条线一起推：SQL 和索引先抠，再上本地加 Redis 二级缓存。写后删缓存，击穿单飞，穿透垫空值。简历数字就两个：可用性 99.9999%，成本大概降了 40%。缓存再快也不能当唯一真相，关键路径要能回源和对账。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。关键路径我还会主动提可观测、超时取消和回滚，避免只讲开心路径。",
         followUps: [
           { q: "先缓存还是先 SQL？", a: "我先 SQL。缓存是放大器，放大的是你已经相对合理的查询。脏 SQL 加缓存，只是把压力从库挪到缓存失效风暴上。" },
           { q: "一致性窗口？", a: "跟产品谈可接受的短暂不一致。财务级以库为准；展示类可读缓存。策略写进 SLA。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
@@ -79,7 +79,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "isolation",
         label: "隔离级别 / MVCC",
         oneLiner: "InnoDB 默认可重复读，靠 MVCC 与间隙锁等机制；选型看业务要不要幻读与写倾斜。",
-        resumeAnchor: "面试基础口径；B 站 SQL 优化背景上的原理补强，不编造项目隔离调参经历。",
+        resumeAnchor: "面试基础口径；资源效能 SQL 优化背景上的原理补强，不编造项目隔离调参经历。",
         warning: "简历未写调过隔离级别；本卡讲原理与默认行为，不声称生产改过级别。",
         principles: [
           "读未提交、读已提交、可重复读、串行化，约束递增代价递增。",
@@ -292,7 +292,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "redis",
         label: "二级缓存与防护",
         oneLiner: "本地加 Redis 做二级缓存；写后删；击穿用单飞，穿透垫空值。",
-        resumeAnchor: "B 站资源效能：二级缓存 + SQL 优化；可用性 99.9999%；成本约 -40%。",
+        resumeAnchor: "资源效能：二级缓存 + SQL 优化；可用性 99.9999%；成本约 -40%。",
         principles: [
           "本地缓存抗热点，Redis 做共享层。",
           "写数据库后删缓存，接受极短不一致。",
@@ -345,7 +345,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           "恢复流程从没演练。",
           "缓存与存储职责混淆。",
         ],
-        oral: "持久化我先定性：这是不是缓存。B 站那种二级缓存，真相在 DB，Redis 挂了能回源，持久化级别可以务实。若当队列或会话硬状态，才认真谈 AOF/RDB 与演练。fork 与磁盘也要进容量。别用『开了 AOF』骗自己当数据库。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。关键路径我还会主动提可观测、超时取消和回滚，避免只讲开心路径。",
+        oral: "持久化我先定性：这是不是缓存。资源效能那种二级缓存，真相在 DB，Redis 挂了能回源，持久化级别可以务实。若当队列或会话硬状态，才认真谈 AOF/RDB 与演练。fork 与磁盘也要进容量。别用『开了 AOF』骗自己当数据库。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。关键路径我还会主动提可观测、超时取消和回滚，避免只讲开心路径。",
         followUps: [
           { q: "fsync 策略？", a: "always 最慢最稳，everysec 常见折中。看 SLA。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
           { q: "和备份？", a: "RDB/AOF 文件要进备份策略，恢复要演练。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
@@ -537,7 +537,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "docker",
         label: "Docker 镜像基础",
         oneLiner: "镜像分层、多阶段构建、不可变标签；构建尽量在 CI 用 Kaniko，少在节点挂 Docker socket。",
-        resumeAnchor: "特赞 Kaniko 构建；生产禁用 latest。",
+        resumeAnchor: "Kaniko 构建；生产禁用 latest。",
         principles: [
           "镜像按层缓存，Dockerfile 顺序影响构建速度。",
           "多阶段构建把编译环境和运行环境拆开，最终镜像更小。",
@@ -570,7 +570,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "probe",
         label: "探针与滚动",
         oneLiner: "startup 扛慢启，liveness 判断死锁重启，readiness 决定摘流；滚动靠 Surge/Unavailable 加 Ready。",
-        resumeAnchor: "华润容器化交付与扩缩容。",
+        resumeAnchor: "容器化交付与扩缩容。",
         principles: [
           "readiness 失败只是摘掉端点，进程还在。",
           "liveness 失败会杀重建，所以探针不能过敏。",
@@ -636,7 +636,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "cicdlink",
         label: "承接 CI 部署",
         oneLiner: "CI 产出不可变镜像和同版本配置；K8s 用探针与滚动把流量接稳。",
-        resumeAnchor: "特赞 CI/CD；华润配置版本对接发布。流水线细节在场景层 GitLab CI。",
+        resumeAnchor: "运维平台 CI/CD；配置中心版本对接发布。流水线细节在场景层 GitLab CI。",
         principles: [
           "流水线负责构建、扫描、推送制品，不在集群里现场编译。",
           "部署清单引用 git sha 标签，生产禁用 latest。",
@@ -669,7 +669,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "config",
         label: "ConfigMap / Secret",
         oneLiner: "配置与密钥分离：ConfigMap 放非敏感，Secret 放敏感；变更要版本与滚动策略。",
-        resumeAnchor: "华润配置版本；K8s 交付与 Nacos 边界。",
+        resumeAnchor: "配置中心版本；K8s 交付与 Nacos 边界。",
         principles: [
           "非敏感用 ConfigMap，敏感用 Secret（仍要加密与权限）。",
           "挂载或环境变量注入，应用无感。",
@@ -801,7 +801,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         id: "troubleshoot",
         label: "资源排障更深",
         oneLiner: "Pending/OOM/Throttle/CrashLoop 分层查：事件、指标、配置、近期变更。",
-        resumeAnchor: "华润/特赞容器交付排障经验结构化。",
+        resumeAnchor: "配置交付与运维平台的容器排障经验结构化。",
         principles: [
           "Pending：events 看资源、亲和、污点、PVC。",
           "CrashLoop：看日志、探针、退出码、依赖。",

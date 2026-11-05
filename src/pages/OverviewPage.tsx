@@ -128,7 +128,7 @@ export function OverviewPage({
           <StarOutlined /> 项目 90 秒 STAR
         </Title>
         <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          主攻明赋云、B 站、特赞；华润/华为补强。讲 STAR 时点出落到哪一层。
+          主攻 CMDB、资源效能、运维平台；配置交付与 HPC 备份补强。讲 STAR 时点出落到哪一层。
         </Paragraph>
         <Select
           style={{ width: "100%", maxWidth: 420, marginBottom: 16 }}
