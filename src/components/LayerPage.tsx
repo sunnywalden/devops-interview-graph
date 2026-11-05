@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Segmented, Select, Space, Typography } from "antd";
+import { Button, Segmented, Select, Typography } from "antd";
 import { ExpandOutlined, CompressOutlined } from "@ant-design/icons";
 import type { PageId, SegmentGroup } from "../types";
 import { CardView } from "./CardView";
@@ -55,10 +55,69 @@ export function LayerPage({
   const [visitedCount, setVisitedCount] = useState(0);
 
   const stageRef = useRef<HTMLElement>(null);
+  const scrollBehavior = useRef<ScrollBehavior>("smooth");
 
   useEffect(() => {
-    stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior = reduce ? "auto" : scrollBehavior.current;
+    scrollBehavior.current = "smooth";
+    stageRef.current?.scrollIntoView({ behavior, block: "start" });
   }, [primary, topic, page]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.defaultPrevented ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        e.isComposing
+      ) {
+        return;
+      }
+      const forward = e.key === "ArrowRight" || e.key === "j";
+      const back = e.key === "ArrowLeft" || e.key === "k";
+      if (!forward && !back) return;
+
+      const target = e.target instanceof Element ? e.target : null;
+      if (target) {
+        const tag = target.tagName;
+        if (
+          tag === "INPUT" ||
+          tag === "TEXTAREA" ||
+          tag === "SELECT" ||
+          (target instanceof HTMLElement && target.isContentEditable)
+        ) {
+          return;
+        }
+        if (
+          target.closest(
+            ".ant-select, .ant-segmented, .ant-select-dropdown, [role='listbox'], [role='combobox']",
+          )
+        ) {
+          return;
+        }
+      }
+      if (
+        document.querySelector(".ant-select-open") ||
+        document.querySelector(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
+      ) {
+        return;
+      }
+
+      const cards = group.cards;
+      const idx = cards.findIndex((c) => c.id === card.id);
+      if (idx < 0) return;
+      const next = forward ? idx + 1 : idx - 1;
+      if (next < 0 || next >= cards.length) return;
+      e.preventDefault();
+      scrollBehavior.current = "auto";
+      onTopic(cards[next].id);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [group, card.id, onTopic]);
 
   useEffect(() => {
     if (!isLayerPageId(page)) return;
@@ -84,9 +143,9 @@ export function LayerPage({
   };
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <div className="layer-page">
       {!focusMode && (
-        <div>
+        <div className="layer-page__intro">
           <Title level={2} style={{ marginBottom: 6, fontSize: 22 }}>
             {title}
           </Title>
@@ -95,11 +154,13 @@ export function LayerPage({
       )}
 
       <div className="layer-toolbar">
-        <Space direction="vertical" size={12} style={{ width: "100%" }}>
+        <div className="train-bar" role="group" aria-label={`${pageLabel}导航`}>
           <div className="layer-toolbar__row">
             <div className="segmented-wrap layer-toolbar__seg">
               <Segmented
                 block
+                shape="round"
+                className="train-segmented"
                 value={group.id}
                 options={groups.map((g) => ({ value: g.id, label: g.label }))}
                 onChange={(v) => onPrimary(String(v))}
@@ -119,6 +180,7 @@ export function LayerPage({
             </Button>
           </div>
           <Select
+            className="train-select"
             style={{ width: "100%" }}
             value={card.id}
             options={group.cards.map((c) => ({
@@ -130,30 +192,43 @@ export function LayerPage({
             optionFilterProp="label"
             placeholder="选择知识点"
             aria-label="知识点"
+            classNames={{ popup: { root: "train-select-dropdown" } }}
           />
-          <div
-            className="layer-visit-progress"
-            role="status"
-            aria-label={`本层已浏览 ${visitedCount} / ${totalCards}`}
-            title="本层已打开过的知识点（本机）"
-          >
-            <div className="layer-visit-progress__track">
-              <div
-                className="layer-visit-progress__fill"
-                style={{ width: `${progressPct}%` }}
-              />
+          <div className="train-bar__meta">
+            <div
+              className="layer-visit-progress"
+              role="status"
+              aria-label={`本层已浏览 ${visitedCount} / ${totalCards}`}
+              title="本层已打开过的知识点（本机）"
+            >
+              <div className="layer-visit-progress__track">
+                <div
+                  className="layer-visit-progress__fill"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <span key={visitedCount} className="layer-visit-progress__label is-tick">
+                本层 {visitedCount}/{totalCards}
+              </span>
             </div>
-            <span className="layer-visit-progress__label">
-              本层 {visitedCount}/{totalCards}
-            </span>
+            <p className="train-hint" id="card-kbd-hint">
+              本组相邻
+              <kbd>←</kbd>
+              <kbd>→</kbd>
+              <span className="train-hint__or">或</span>
+              <kbd>j</kbd>
+              <kbd>k</kbd>
+            </p>
           </div>
-        </Space>
+        </div>
       </div>
 
       <section
         ref={stageRef}
         className="card-stage"
         aria-label={`${pageLabel}知识点`}
+        aria-keyshortcuts="ArrowLeft ArrowRight j k"
+        aria-describedby="card-kbd-hint"
       >
         <div key={card.id} className="card-transition">
           <CardView card={card} />
@@ -170,6 +245,6 @@ export function LayerPage({
           ))}
         </nav>
       )}
-    </Space>
+    </div>
   );
 }

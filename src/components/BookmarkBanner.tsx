@@ -56,24 +56,29 @@ export function BookmarkBanner({
   const when = relativeStamp(bookmark.updatedAt);
 
   return (
-    <div className={`progress-chip ${className ?? ""}`.trim()} role="status">
-      <span className="progress-chip__label" title={bookmark.label}>
-        {compact ? bookmark.label : `上次：${bookmark.label}`}
-      </span>
-      <span className="progress-chip__meta" title={bookmark.updatedAt}>
-        {when}
-      </span>
-      {showContinue && (
-        <Button
-          type="primary"
-          size="small"
-          className="progress-chip__btn"
-          icon={<PlayCircleOutlined />}
-          onClick={onContinue}
-        >
-          继续
-        </Button>
-      )}
+    <div className="progress-chip-slot" role="status">
+      <div
+        key={`${bookmark.page}:${bookmark.topic}:${bookmark.updatedAt}`}
+        className={`progress-chip progress-chip--live ${className ?? ""}`.trim()}
+      >
+        <span className="progress-chip__label" title={bookmark.label}>
+          {compact ? bookmark.label : `上次：${bookmark.label}`}
+        </span>
+        <span className="progress-chip__meta" title={bookmark.updatedAt}>
+          {when}
+        </span>
+        {showContinue && (
+          <Button
+            type="primary"
+            size="small"
+            className="progress-chip__btn"
+            icon={<PlayCircleOutlined />}
+            onClick={onContinue}
+          >
+            继续
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

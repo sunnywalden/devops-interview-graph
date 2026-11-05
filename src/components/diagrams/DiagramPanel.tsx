@@ -1,10 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Button, Card, Tabs } from "antd";
+import { Tabs } from "antd";
 import {
   ApartmentOutlined,
-  DownOutlined,
   PartitionOutlined,
-  UpOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
 import type { CardVisual } from "../../types";
 import {
@@ -12,6 +11,8 @@ import {
   writeUiPrefs,
   type DiagramTab,
 } from "../../uiPrefs";
+
+const FLOW_HEIGHT = 520;
 
 const MermaidBlock = lazy(() =>
   import("./MermaidBlock").then((m) => ({ default: m.MermaidBlock })),
@@ -38,7 +39,7 @@ function VisualBody({ visual }: { visual: CardVisual }) {
   }
   return (
     <Suspense fallback={<Fallback />}>
-      <FlowGraph nodes={visual.nodes} edges={visual.edges} height={400} />
+      <FlowGraph nodes={visual.nodes} edges={visual.edges} height={FLOW_HEIGHT} />
     </Suspense>
   );
 }
@@ -73,14 +74,10 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           children: (
             <div className="diagram-stack">
               {mermaidItems.map((v, i) => (
-                <Card
-                  key={`m-${i}`}
-                  size="small"
-                  title={v.title}
-                  style={{ marginBottom: i < mermaidItems.length - 1 ? 12 : 0 }}
-                >
+                <div key={`m-${i}`} className="diagram-sheet diagram-sheet--mermaid">
+                  {v.title ? <div className="diagram-sheet__title">{v.title}</div> : null}
                   <VisualBody visual={v} />
-                </Card>
+                </div>
               ))}
             </div>
           ),
@@ -98,14 +95,10 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           children: (
             <div className="diagram-stack">
               {flowItems.map((v, i) => (
-                <Card
-                  key={`f-${i}`}
-                  size="small"
-                  title={v.title}
-                  style={{ marginBottom: i < flowItems.length - 1 ? 12 : 0 }}
-                >
+                <div key={`f-${i}`} className="diagram-sheet diagram-sheet--flow">
+                  {v.title ? <div className="diagram-sheet__title">{v.title}</div> : null}
                   <VisualBody visual={v} />
-                </Card>
+                </div>
               ))}
             </div>
           ),
@@ -156,41 +149,39 @@ function DiagramPanelInner({
     : keys[0];
 
   return (
-    <Card
-      className="diagram-panel"
-      title="知识图示"
-      extra={
+    <section
+      className={`stage-card diagram-panel${expanded ? " is-open" : ""}`}
+      aria-label="知识图示"
+    >
+      <header className="diagram-panel__bar">
+        <h3 className="diagram-panel__title">知识图示</h3>
         <div className="diagram-panel__extra">
           <a className="diagram-skip" href="#card-followups">
             跳到追问
           </a>
-          <Button
-            type="text"
-            size="small"
+          <button
+            type="button"
             className="diagram-panel__toggle"
-            icon={expanded ? <UpOutlined /> : <DownOutlined />}
             onClick={onToggle}
             aria-expanded={expanded}
           >
+            <RightOutlined className="diagram-panel__chevron" />
             {expanded ? "收起" : "展开"}
-          </Button>
+          </button>
         </div>
-      }
-      styles={{
-        body: {
-          paddingTop: expanded ? 8 : 0,
-          paddingBottom: expanded ? 16 : 0,
-        },
-      }}
-    >
+      </header>
       {expanded && (
-        <Tabs
-          activeKey={safeKey}
-          onChange={onTab}
-          items={tabItems}
-          destroyInactiveTabPane
-        />
+        <div className="diagram-panel__body">
+          <Tabs
+            className="diagram-tabs"
+            type="line"
+            activeKey={safeKey}
+            onChange={onTab}
+            items={tabItems}
+            destroyInactiveTabPane
+          />
+        </div>
       )}
-    </Card>
+    </section>
   );
 }
