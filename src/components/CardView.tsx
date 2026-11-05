@@ -1,36 +1,35 @@
-import { Collapse, List, Space, Typography, theme } from "antd";
+import { useId, useState, type ReactNode } from "react";
 import {
   AlertOutlined,
   BookOutlined,
   CommentOutlined,
   QuestionCircleOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
 import type { Card as CardType } from "../types";
 import { Callout } from "./Callout";
 import { DiagramPanel } from "./diagrams/DiagramPanel";
 
-const { Paragraph, Text } = Typography;
-
 export function CardView({ card }: { card: CardType }) {
-  const { token } = theme.useToken();
-
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }} key={card.id}>
+    <div className="card-stack">
       {card.warning && (
         <Callout lead="诚实边界" tone="warn">
           {card.warning}
         </Callout>
       )}
 
-      <header className="card-head print-keep">
+      <header className="stage-card card-head print-keep">
+        <p className="card-head__kicker">知识点</p>
         <h2 className="card-head__title">{card.label}</h2>
-        <Paragraph className="card-head__one">{card.oneLiner}</Paragraph>
-        <Paragraph className="card-head__resume print-hide">
-          简历锚点 · {card.resumeAnchor}
-        </Paragraph>
+        <p className="card-head__one">{card.oneLiner}</p>
+        <p className="card-head__resume print-hide">
+          <span className="card-head__resume-tag">简历锚点</span>
+          <span className="card-head__resume-text">{card.resumeAnchor}</span>
+        </p>
       </header>
 
-      <section className="oral-hero print-keep" aria-label="60–90 秒口述">
+      <section className="stage-card oral-hero print-keep" aria-label="60–90 秒口述">
         <div className="oral-hero__label">
           <CommentOutlined />
           60–90 秒口述
@@ -42,79 +41,101 @@ export function CardView({ card }: { card: CardType }) {
         <DiagramPanel visuals={card.visuals} />
       </div>
 
-      <div id="card-followups" className="print-hide">
-      <Collapse
-        key={card.id}
-        defaultActiveKey={["followUps"]}
-        items={[
-          {
-            key: "followUps",
-            label: (
-              <Space>
-                <QuestionCircleOutlined />
-                追问（{card.followUps.length}）
-              </Space>
-            ),
-            children: (
-              <List
-                dataSource={card.followUps}
-                renderItem={(f) => (
-                  <List.Item>
-                    <Space
-                      direction="vertical"
-                      size={4}
-                      style={{ width: "100%" }}
-                    >
-                      <Text strong style={{ color: token.colorPrimary }}>
-                        追问：{f.q}
-                      </Text>
-                      <Text>{f.a}</Text>
-                    </Space>
-                  </List.Item>
-                )}
-              />
-            ),
-          },
-          {
-            key: "principles",
-            label: (
-              <Space>
-                <BookOutlined />
-                原理（{card.principles.length}）
-              </Space>
-            ),
-            children: (
-              <List
-                dataSource={card.principles}
-                renderItem={(p, i) => (
-                  <List.Item>
-                    <Text>
-                      <Text strong>原理{i + 1}：</Text>
-                      {p}
-                    </Text>
-                  </List.Item>
-                )}
-              />
-            ),
-          },
-          {
-            key: "pitfalls",
-            label: (
-              <Space>
-                <AlertOutlined />
-                易错（{card.pitfalls.length}）
-              </Space>
-            ),
-            children: (
-              <List
-                dataSource={card.pitfalls}
-                renderItem={(p) => <List.Item>{p}</List.Item>}
-              />
-            ),
-          },
-        ]}
-      />
+      <section
+        id="card-followups"
+        className="followups print-hide"
+        aria-label="追问"
+      >
+        <div className="section-label">
+          <QuestionCircleOutlined />
+          <span>追问</span>
+          <span className="section-label__count">{card.followUps.length}</span>
+        </div>
+        <div className="qa-list">
+          {card.followUps.map((f, i) => (
+            <article key={`${card.id}-fu-${i}`} className="qa-card">
+              <div className="qa-card__row">
+                <span className="qa-mark" aria-hidden>
+                  Q
+                </span>
+                <p className="qa-card__q">{f.q}</p>
+              </div>
+              <div className="qa-card__row">
+                <span className="qa-mark qa-mark--a" aria-hidden>
+                  A
+                </span>
+                <p className="qa-card__a">{f.a}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <Disclosure
+        title="原理"
+        icon={<BookOutlined />}
+        count={card.principles.length}
+      >
+        <ol className="note-list">
+          {card.principles.map((p, i) => (
+            <li key={`${card.id}-pr-${i}`}>{p}</li>
+          ))}
+        </ol>
+      </Disclosure>
+
+      <Disclosure
+        title="易错"
+        icon={<AlertOutlined />}
+        count={card.pitfalls.length}
+      >
+        <ul className="note-list note-list--plain">
+          {card.pitfalls.map((p, i) => (
+            <li key={`${card.id}-pit-${i}`}>{p}</li>
+          ))}
+        </ul>
+      </Disclosure>
+    </div>
+  );
+}
+
+function Disclosure({
+  title,
+  icon,
+  count,
+  children,
+}: {
+  title: string;
+  icon: ReactNode;
+  count: number;
+  children: ReactNode;
+}) {
+  const uid = useId();
+  const panelId = `disclosure-${uid}`;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className={`disclosure print-hide${open ? " is-open" : ""}`}>
+      <button
+        type="button"
+        className="disclosure__trigger"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <RightOutlined className="disclosure__chevron" />
+        <span className="disclosure__icon">{icon}</span>
+        <span>{title}</span>
+        <span className="disclosure__count">{count}</span>
+      </button>
+      <div
+        className="disclosure__panel"
+        id={panelId}
+        role="region"
+        aria-label={title}
+        aria-hidden={!open}
+      >
+        <div className="disclosure__panel-inner">{children}</div>
       </div>
-    </Space>
+    </section>
   );
 }
