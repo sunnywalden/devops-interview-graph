@@ -12,7 +12,7 @@ export const layerSteps = [
   {
     title: "② 中间件 / 基础设施",
     detail:
-      "MySQL（索引/隔离/死锁）、Mongo（索引/事务/副本/模型）、Redis（缓存防护/持久化/集群/热 key）、MQ（可靠/积压/顺序）、Docker/K8s（探针滚动/配置密钥/Service/网络策略/etcd/排障）、DNS/TLS。",
+      "MySQL（索引/隔离/死锁/主从）、Mongo（索引/事务/副本/分片）、Redis（结构选型/缓存防护/集群/热 key）、MQ（可靠/积压/顺序/选型）、Docker/K8s（架构与组件、工作负载、网络存储、探针滚动、Service、RBAC、排障）、DNS/CoreDNS/TLS/证书。",
   },
   {
     title: "③ DevOps 场景",
@@ -33,7 +33,7 @@ export const diagramNodes = [
   { id: "redis", label: "Redis", detail: "缓存/热 key", layer: 2 },
   { id: "mq", label: "消息 MQ", detail: "可靠/顺序/积压", layer: 2 },
   { id: "docker", label: "Docker", detail: "镜像/容器", layer: 2 },
-  { id: "k8s", label: "Kubernetes", detail: "编排/排障", layer: 2 },
+  { id: "k8s", label: "Kubernetes", detail: "架构/编排", layer: 2 },
   { id: "net", label: "DNS/TLS", detail: "解析与证书", layer: 2 },
   { id: "cicd", label: "CI/CD", detail: "GitLab+供应链", layer: 3 },
   { id: "monitor", label: "监控", detail: "Prom/SLO/告警", layer: 3 },
@@ -118,8 +118,8 @@ export const sprint5d: SprintDay[] = [
   {
     label: "Day2 ②中间件+CMDB",
     items: [
-      { label: "背", value: "Mongo 四卡；Redis 热 key；MQ 积压/顺序；K8s 探针+排障" },
-      { label: "扫", value: "MySQL 隔离/死锁；DNS/TLS" },
+      { label: "背", value: "Mongo 四卡；Redis 热 key；MQ 积压/顺序；K8s 架构+探针+排障" },
+      { label: "扫", value: "MySQL 隔离/死锁/主从；DNS/证书" },
       { label: "练", value: "CMDB STAR + 幂等/Lease" },
     ],
   },
@@ -158,7 +158,7 @@ export const sprint3d: SprintDay[] = [
   {
     label: "Day2",
     items: [
-      { label: "内容", value: "③GitLab CI 八卡 + ②K8s 探针/排障 + 运维平台/Terraform" },
+      { label: "内容", value: "③GitLab CI 八卡 + ②K8s 架构/探针/排障 + 运维平台/Terraform" },
       { label: "产出", value: "CI→K8s 白板 + 运维平台要点" },
     ],
   },
@@ -182,9 +182,9 @@ export const sprintTips = [
 export const checklist = [
   "①语言层 Go：GMP/ctx/channel、iface/nil、error wrap、Mutex/sync.Map、优雅退出、表驱动测试、GC、go-zero/GraphQL",
   "①语言层 Python：GIL/asyncio、Django 多租户、Exporter、typing/Pydantic、多进程、Poetry、WSGI/ASGI、标准库脚本",
-  "②中间件：MySQL 索引+隔离+死锁；Mongo 索引/事务/副本/模型；Redis 防护+持久化+集群+热 key；MQ 可靠+积压+顺序",
-  "②中间件 K8s：探针滚动、Config/Secret、Service/Ingress、NetworkPolicy、etcd、排障；DNS/TLS",
-  "③场景 CI：GitLab 八卡（含供应链/Runner）；监控黄金信号/联邦/SLO/告警疲劳；日志 ELK+结构化链路",
+  "②中间件：MySQL 索引+隔离+死锁+主从；Mongo 索引/事务/副本/分片；Redis 结构选型+防护+集群+热 key；MQ 可靠+积压+顺序+选型",
+  "②中间件 K8s：架构与组件、Pod 控制器、CNI 与存储、探针滚动、Config/Secret、Service/Ingress、RBAC、NetworkPolicy、etcd、排障；DNS/CoreDNS/TLS/证书",
+  "③场景 CI：GitLab 八卡（含供应链/Runner/金丝雀）；监控黄金信号/联邦/SLO/告警疲劳；日志 ELK+结构化链路+追踪",
   "③场景：运维平台+Terraform+GitOps；CMDB 四卡；报表；Nacos/审计/备份/密钥/oncall/容量",
   "总览：CMDB、资源效能、运维平台 STAR 录音≤90s；配置交付与 HPC 备份各过一遍；只报简历已有数字",
 ];

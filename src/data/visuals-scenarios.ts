@@ -80,6 +80,17 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   BP --> Release[可部署产物]`,
     },
   ],
+  "cicd/canary": [
+    {
+      kind: "mermaid",
+      title: "金丝雀放量",
+      source: `flowchart LR
+  Base[基线] --> Gate{黄金信号}
+  Canary[小流量新版本] --> Gate
+  Gate -->|过线| Stop[停并回滚镜像+配置]
+  Gate -->|守住| More[加大权重或副本]`,
+    },
+  ],
   "cicd/deploy": [
     {
       kind: "flow",
@@ -189,6 +200,18 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   Beat --> ES[(Elasticsearch)]
   ES --> ILM[热→温→冷→删]
   ES --> Kibana`,
+    },
+  ],
+  "log/trace": [
+    {
+      kind: "mermaid",
+      title: "trace 穿过同步和队列",
+      source: `flowchart LR
+  In[入口 trace id] --> RPC[RPC 协议头]
+  RPC --> Span[子 span]
+  In --> MQ[消息头]
+  MQ --> Cons[消费端接上同一棵树]
+  Span --> Log[日志打同一个 id]`,
     },
   ],
   "log/structured": [
