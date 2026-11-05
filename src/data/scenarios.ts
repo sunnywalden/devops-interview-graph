@@ -12,7 +12,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "stages",
         label: "stages / jobs / needs",
         oneLiner: "stages 定阶段顺序，jobs 是执行单元；needs 做有向依赖，rules 和 workflow 决定这条流水线何时跑。",
-        resumeAnchor: "特赞 GitLab CI Templates：统一 lint→test→build→scan→deploy。",
+        resumeAnchor: "GitLab CI Templates：统一 lint→test→build→scan→deploy。",
         principles: [
           "stages 描述全局阶段顺序，比如 lint、test、build、deploy。",
           "每个 job 属于一个 stage，默认同 stage 内可并行。",
@@ -32,7 +32,7 @@ const rawScenarioGroups: SegmentGroup[] = [
           "workflow 与 rules 打架，行为难测。",
           "allow_failure 滥用导致门禁假绿。",
         ],
-        oral: "GitLab CI 我这么拆：stages 管大阶段顺序，job 是真正干活的单元。同阶段能并行的我尽量并行；跨阶段有依赖就写 needs，让关键路径早跑。rules 决定这个 job 在 MR 还是主干跑，workflow 决定整条流水线创不创建。特赞那套模板就是按 lint、test、build、scan、deploy 把节奏定死，项目只填变量。门禁红线不许 allow_failure。",
+        oral: "GitLab CI 我这么拆：stages 管大阶段顺序，job 是真正干活的单元。同阶段能并行的我尽量并行；跨阶段有依赖就写 needs，让关键路径早跑。rules 决定这个 job 在 MR 还是主干跑，workflow 决定整条流水线创不创建。平台那套模板就是按 lint、test、build、scan、deploy 把节奏定死，项目只填变量。门禁红线不许 allow_failure。",
         followUps: [
           { q: "needs 和 stage 啥关系？", a: "stage 是粗粒度顺序；needs 是细粒度依赖。有了 needs，job 可以在前置一完成就启动，不必等同 stage 所有兄弟结束。依赖图要清晰，别绕成环。" },
           { q: "rules 怎么设计？", a: "MR 跑快检和单测；默认分支跑完整构建和扫描；标签或手动触发才部署。只改文档就别触发镜像构建。规则要可读，注释写清意图。" },
@@ -45,7 +45,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "templates",
         label: "include 模板与变量",
         oneLiner: "用 include 引入公共 CI Templates，项目只保留变量和少量覆盖；Variables 分层管理。",
-        resumeAnchor: "特赞把多项目 CI 收成 Templates，减少每个仓库复制一份 YAML。",
+        resumeAnchor: "把多项目 CI 收成 Templates，减少每个仓库复制一份 YAML。",
         principles: [
           "include 可以引入项目内、远程或模板仓库的 YAML 片段。",
           "公共模板定义 job 骨架；业务仓用变量填充镜像名、环境和开关。",
@@ -65,7 +65,7 @@ const rawScenarioGroups: SegmentGroup[] = [
           "项目覆盖关掉扫描。",
           "变量地狱无文档。",
         ],
-        oral: "特赞我做的不是每个项目手写一套 CI，而是 Templates。公共仓定义 stages 和标准 job，业务仓 include 进来，自己只填变量。密钥走受保护变量。模板也要版本化，升级能灰度，挂了能回滚。门禁红线模板钉死。这样治理才像平台，而不是 YAML 复制粘贴大会。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "我做的不是每个项目手写一套 CI，而是 Templates。公共仓定义 stages 和标准 job，业务仓 include 进来，自己只填变量。密钥走受保护变量。模板也要版本化，升级能灰度，挂了能回滚。门禁红线模板钉死。这样治理才像平台，而不是 YAML 复制粘贴大会。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "项目能否覆盖模板？", a: "可以有限覆盖，比如加项目特有集成测试。但质量门禁、不可变标签、生产审批这些红线，模板层要钉死。" },
           { q: "变量怎么分层？", a: "通用默认放群组，项目差异放项目变量，临时调试用 pipeline 变量。生产密钥必须受保护。" },
@@ -78,7 +78,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "quality",
         label: "cache / artifacts / Sonar",
         oneLiner: "cache 加速依赖，artifacts 传递产物，coverage 可视化；Sonar 等门禁失败就阻断。",
-        resumeAnchor: "特赞：Sonar/Jacoco 门禁，制品进 Artifactory。",
+        resumeAnchor: "Sonar/Jacoco 门禁，制品进 Artifactory。",
         principles: [
           "cache 按 key 复用依赖目录，但不保证跨 job 传递产物。",
           "artifacts 才是 job 间传递的构建产物，可设过期时间。",
@@ -111,7 +111,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "kaniko",
         label: "Kaniko → Artifactory",
         oneLiner: "Kaniko 在集群里用户态构建镜像，推到 Artifactory；用 git sha 做不可变标签。",
-        resumeAnchor: "特赞：Kaniko 构建 → Artifactory。",
+        resumeAnchor: "Kaniko 构建 → Artifactory。",
         principles: [
           "Kaniko 不依赖 Docker daemon，适合在 K8s/GitLab Runner 里构建。",
           "减少挂载 Docker socket，特权面更小。",
@@ -144,7 +144,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "mrpipe",
         label: "MR vs 分支 / Badge",
         oneLiner: "MR pipeline 跑快检与门禁；分支 pipeline 跑完整构建；Badge 暴露状态与覆盖率。",
-        resumeAnchor: "特赞：MR 必须绿才能合，主干再做完整构建部署准备。",
+        resumeAnchor: "MR 必须绿才能合，主干再做完整构建部署准备。",
         principles: [
           "MR pipeline 针对合并请求，验证『合进去会怎样』。",
           "分支 pipeline 在 push 后跑，常用于默认分支完整链路。",
@@ -177,7 +177,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "deploy",
         label: "CD 一键部署",
         oneLiner: "CD 作业把同版本镜像和配置推到研发/测试；对接 K8s 滚动与探针；生产走保护和审批。",
-        resumeAnchor: "特赞一键部署到研发/测试；华润配置版本与发布联动。",
+        resumeAnchor: "一键部署到研发/测试；配置中心版本与发布联动。",
         principles: [
           "部署 job 消费构建阶段的镜像标签和配置版本，不重新发明版本号。",
           "研发/测试可用 manual 或自动部署，追求可重复一键。",
@@ -210,7 +210,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "supply",
         label: "供应链安全扫描",
         oneLiner: "依赖与镜像扫描进门禁；签名与来源可追溯；高危阻断，例外走审批。",
-        resumeAnchor: "特赞扫描门禁与 Artifactory 制品；面试补强供应链叙事。",
+        resumeAnchor: "扫描门禁与 Artifactory 制品；面试补强供应链叙事。",
         principles: [
           "SCA 扫依赖，镜像扫 OS/包漏洞。",
           "高危/严重作 blocker，有时限例外。",
@@ -243,7 +243,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "runners",
         label: "Runner 标签与容量",
         oneLiner: "Runner 用 tag 路由到正确环境；容量与隔离决定反馈速度与安全边界。",
-        resumeAnchor: "特赞 GitLab Runner / Kaniko 构建环境治理。",
+        resumeAnchor: "GitLab Runner / Kaniko 构建环境治理。",
         principles: [
           "job tags 选中匹配 Runner。",
           "共享与专用 Runner 分离敏感构建。",
@@ -283,7 +283,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "golden",
         label: "黄金信号排障",
         oneLiner: "按延迟、流量、错误、饱和排障，再对照面板、日志和变更窗口。",
-        resumeAnchor: "特赞钉钉告警；B 站效能与日志联动。",
+        resumeAnchor: "运维平台钉钉告警；资源效能与日志联动。",
         principles: [
           "延迟重点看 P99，平均值容易骗人。",
           "流量突变往往是根因或放大器。",
@@ -316,7 +316,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "prom",
         label: "Prometheus 联邦",
         oneLiner: "联邦分层：边缘留高基数，全局只拉聚合；告警分组、抑制、静默。",
-        resumeAnchor: "特赞 Influx + Prometheus + Grafana 联邦与钉钉。",
+        resumeAnchor: "Influx + Prometheus + Grafana 联邦与钉钉。",
         principles: [
           "下级负责抓取明细，上级只拉聚合后的指标。",
           "高基数留在边缘，避免中心被时序打爆。",
@@ -350,7 +350,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         label: "SLO / SLI / 错误预算",
         oneLiner: "SLI 是度量，SLO 是目标，错误预算决定发版节奏与可靠性权衡。",
         resumeAnchor: "可用性叙事与告警治理；数字仅用简历已有可用性表述，不另造 SLO 百分比。",
-        warning: "简历写过可用性 99.9999%（B 站效能语境）。本卡讲方法；不编造其它未写过的 SLO 数字。",
+        warning: "简历写过可用性 99.9999%（资源效能语境）。本卡讲方法；不编造其它未写过的 SLO 数字。",
         principles: [
           "SLI：可测的用户体验近似，如成功率和延迟分位。",
           "SLO：一段时间内的目标。",
@@ -370,7 +370,7 @@ const rawScenarioGroups: SegmentGroup[] = [
           "告警与 SLO 脱节。",
           "编造未有的小数点。",
         ],
-        oral: "SLO 我讲方法：先定用户可感的 SLI，再定目标，用错误预算管发版节奏。告警对齐燃烧，而不是每个毛刺叫人。B 站简历里写过可用性 99.9999%，我只把这个当结果引用，不另造一堆小数。没有产品共识的 SLO 只是墙上数字。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。关键路径我还会主动提可观测、超时取消和回滚，避免只讲开心路径。",
+        oral: "SLO 我讲方法：先定用户可感的 SLI，再定目标，用错误预算管发版节奏。告警对齐燃烧，而不是每个毛刺叫人。简历里资源效能写过可用性 99.9999%，我只把这个当结果引用，不另造一堆小数。没有产品共识的 SLO 只是墙上数字。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。关键路径我还会主动提可观测、超时取消和回滚，避免只讲开心路径。",
         followUps: [
           { q: "如何选 SLI？", a: "贴近用户路径：下单成功、页面可用。比 CPU 更合适。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
           { q: "预算花完？", a: "冻结非必要发布，先还可靠性债。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
@@ -383,7 +383,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "alertfatigue",
         label: "告警疲劳治理",
         oneLiner: "分组、抑制、静默、分级与 runbook；让告警可行动，而不是刷屏。",
-        resumeAnchor: "特赞钉钉告警；联邦告警路由。",
+        resumeAnchor: "钉钉告警；联邦告警路由。",
         principles: [
           "一条告警要能回答：影响谁、多严重、下一步。",
           "分组合并同根因风暴。",
@@ -423,7 +423,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "elk",
         label: "ELK / ILM",
         oneLiner: "显式 Mapping，ILM 热温冷删，查询代理限流，稳住集群并控成本。",
-        resumeAnchor: "B 站日志平台：ILM、查询代理、Mapping。",
+        resumeAnchor: "日志平台：ILM、查询代理、Mapping。",
         principles: [
           "动态 mapping 容易字段爆炸，索引映射要写死。",
           "keyword 和 text 分离，聚合和全文检索各走各的。",
@@ -443,7 +443,7 @@ const rawScenarioGroups: SegmentGroup[] = [
           "分片过多。",
           "无慢查治理。",
         ],
-        oral: "日志平台三件事：Mapping 写死；ILM 热温冷删控成本；查询走代理限流熔断。这跟 B 站效能降本是一条线，简历里成本和可用性数字在缓存/效能语境，日志侧我讲方法与成本意识，不另造指标。冷数据可以降级查或归档，没落地的能力我不吹。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "日志平台三件事：Mapping 写死；ILM 热温冷删控成本；查询走代理限流熔断。这跟资源效能降本是一条线，简历里成本和可用性数字在缓存/效能语境，日志侧我讲方法与成本意识，不另造指标。冷数据可以降级查或归档，没落地的能力我不吹。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "冷数据？", a: "降级查，或者归档到对象存储按需回载。把『多久内必须秒级可查』产品化。没落地的不吹。" },
           { q: "字段爆炸？", a: "禁动态乱字段；规范化；废字段清理。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
@@ -496,7 +496,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "platform",
         label: "平台化叙事",
         oneLiner: "把云、发布、监控、变更收成同一套权限和工具链；IaC + CI Templates + 可观测 + 审计。",
-        resumeAnchor: "特赞运维平台：Terraform、GitLab CI、联邦监控、Django 权限、SQL 审计。",
+        resumeAnchor: "运维平台：Terraform、GitLab CI、联邦监控、Django 权限、SQL 审计。",
         principles: [
           "平台化的目标是可重复、可审计、可授权，而不是堆脚本。",
           "多云资源用 Terraform 等 IaC 收敛，定期 plan 防漂移。",
@@ -516,20 +516,20 @@ const rawScenarioGroups: SegmentGroup[] = [
           "脚本当平台。",
           "没有多租户隔离。",
         ],
-        oral: "特赞运维平台我按产品讲：云资源 Terraform，发布走 GitLab Templates，监控联邦加钉钉，权限 Django 按租户过滤，SQL 审计按租户配额隔离。语言层讲 Django/GIL，中间件层讲 K8s，场景层把它们收成一条故事。详细 STAR 在总览页。平台要可重复可审计可授权，不是一堆脚本。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "运维平台我按产品讲：云资源 Terraform，发布走 GitLab Templates，监控联邦加钉钉，权限 Django 按租户过滤，SQL 审计按租户配额隔离。语言层讲 Django/GIL，中间件层讲 K8s，场景层把它们收成一条故事。详细 STAR 在总览页。平台要可重复可审计可授权，不是一堆脚本。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "平台和脚本的区别？", a: "脚本解决一次性问题；平台解决授权、复跑、审计和标准化。面试里我主动讲边界和治理，不只罗列工具名。" },
           { q: "如何推动采用？", a: "先打通最痛路径，模板降低接入成本，指标展示收益。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
           { q: "多云？", a: "IaC 抽象 + 分 provider；别幻想完全无差异。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
           { q: "平台可靠性？", a: "自己也有流水线、监控、oncall。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
-          { q: "与 CMDB？", a: "资产真相服务平台其它能力；明赋云故事衔接。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
+          { q: "与 CMDB？", a: "资产真相服务平台其它能力；CMDB 故事衔接。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
         ],
       },
       {
         id: "terraform",
         label: "Terraform state / lock",
         oneLiner: "远程 state + 锁防并发；plan 审再 apply；漂移要定期对账。",
-        resumeAnchor: "特赞多云 Terraform。",
+        resumeAnchor: "多云 Terraform。",
         principles: [
           "state 是真相映射，需远程且权限可控。",
           "锁防止两人同时 apply。",
@@ -562,7 +562,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "gitops",
         label: "GitOps vs Push CD",
         oneLiner: "GitOps 以仓库为真相由控制器拉取；Push CD 由流水线推送；关键是可审计可回放。",
-        resumeAnchor: "特赞一键部署偏 push；对比讲述 GitOps 适用边界。",
+        resumeAnchor: "一键部署偏 push；对比讲述 GitOps 适用边界。",
         principles: [
           "GitOps：改 Git，集群对齐期望状态。",
           "Push：CI 持凭证执行 kubectl/helm。",
@@ -602,7 +602,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "idem",
         label: "幂等",
         oneLiner: "同一笔业务来一次和来十次结果必须一样；靠业务幂等键加唯一索引和状态机。",
-        resumeAnchor: "明赋云折旧、消息消费、资产变更。",
+        resumeAnchor: "CMDB 折旧、消息消费、资产变更。",
         principles: [
           "消息至少一次投递，所以消费端必须幂等。",
           "幂等键可以是业务单号、fencing token 或版本号。",
@@ -635,7 +635,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "lease",
         label: "Lease / Fencing",
         oneLiner: "租约选主；fencing token 拒绝旧主写入，防止脑裂双写。",
-        resumeAnchor: "明赋云财务折旧：同一资产不能并行折旧。",
+        resumeAnchor: "财务折旧：同一资产不能并行折旧。",
         principles: [
           "租约是限时持有，可以续约，也可以被抢。",
           "续约失败必须立刻停写。",
@@ -668,7 +668,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "saga",
         label: "流程补偿",
         oneLiner: "长流程拆成多步本地事务加补偿，追求最终一致。",
-        resumeAnchor: "明赋云资产跨系统变更与补偿。",
+        resumeAnchor: "资产跨系统变更与补偿。",
         principles: [
           "每一步都有动作、状态和对应的逆动作。",
           "失败就反向补偿，而且补偿本身必须幂等。",
@@ -701,7 +701,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "worker",
         label: "预计算 Worker",
         oneLiner: "概览聚合做成事件驱动 Worker 加 BulkWrite；读走预计算结果。",
-        resumeAnchor: "明赋云资产概览预计算 Worker。",
+        resumeAnchor: "资产概览预计算 Worker。",
         principles: [
           "在线聚合太贵，所以异步物化成读模型。",
           "定时全量打底，事件增量追新。",
@@ -741,7 +741,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "board",
         label: "看板与预计算",
         oneLiner: "看板吃预计算结果和可观测指标；别在面板查询里现算重聚合。",
-        resumeAnchor: "明赋云资产概览；特赞 Grafana 看板。不编造未写过的报表数字。",
+        resumeAnchor: "CMDB 资产概览；运维平台 Grafana 看板。不编造未写过的报表数字。",
         principles: [
           "运营看板优先读物化结果，请求路径保持轻。",
           "监控看板用 recording rule 或预聚合，少在 Grafana 里做重计算。",
@@ -781,7 +781,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "nacos",
         label: "Nacos 配置中心",
         oneLiner: "Nacos 做配置与发现：推送加版本，本地缓存，变更可回滚。",
-        resumeAnchor: "明赋云 go-zero 配置；华润配置中心与发布联动。",
+        resumeAnchor: "go-zero 配置；配置中心与发布联动。",
         principles: [
           "配置集中管理，按环境和命名空间隔离。",
           "客户端监听推送或长轮询，本地快照做兜底。",
@@ -814,7 +814,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "audit",
         label: "SQL 审计",
         oneLiner: "SQL 审计按租户隔离执行配额与超时，权限平台化，动作可追溯。",
-        resumeAnchor: "特赞 Archery SQL 审计；语言层 asyncio/GIL 卡展开并发模型。",
+        resumeAnchor: "Archery 多租户 SQL 审计；语言层 asyncio/GIL 卡展开并发模型。",
         principles: [
           "高风险 SQL 变更不能裸奔，要走审批与执行通道。",
           "按租户做协程/任务配额，防止吵闹邻居。",
@@ -834,7 +834,7 @@ const rawScenarioGroups: SegmentGroup[] = [
           "超时无效。",
           "凭据共享。",
         ],
-        oral: "SQL 审计我当高风险平台能力讲：审批、执行、配额、超时、审计一条链。特赞用 Archery，按租户隔离协程配额。并发模型细节在语言层；这里强调的是场景——工具不能裸奔，租户不能互害。压力先限流，再评估是否用 Go 做热点。取消必须真能停。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
+        oral: "SQL 审计我当高风险平台能力讲：审批、执行、配额、超时、审计一条链。多租户审计用 Archery，按租户隔离协程配额。并发模型细节在语言层；这里强调的是场景——工具不能裸奔，租户不能互害。压力先限流，再评估是否用 Go 做热点。取消必须真能停。面试里我会先讲约束和取舍，再落到我项目里怎么做，不背名词堆砌，也绝不编造简历没有的指标。",
         followUps: [
           { q: "和权限平台关系？", a: "权限决定谁能提交什么；审计执行器决定怎么安全跑。两边策略要一致，Admin 旁路也要堵。" },
           { q: "危险语句？", a: "规则引擎拦截或强制审；生产更严。 我会结合项目边界和可观测把因果讲清楚，不停留在一句话定义。" },
@@ -847,7 +847,7 @@ const rawScenarioGroups: SegmentGroup[] = [
         id: "backup",
         label: "备份恢复",
         oneLiner: "备份窗口约束下做可验证恢复；成功日志不等于可恢复。",
-        resumeAnchor: "华为 HPC 备份恢复（Java + Shell）。完整 STAR 在总览页。",
+        resumeAnchor: "HPC 备份恢复（Java + Shell）。完整 STAR 在总览页。",
         principles: [
           "备份策略要匹配窗口：全量、增量、优先级集。",
           "校验和与抽检恢复，证明『能回来』。",
