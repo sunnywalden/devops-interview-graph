@@ -96,3 +96,29 @@
 | `ci-workload-identity` | 3. 信任与有效权限 | 信任策略控制角色承担；会话策略只能缩小角色身份策略的授权；资源策略、权限边界和组织策略按适用范围参与评估。 | [AWS STS 会话策略](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html) · [IAM 策略评估](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html) |
 | `ci-workload-identity` | 4. 按失败阶段排查 | 区分令牌过期、验证、端点连通和信任条件；成功换证后先识别会话，再核查资源权限。 | [AWS STS 错误](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html#API_AssumeRoleWithWebIdentity_Errors) · [GetCallerIdentity](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html) |
 | `ci-workload-identity` | 5. 审计与保密 | 用会话标识和时间关联已记录事件；S3 对象操作等数据事件需启用采集。流水线日志和制品不保留原始凭证。 | [IAM 与 CloudTrail](https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html) · [CloudTrail 数据事件](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html) |
+
+## 2026-11-09 岗位覆盖与版本复查
+
+逐组盘点现有的 23 个分组和 152 张卡片。Go 后端补请求体解析契约和性能诊断；Python 后端补并发子任务的生命周期和服务端异步 HTTP 调用；DevOps 开发补 Kubernetes 入口路由、节点维护和工作负载安全。已有的 InnoDB、CI 短期凭证、故障恢复及 API 可靠性专题继续保留。下表记录新增 35 组双语追问的核对范围。
+
+| 新增卡片 | 逐题核对 | 主要依据 |
+| --- | --- | --- |
+| `go-json-contracts` | 缺失、null 与零值；大小和尾随值；数字精度；v1/v2 默认值；迁移契约测试 | [encoding/json](https://pkg.go.dev/encoding/json) · [encoding/json/v2](https://pkg.go.dev/encoding/json/v2) · [Go 1.27](https://go.dev/doc/go1.27) |
+| `go-performance-profiling` | B.Loop；基准波动；存活堆与累计分配；低 CPU 高延迟；生产采集 | [B.Loop](https://go.dev/blog/testing-b-loop) · [Go 诊断指南](https://go.dev/doc/diagnostics) · [benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat) |
+| `py-structured-concurrency` | TaskGroup 与 gather；异常组；取消传播；超时捕获；限制并发 | [asyncio Tasks](https://docs.python.org/3.15/library/asyncio-task.html) · [PEP 654](https://peps.python.org/pep-0654/) |
+| `py-http-client` | 客户端生命周期；分阶段超时和总预算；连接池等待；流式响应清理；重试范围 | [HTTPX 异步调用](https://www.python-httpx.org/async/) · [超时](https://www.python-httpx.org/advanced/timeouts/) · [传输](https://www.python-httpx.org/advanced/transports/) |
+| `k8s-gateway-api` | 资源职责；路由挂载和跨命名空间后端授权；状态排查；权重灰度；迁移控制器 | [Gateway API GA](https://kubernetes.io/blog/2023/10/31/gateway-api-ga/) · [ReferenceGrant](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/) · [ingress-nginx 退役](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/) |
+| `k8s-disruption-budgets` | 驱逐与删除；预算字段与取整；429 诊断；不健康 Pod 驱逐；选择器迁移 | [配置 PDB](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) · [Eviction API](https://kubernetes.io/docs/concepts/scheduling-eviction/api-eviction/) · [API 迁移](https://kubernetes.io/docs/reference/using-api/deprecation-guide/#poddisruptionbudget-v125) |
+| `k8s-pod-security` | 策略级别；控制器模板与 Pod 准入；Restricted 检查项；已有 Pod；版本试行 | [Pod Security Admission](https://kubernetes.io/docs/concepts/security/pod-security-admission/) · [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) |
+
+同步修正 11 张已有卡片的两种语言：
+
+| 知识点 | 核对结果与版本边界 |
+| --- | --- |
+| Go GMP、计时器、GC | Go 1.27 正式提供 `goroutineleak` profile，可能漏报；同版删除 `asynctimerchan` 开关。Green Tea GC 在 Go 1.25 试验、1.26 默认启用。 [Go 1.26](https://go.dev/doc/go1.26) · [Go 1.27](https://go.dev/doc/go1.27) · [计时器语义](https://go.dev/wiki/Go123Timer) |
+| Python GIL、自由线程、ASGI、标准库、多进程 | 区分 3.13 试验、3.14 支持和 3.15 自由线程扩展 ABI、macOS 安装包及 UTF-8 模式。Django 5.2/6.0 的事务仍需同步边界。多进程启动方式需区分平台、3.14 的默认值变化及 3.14.9/3.15.1 的临时目录回退。 [CPython 3.15](https://docs.python.org/3.15/whatsnew/3.15.html) · [PEP 803](https://peps.python.org/pep-0803/) · [Django async](https://docs.djangoproject.com/en/6.0/topics/async/) · [3.14 多进程](https://docs.python.org/3.14/library/multiprocessing.html#contexts-and-start-methods) · [3.15 多进程](https://docs.python.org/3.15/library/multiprocessing.html#contexts-and-start-methods) |
+| Kubernetes 容器隔离、Service/Ingress | cgroup v2 在 1.25 稳定；1.35 起 kubelet 默认拒绝 cgroup v1。社区 ingress-nginx 退役与 Ingress API 的状态分别说明。 [cgroup 迁移](https://kubernetes.io/blog/2026/10/06/kubernetes-cgroups-v2-shift/) · [Ingress API](https://kubernetes.io/docs/concepts/services-networking/ingress/) · [ingress-nginx 退役](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/) |
+| Prometheus PromQL | 经典与原生直方图的分位数查询不同；原生直方图在 3.8 稳定，3.9 起以抓取配置选择。 [原生直方图规范](https://prometheus.io/docs/specs/native_histograms/) |
+| Terraform S3 状态 | 1.10 起可选 S3 锁文件；迁移期间双配置写入端同时取两把锁，等所有写入端使用新锁再移除 DynamoDB 锁。 [Terraform 1.10](https://github.com/hashicorp/terraform/blob/v1.10.0/CHANGELOG.md) · [S3 后端](https://developer.hashicorp.com/terraform/language/backend/s3) |
+
+核对两版是否覆盖相同的前提、异常和验证方法。浏览器逐张打开 7 张新卡并展开全部追问，切换中英文后验证路由、卡片和展开状态保持不变。

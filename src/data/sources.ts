@@ -124,6 +124,10 @@ export const contentSources = {
     "title": "Python 3.14：multiprocessing",
     "url": "https://docs.python.org/3.14/library/multiprocessing.html"
   },
+  "py315-mp": {
+    "title": "Python 3.15：多进程上下文与启动方式",
+    "url": "https://docs.python.org/3.15/library/multiprocessing.html#contexts-and-start-methods"
+  },
   "py-asyncio": {
     "title": "Python：asyncio Tasks",
     "url": "https://docs.python.org/3/library/asyncio-task.html"
@@ -1315,6 +1319,138 @@ export const contentSources = {
   "aws-cloudtrail-data-events": {
     "title": "AWS CloudTrail — Logging data events",
     "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html"
+  },
+  "go126": {
+    "title": "Go 1.26 — Release notes",
+    "url": "https://go.dev/doc/go1.26"
+  },
+  "go127": {
+    "title": "Go 1.27 — Release notes",
+    "url": "https://go.dev/doc/go1.27"
+  },
+  "go-json-v1": {
+    "title": "Go — encoding/json",
+    "url": "https://pkg.go.dev/encoding/json"
+  },
+  "go-json-v2": {
+    "title": "Go — encoding/json/v2",
+    "url": "https://pkg.go.dev/encoding/json/v2"
+  },
+  "go-b-loop": {
+    "title": "Go — More predictable benchmarking with testing.B.Loop",
+    "url": "https://go.dev/blog/testing-b-loop"
+  },
+  "go-pprof": {
+    "title": "Go — net/http/pprof",
+    "url": "https://pkg.go.dev/net/http/pprof"
+  },
+  "go-benchstat": {
+    "title": "Go — benchstat",
+    "url": "https://pkg.go.dev/golang.org/x/perf/cmd/benchstat"
+  },
+  "py315": {
+    "title": "Python — What's new in Python 3.15",
+    "url": "https://docs.python.org/3.15/whatsnew/3.15.html"
+  },
+  "py-abi3t": {
+    "title": "Python — PEP 803: Stable ABI for free-threaded builds",
+    "url": "https://peps.python.org/pep-0803/"
+  },
+  "py-mac315": {
+    "title": "Python 3.15 — Installing free-threaded binaries on macOS",
+    "url": "https://docs.python.org/3.15/using/mac.html#installing-free-threaded-binaries"
+  },
+  "py-asyncio-315": {
+    "title": "Python 3.15 — Coroutines and tasks",
+    "url": "https://docs.python.org/3.15/library/asyncio-task.html"
+  },
+  "pep654": {
+    "title": "Python — PEP 654: Exception groups and except*",
+    "url": "https://peps.python.org/pep-0654/"
+  },
+  "httpx-async": {
+    "title": "HTTPX — Async support",
+    "url": "https://www.python-httpx.org/async/"
+  },
+  "httpx-timeouts": {
+    "title": "HTTPX — Timeouts",
+    "url": "https://www.python-httpx.org/advanced/timeouts/"
+  },
+  "httpx-limits": {
+    "title": "HTTPX — Resource limits",
+    "url": "https://www.python-httpx.org/advanced/resource-limits/"
+  },
+  "httpx-transports": {
+    "title": "HTTPX — Transports",
+    "url": "https://www.python-httpx.org/advanced/transports/"
+  },
+  "django-async-6": {
+    "title": "Django 6.0 — Asynchronous support",
+    "url": "https://docs.djangoproject.com/en/6.0/topics/async/"
+  },
+  "gateway-ga": {
+    "title": "Kubernetes — Gateway API v1.0: GA release",
+    "url": "https://kubernetes.io/blog/2023/10/31/gateway-api-ga/"
+  },
+  "gateway-multiple-ns": {
+    "title": "Gateway API — Cross-namespace routing",
+    "url": "https://gateway-api.sigs.k8s.io/guides/user-guides/multiple-ns/"
+  },
+  "gateway-reference-grant": {
+    "title": "Gateway API — ReferenceGrant",
+    "url": "https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/"
+  },
+  "gateway-traffic-splitting": {
+    "title": "Gateway API — Traffic splitting",
+    "url": "https://gateway-api.sigs.k8s.io/guides/user-guides/traffic-splitting/"
+  },
+  "gateway-implementers": {
+    "title": "Gateway API — Implementer's guide",
+    "url": "https://gateway-api.sigs.k8s.io/guides/implementers-guide/"
+  },
+  "k8s-ingress-retirement": {
+    "title": "Kubernetes — Ingress NGINX retirement",
+    "url": "https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/"
+  },
+  "k8s-ingress-api": {
+    "title": "Kubernetes — Ingress",
+    "url": "https://kubernetes.io/docs/concepts/services-networking/ingress/"
+  },
+  "k8s-pdb": {
+    "title": "Kubernetes — Specifying a disruption budget",
+    "url": "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+  },
+  "k8s-pdb-api-versions": {
+    "title": "Kubernetes — PodDisruptionBudget API migration",
+    "url": "https://kubernetes.io/docs/reference/using-api/deprecation-guide/#poddisruptionbudget"
+  },
+  "k8s-api-eviction": {
+    "title": "Kubernetes — API-initiated eviction",
+    "url": "https://kubernetes.io/docs/concepts/scheduling-eviction/api-eviction/"
+  },
+  "k8s-psa": {
+    "title": "Kubernetes — Pod Security Admission",
+    "url": "https://kubernetes.io/docs/concepts/security/pod-security-admission/"
+  },
+  "k8s-pss": {
+    "title": "Kubernetes — Pod Security Standards",
+    "url": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  "k8s-psp-migration": {
+    "title": "Kubernetes — Migrate from PodSecurityPolicy",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/migrate-from-psp/"
+  },
+  "k8s-cgroup-shift": {
+    "title": "Kubernetes — The shift to cgroup v2",
+    "url": "https://kubernetes.io/blog/2026/10/06/kubernetes-cgroups-v2-shift/"
+  },
+  "prom-native-histograms": {
+    "title": "Prometheus — Native histograms",
+    "url": "https://prometheus.io/docs/specs/native_histograms/"
+  },
+  "terraform-110": {
+    "title": "Terraform 1.10.0 — Changelog",
+    "url": "https://github.com/hashicorp/terraform/blob/v1.10.0/CHANGELOG.md"
   }
 } as const;
 

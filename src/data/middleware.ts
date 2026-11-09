@@ -1318,8 +1318,10 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         ],
         "sources": [
           "k8s-resources",
-          "k8s-security"
-        ]
+          "k8s-security",
+          "k8s-cgroup-shift"
+        ],
+        "scope": "Kubernetes 1.25 起 cgroup v2 支持稳定；1.35 起 failCgroupV1 默认开启，kubelet 在 cgroup v1 节点上默认无法启动。升级前核对节点并迁移到 v2。"
       },
       {
         "id": "docker",
@@ -1561,7 +1563,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           },
           {
             "q": "Gateway API 与 Ingress 有何区别？",
-            "a": "Gateway API 提供更丰富的资源模型和角色分工；Ingress 主要描述 HTTP/HTTPS 入口。实际支持的路由、扩展与迁移成本需核对控制器。"
+            "a": "Ingress API 仍可使用，但已冻结，不再加入新功能。社区 ingress-nginx 控制器已于 2026 年 3 月退役，停止发布修复；这不等于 Ingress API 或其他控制器退役。Gateway API 提供更细的路由模型和角色分工；迁移前核对目标控制器的支持范围。"
           },
           {
             "q": "如何控制灰度流量？",
@@ -1578,7 +1580,9 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         ],
         "sources": [
           "k8s-service",
-          "gateway-docs"
+          "gateway-docs",
+          "k8s-ingress-api",
+          "k8s-ingress-retirement"
         ]
       },
       {

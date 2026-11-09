@@ -35,7 +35,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何判断 goroutine 数量增长是否属于泄漏？",
-            "a": "先用 runtime.NumGoroutine 或运行时指标观察趋势，再比较 goroutine profile 中重复堆栈和等待位置。重点检查 channel、锁、网络调用及取消路径。在相同负载下多次执行并等待任务结束，确认数量回到稳定范围；仅一次回落不足以证明泄漏已消除。"
+            "a": "先用 runtime.NumGoroutine 或运行时指标观察趋势，再对比 goroutine profile 中重复出现的堆栈与等待位置。重点检查 channel、锁、网络调用和取消路径。Go 1.27 的 goroutineleak profile 能识别部分永远无法被唤醒的 goroutine；若阻塞的同步对象仍可从全局变量等位置访问，就可能漏报。修复后在相同负载下反复验证：任务结束后数量应回到稳定范围，一次回落不足以证明修复有效。"
           },
           {
             "q": "如何理解和设置 GOMAXPROCS？",
@@ -53,6 +53,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "sources": [
           "go-runtime",
           "go125",
+          "go127",
           "java-threads"
         ],
         "scope": "调度器内部策略不属于语言规范；容器默认值需区分 Go 1.25 前后及兼容设置。"
@@ -143,9 +144,10 @@ const rawLanguageGroups: SegmentGroup[] = [
         "sources": [
           "go-spec",
           "go-memory",
-          "go-timers"
+          "go-timers",
+          "go127"
         ],
-        "scope": "Go 1.23 改善了未引用 timer 的回收；循环创建 time.After 仍有分配成本，但不应一概称为永久泄漏。"
+        "scope": "Go 1.23 引入同步计时器 channel，未到期且不再被引用的计时器也可回收。Go 1.23–1.26 中，主模块的 go 指令决定默认行为，asynctimerchan 可覆盖；Go 1.27 移除该开关，time 包的计时器 channel 始终无缓冲。循环调用 time.After 仍有分配成本。"
       },
       {
         "id": "mem",
@@ -540,9 +542,11 @@ const rawLanguageGroups: SegmentGroup[] = [
           }
         ],
         "sources": [
-          "go-gc"
+          "go-gc",
+          "go125",
+          "go126"
         ],
-        "scope": "GOMEMLIMIT 自 Go 1.19 引入；具体 GC 实现与诊断指标应按运行版本核对。"
+        "scope": "GOMEMLIMIT 自 Go 1.19 引入。Green Tea GC 在 Go 1.25 为实验功能，自 Go 1.26 默认启用；用实际部署的工具链和负载比较 GC 指标。"
       },
       {
         "id": "gomodel",
@@ -683,9 +687,10 @@ const rawLanguageGroups: SegmentGroup[] = [
           "py-threading",
           "py-free",
           "py314",
-          "py-mp"
+          "py-mp",
+          "py-mac315"
         ],
-        "scope": "以 CPython 为讨论对象；free-threading 在 3.13 为实验性功能，在 3.14 正式支持且仍为可选构建。"
+        "scope": "CPython 3.13 实验性支持自由线程，3.14 正式支持。Python.org 的 macOS 3.15 安装包默认附装自由线程二进制，但仍需选择独立的自由线程解释器。"
       },
       {
         "id": "free-threading",
@@ -708,11 +713,11 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "如何启用 free-threading，并确认 GIL 实际已经关闭？",
-            "a": "先安装 free-threaded CPython，或以 --disable-gil 配置源码构建。sysconfig.get_config_var(\"Py_GIL_DISABLED\") 返回 1 表示构建支持；在 Python 3.14 中，再用 sys._is_gil_enabled() 检查当前状态，False 表示 GIL 已关闭。-X gil=0/1 或 PYTHON_GIL=0/1 可控制支持该能力的构建，普通构建不能用这些参数获得自由线程能力。检查应覆盖实际启动参数和依赖导入，不能只看解释器名称。"
+            "a": "选择 free-threaded CPython，或以 --disable-gil 配置源码构建。sysconfig.get_config_var(\"Py_GIL_DISABLED\") 返回 1 表示构建支持；sys._is_gil_enabled() 返回 False 表示当前 GIL 已关闭。-X gil=0/1 或 PYTHON_GIL=0/1 可控制支持该能力的构建，普通构建不能用这些参数获得自由线程能力。用实际启动参数和完整导入链检查状态。"
           },
           {
-            "q": "为什么使用 free-threaded 解释器后，GIL 仍可能重新启用？",
-            "a": "未声明支持 free-threading 的 C 扩展默认会在导入时触发 GIL 启用并产生警告。因此应核对依赖的兼容版本和对应构建产物，并在实际导入链及延迟导入后检查状态。扩展作者可通过 Py_mod_gil 等机制声明支持，但声明本身不能代替对共享状态、对象访问和同步的审查。显式强制关闭 GIL 会绕过这一保护，不能作为解决兼容性问题的方法。"
+            "q": "C 扩展会让 GIL 重新启用吗？abi3 轮子能直接复用吗？",
+            "a": "未声明支持自由线程的 C 扩展默认会在导入时重新启用 GIL 并发出警告。Python 3.15 为使用受限 C API 的自由线程扩展引入稳定 ABI abi3t；普通 abi3 wheel 不因此兼容自由线程解释器。ABI 标签和 Py_mod_gil 声明都不能替代线程安全审查；用兼容的构建产物，检查延迟导入后的 GIL 状态。强制关闭 GIL 会绕过导入保护，不能修复扩展的并发问题。"
           },
           {
             "q": "dict 和 list 有内部锁，为什么应用仍需要锁？",
@@ -731,9 +736,11 @@ const rawLanguageGroups: SegmentGroup[] = [
           "py-free",
           "py314",
           "py-free-capi",
-          "py-cmdline"
+          "py-cmdline",
+          "py315",
+          "py-abi3t"
         ],
-        "scope": "以 CPython 3.14 官方文档为基线：自由线程构建已正式支持但仍可选；3.13 为实验性阶段。具体扩展兼容性和性能需在实际版本与工作负载下验证。"
+        "scope": "CPython 3.13 实验性支持自由线程，3.14 正式支持该独立构建，3.15 引入 abi3t。扩展兼容性和性能仍需在实际版本与负载下验证。"
       },
       {
         "id": "asyncio",
@@ -1005,7 +1012,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "resumeAnchor": "审计分析或批处理计算：说明进程粒度、连接隔离和平台兼容性。",
         "principles": [
           "spawn 启动新的解释器；fork 复制进程状态；forkserver 通过服务进程创建子进程。",
-          "Python 3.14 在 macOS 以外且支持条件满足的 POSIX 平台默认使用 forkserver；Windows 与 macOS 默认使用 spawn。",
+          "Python 3.14 起，在 macOS 之外支持 forkserver 的 POSIX 平台通常默认使用 forkserver；Windows 与 macOS 默认使用 spawn。",
           "线程、连接池和锁不应未经分析直接随进程复制使用。",
           "任务粒度应足以摊薄序列化和进程调度成本。"
         ],
@@ -1022,7 +1029,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "ProcessPoolExecutor 适合什么任务？",
-            "a": "适合相互独立、计算量足以抵消进程通信开销的任务。可调用对象、参数和返回值必须可 pickle，主模块须可被子进程导入。限制提交数量，处理 BrokenProcessPool 等故障，并在子进程内建立所需连接。"
+            "a": "适合相互独立、计算量足以抵消进程通信开销的任务。可调用对象、参数和返回值必须可 pickle，主模块须可被子进程导入。若依赖特定启动方式，通过 mp_context 显式传入所需上下文。限制提交数量，处理 BrokenProcessPool 等故障，并在子进程内建立所需连接。"
           },
           {
             "q": "Gunicorn worker 数量如何确定？",
@@ -1039,9 +1046,10 @@ const rawLanguageGroups: SegmentGroup[] = [
         ],
         "sources": [
           "py-mp",
+          "py315-mp",
           "py-futures"
         ],
-        "scope": "启动方式按平台和版本确认；不要把历史 Linux fork 默认值当成所有版本的规则。"
+        "scope": "Python 3.14 起 fork 在任何平台上都不是默认方式。3.14.9 和 3.15.1 分别在各自版本系列中加入回退：没有可写临时目录时，原本默认 forkserver 的平台改用 spawn；更早的补丁版本仍可能选中 forkserver，启动时报 OSError。用 multiprocessing.get_start_method() 确认当前全局设置；进程池也可显式指定上下文。"
       },
       {
         "id": "poetry",
@@ -1107,7 +1115,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "Django 中什么时候使用异步视图？",
-            "a": "当视图需要并发等待支持异步的外部服务或长连接时，异步可能有收益。应核对中间件和 ORM 支持；Django 5.2 的事务代码仍应放入同步函数，再通过 sync_to_async 等适配。"
+            "a": "当视图需要并发等待支持异步的外部服务或处理长连接时，异步可能有收益。Django 5.2 和 6.0 均提供部分异步 ORM 方法，但事务仍需在同步函数中完整执行，再用 sync_to_async 适配；同时核对中间件是否支持异步。"
           },
           {
             "q": "Gunicorn 与 ASGI 服务器是什么关系？",
@@ -1128,9 +1136,10 @@ const rawLanguageGroups: SegmentGroup[] = [
         ],
         "sources": [
           "django-async",
+          "django-async-6",
           "asgi-spec"
         ],
-        "scope": "Django ORM 与事务能力以项目实际版本为准；本卡事务说明按 Django 5.2 文档。"
+        "scope": "Django 异步 ORM 与事务的说明已对照 5.2 和 6.0；按项目实际版本核对 API。"
       },
       {
         "id": "stdlib",
@@ -1174,8 +1183,10 @@ const rawLanguageGroups: SegmentGroup[] = [
         "sources": [
           "py-subprocess",
           "py-logging",
-          "py-futures"
-        ]
+          "py-futures",
+          "py315"
+        ],
+        "scope": "Python 3.15 默认启用 UTF-8 模式，可用 PYTHONUTF8=0 或 -X utf8=0 关闭。读写文本文件仍应按数据契约明确编码。"
       },
       ...pythonBackend.cards
     ]

@@ -815,9 +815,10 @@ const rawScenarioGroups: SegmentGroup[] = [
           "terraform-state",
           "terraform-lock",
           "terraform-s3",
+          "terraform-110",
           "terraform-refactor"
         ],
-        "scope": "后端锁机制随版本和配置变化；S3 的 use_lockfile 与已弃用的 DynamoDB 锁方案须按版本区分。"
+        "scope": "Terraform 1.10 起 S3 后端支持 use_lockfile，默认关闭。DynamoDB 锁已弃用；迁移时可同时配置两种锁，新客户端会获取两把锁。移除旧锁前，确认所有写入方已使用 S3 锁。"
       },
       {
         "id": "gitops",

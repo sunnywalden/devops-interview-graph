@@ -52,19 +52,19 @@ npm run preview
 
 | 内容 | 文件 | 数量 |
 | --- | --- | --- |
-| 语言基础 | `src/data/language.ts`、`src/data/go-backend.ts`、`src/data/python-backend.ts`、`src/data/shell.ts` | 43 张 |
-| 中间件与容器 | `src/data/middleware.ts` 及其主题文件 | 70 张 |
-| 场景实战 | `src/data/scenarios.ts`、`src/data/platform-practice.ts`、`src/data/backend-api.ts` | 36 张 |
+| 语言基础 | `src/data/language.ts`、`src/data/go-backend.ts`、`src/data/python-backend.ts`、`src/data/shell.ts` | 49 张 |
+| 中间件与容器 | `src/data/middleware.ts` 及其主题文件 | 73 张 |
+| 场景实战 | `src/data/scenarios.ts`、`src/data/platform-practice.ts`、`src/data/backend-api.ts` | 37 张 |
 | 项目与冲刺 | `src/data/overview.ts` | 5 个 STAR 经验草稿、3/5 天计划 |
-| 官方参考资料 | `src/data/sources.ts` | 306 条引用 |
-| 英文课程与总览 | `src/i18n/*.en.ts` 及上表中的双语主题文件 | 对应全部 149 张卡片、745 组追问与回答、项目与计划 |
+| 官方参考资料 | `src/data/sources.ts` | 363 条引用 |
+| 英文课程与总览 | `src/i18n/*.en.ts` 及上表中的双语主题文件 | 对应全部 159 张卡片、795 组追问与回答、项目与计划 |
 | 界面与图示翻译 | `src/i18n/ui.ts`、`src/i18n/visuals.ts` | 界面、引用标题与全部 84 张课程图示 |
 
-课程合计 23 组 149 张卡片、745 组双语追问与回答，按定义、机制、适用条件、工程取舍与验证方法组织。各组的核心考点和补充内容见 [岗位考点覆盖盘点](docs/curriculum-coverage.md)。图示定义位于 `src/data/visuals-*.ts`，包括 70 张 Mermaid 图示与 14 张交互图，经 `attachVisuals` 挂载。内容重构范围、关键修正及验证记录见 [内容评审记录](docs/content-review.md)。
+课程合计 23 组、159 张卡片、795 组双语追问与回答，按定义、机制、适用条件、工程取舍与验证方法组织。各组的核心考点和补充内容见 [岗位考点覆盖盘点](docs/curriculum-coverage.md)，版本依据见 [课程复审记录](docs/curriculum-review.md)。图示定义位于 `src/data/visuals-*.ts`，包括 70 张 Mermaid 图示与 14 张交互图，经 `attachVisuals` 挂载。
 
 Shell 覆盖参数展开、退出状态与运维脚本。中间件与容器包括 ELK 日志链路、Prometheus 抓取与告警、GitLab CI/CD 和 Jenkins Pipeline，以及 Linux 与 PostgreSQL 独立分组。MySQL 默认打开 InnoDB 引擎与索引组织（`#/mid/mysql/innodb`），随后学习事务日志、崩溃恢复和联合索引的执行计划。
 
-Python 共 19 个知识点，含独立的 Free-threading 专题（`#/lang/python/free-threading`）。以 CPython 3.14 为基线，区分 3.13 的实验性阶段与 3.14 正式支持的可选构建，覆盖启用与检测、C 扩展兼容性、共享状态同步、并发方案取舍和迁移验证。
+Python 共 22 个知识点，含独立的 Free-threading 专题（`#/lang/python/free-threading`）。区分 CPython 3.13 的实验性支持、3.14 正式支持的可选构建和 3.15 新增的自由线程稳定 ABI，覆盖启用与检测、C 扩展兼容性、共享状态同步、并发方案取舍和迁移验证。
 
 编辑内容时保持已有分组与卡片 ID 稳定，以兼容书签和阅读记录。每张卡片必须提供完整回答与 `sources`；引用在 `src/data/sources.ts` 集中维护。存在实现、版本或部署条件差异时，在正文及 `scope` 中明确条件。官方资料用于核对技术知识；项目关联和 STAR 草稿需由本人按实际职责、代码和运行数据补全，不将参考方案或未经核实的数字写成个人成果。阅读内置课程无需网络，打开外部参考资料需要网络。
 

@@ -130,6 +130,7 @@ test("language preference validates input and preserves learning state across sw
   preferences.writeUiPrefs({ focusMode: true, diagramExpanded: true, diagramTab: "flow", overviewPlan: "3d", overviewStar: "bili" });
   preferences.markCardVisited("lang", "chan");
   const before = preferences.readUiPrefs();
+  const totalBeforeSwitch = study.readStudySnapshot().total;
   for (const locale of ["en", "zh", "en"]) {
     preferences.writeUiPrefs({ locale });
     assert.deepEqual(preferences.readUiPrefs(), { ...before, locale });
@@ -137,7 +138,7 @@ test("language preference validates input and preserves learning state across sw
     const snapshot = study.readStudySnapshot();
     assert.equal(snapshot.resume.href, "#/lang/go/chan");
     assert.equal(snapshot.visited, 1);
-    assert.equal(snapshot.total, 152);
+    assert.equal(snapshot.total, totalBeforeSwitch);
     if (locale === "en") assert.doesNotMatch(snapshot.resume.layer + snapshot.resume.card.label, /\p{Script=Han}/u);
   }
 });
@@ -291,8 +292,8 @@ test("role paths localize the same valid topics and preserve old MySQL bookmarks
 
 test("progress counts only distinct cards that still exist in the curriculum", () => {
   const snapshot = study.readStudySnapshot(null, { visitedByPage: { lang: ["gmp", "gmp", "exit-status", "removed-card"], mid: [middle.topic, "gitlab-pipeline"] } });
-  assert.deepEqual(snapshot.layers.map(({ total }) => total), [45, 70, 37]);
-  assert.equal(snapshot.total, 152);
+  assert.deepEqual(snapshot.layers.map(({ total }) => total), [49, 73, 37]);
+  assert.equal(snapshot.total, 159);
   assert.deepEqual(snapshot.layers.map(({ visited }) => visited), [2, 2, 0]);
   assert.equal(snapshot.visited, 4);
 });

@@ -95,6 +95,7 @@ export const uiEnglish: Record<string, string> = {
   "Python 3.14：自由线程正式支持与版本变化": "Python 3.14: Free-threading support and version changes",
   "Python 3.14：C 扩展的自由线程支持": "Python 3.14: Free-threading support for C extensions",
   "Python 3.14：GIL 运行参数与环境变量": "Python 3.14: GIL options and environment variables",
+  "Python 3.15：多进程上下文与启动方式": "Python 3.15: Multiprocessing contexts and start methods",
   "Pydantic：数据模型": "Pydantic: Models",
   "Poetry：依赖管理与基本用法": "Poetry: Dependency management and basic usage",
   "GoogleContainerTools/kaniko：已归档的原仓库": "GoogleContainerTools/kaniko: Archived original repository",
