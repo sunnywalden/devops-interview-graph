@@ -74,3 +74,25 @@
 | Go 后端 | 运行时与内存、语言语义、并发、HTTP/gRPC、连接池与存储、依赖管理、测试与退出 | `go-sync-primitives`：Once 的 panic 行为、WaitGroup 计数和等待顺序、Go 1.25 新增 WaitGroup.Go、原子操作与 Mutex 的适用范围、Pool 仅作可丢弃的临时对象缓存。[sync](https://pkg.go.dev/sync) |
 | Python 后端 | 对象与数据模型、GIL 与自由线程、并发、Web 框架与 ORM、迁移、任务队列、测试 | `py-attribute-model`：数据描述器优先级、只读 property、三种方法绑定、MRO 与 super、属性查找钩子。[描述器指南](https://docs.python.org/zh-cn/3.14/howto/descriptor.html) |
 | DevOps 开发 | Linux、网络与 Shell、容器和编排、CI/CD、云与 IaC、可观测性、交付安全及故障恢复 | `ci-workload-identity`：OIDC 换取 STS 会话、限制项目与引用、角色信任和会话权限、按失败阶段排查、CloudTrail 审计；区分 GitLab.com 与其他部署方式的可用声明。[GitLab OIDC on AWS](https://docs.gitlab.com/ci/cloud_services/aws/) · [AWS STS](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html) |
+
+## 新增三张双语卡片逐题复审
+
+逐项复核 `909baaf` 补充的 3 张卡片及 15 组追问与回答。中英文保留相同题序；核心回答、原理和易错提示也按同一套版本条件和技术边界修订。题号对应卡片内的显示顺序。
+
+| 卡片 | 题号与主题 | 核对结论 | 官方依据 |
+| --- | --- | --- | --- |
+| `go-sync-primitives` | 1. Once 与 panic | 同一个 Once 不会重试；Go 1.21 新增的 OnceFunc 也不重跑，但后续调用会以同一个值 panic。 | [Once.Do](https://pkg.go.dev/sync#Once.Do) · [OnceFunc](https://pkg.go.dev/sync#OnceFunc) |
+| `go-sync-primitives` | 2. WaitGroup 计数 | 计数为零时先登记再 Wait；计数为正时可继续登记。负计数会 panic；上一轮所有 Wait 返回后才可复用。 | [WaitGroup.Add](https://pkg.go.dev/sync#WaitGroup.Add) |
+| `go-sync-primitives` | 3. WaitGroup.Go 与 errgroup | WaitGroup.Go 自 Go 1.25 提供，任务函数不得 panic；errgroup 等待所有任务并返回首个非 nil 错误，WithContext 还会在 Wait 返回时取消派生 context。 | [Go 1.25 发布说明](https://go.dev/doc/go1.25#sync) · [errgroup](https://pkg.go.dev/golang.org/x/sync/errgroup#WithContext) |
+| `go-sync-primitives` | 4. 原子操作与锁 | Load 与 Store 分开执行会丢失并发更新；Go 1.19 起可用 atomic.Pointer 发布不可变快照，多个读改写者仍需锁或 CAS。 | [atomic.Pointer](https://pkg.go.dev/sync/atomic#Pointer) · [Go 内存模型](https://go.dev/ref/mem#Atomic_Values) |
+| `go-sync-primitives` | 5. Pool 的用途 | 池条目可随时丢弃；归还后不能再使用对象及其别名。Reset 保留缓冲区存储，不能作为敏感数据擦除手段。 | [sync.Pool](https://pkg.go.dev/sync#Pool) · [bytes.Buffer.Reset](https://pkg.go.dev/bytes#Buffer.Reset) |
+| `py-attribute-model` | 1. 实例属性与描述器 | 先按 MRO 找第一个同名类属性；其中可读的数据描述器优先于实例字典，普通函数可被实例属性遮蔽。 | [实例属性查找](https://docs.python.org/3.14/howto/descriptor.html#invocation-from-an-instance) |
+| `py-attribute-model` | 2. 只读 property | 没有 setter 仍走 property 的 `__set__` 并抛出 AttributeError；默认赋值不会回退到实例字典。 | [描述器指南：Properties](https://docs.python.org/3.14/howto/descriptor.html#properties) |
+| `py-attribute-model` | 3. 方法绑定 | 区分绑定实例、绑定实际类、无隐式首参；classmethod 包装其他描述器的支持在 Python 3.9 引入、3.11 弃用、3.13 移除。 | [方法类型](https://docs.python.org/3.14/howto/descriptor.html#kinds-of-methods) · [classmethod](https://docs.python.org/3.14/library/functions.html#classmethod) |
+| `py-attribute-model` | 4. 菱形继承 | 无参 super 用定义类和首参，沿接收者的 MRO 从定义类之后继续查找；示例中 B 的下一站是 C。 | [super](https://docs.python.org/3.14/library/functions.html#super) · [C3 MRO](https://docs.python.org/3.14/howto/mro.html) |
+| `py-attribute-model` | 5. 属性查找钩子 | 点号和 getattr 在 AttributeError 后调用 `__getattr__`；直接调用 `object.__getattribute__` 不会自动回退。隐式特殊方法查找另有规则。 | [描述器调用机制](https://docs.python.org/3.14/howto/descriptor.html#invocation-from-an-instance) · [特殊方法查找](https://docs.python.org/3.14/reference/datamodel.html#special-method-lookup) |
+| `ci-workload-identity` | 1. 短期凭证的签发与期限 | GitLab 15.7 引入 id_tokens，17.0 移除旧变量；区分 ID token 与 STS 返回的三项凭证及各自有效期。 | [GitLab 版本记录](https://gitlab.com/gitlab-org/gitlab/-/blob/v16.11.0-ee/doc/ci/secrets/id_token_authentication.md) · [GitLab AWS 集成](https://docs.gitlab.com/ci/cloud_services/aws/) · [AWS STS API](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html) |
+| `ci-workload-identity` | 2. 项目、引用与 fork | 匹配签发方、受众和实际 sub；区分 GitLab.com 附加键、AWS 会话及 Self-Managed/Dedicated 支持范围；父项目执行 fork 的流水线仍可使用 fork 的 CI 配置。 | [GitLab AWS 集成](https://docs.gitlab.com/ci/cloud_services/aws/) · [AWS OIDC 条件键](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_iam-condition-keys.html#condition-keys-wif) · [GitLab fork 流水线](https://docs.gitlab.com/ci/pipelines/merge_request_pipelines/#run-pipelines-in-the-parent-project) |
+| `ci-workload-identity` | 3. 信任与有效权限 | 信任策略控制角色承担；会话策略只能缩小角色身份策略的授权；资源策略、权限边界和组织策略按适用范围参与评估。 | [AWS STS 会话策略](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html) · [IAM 策略评估](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html) |
+| `ci-workload-identity` | 4. 按失败阶段排查 | 区分令牌过期、验证、端点连通和信任条件；成功换证后先识别会话，再核查资源权限。 | [AWS STS 错误](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html#API_AssumeRoleWithWebIdentity_Errors) · [GetCallerIdentity](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html) |
+| `ci-workload-identity` | 5. 审计与保密 | 用会话标识和时间关联已记录事件；S3 对象操作等数据事件需启用采集。流水线日志和制品不保留原始凭证。 | [IAM 与 CloudTrail](https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html) · [CloudTrail 数据事件](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html) |

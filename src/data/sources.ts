@@ -44,6 +44,10 @@ export const contentSources = {
     "title": "Go sync 包",
     "url": "https://pkg.go.dev/sync"
   },
+  "go-125-sync": {
+    "title": "Go 1.25 — sync changes",
+    "url": "https://go.dev/doc/go1.25#sync"
+  },
   "go-singleflight": {
     "title": "Go singleflight 包",
     "url": "https://pkg.go.dev/golang.org/x/sync/singleflight"
@@ -1260,6 +1264,10 @@ export const contentSources = {
     "title": "Python — Descriptor Guide",
     "url": "https://docs.python.org/3/howto/descriptor.html"
   },
+  "py-classmethod": {
+    "title": "Python — Built-in function classmethod",
+    "url": "https://docs.python.org/3.14/library/functions.html#classmethod"
+  },
   "py-super": {
     "title": "Python — Built-in function super",
     "url": "https://docs.python.org/3/library/functions.html#super"
@@ -1288,13 +1296,25 @@ export const contentSources = {
     "title": "GitLab — Configure OpenID Connect in AWS to retrieve temporary credentials",
     "url": "https://docs.gitlab.com/ci/cloud_services/aws/"
   },
+  "aws-iam-oidc-conditions": {
+    "title": "AWS IAM — OIDC federation condition keys",
+    "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_iam-condition-keys.html#condition-keys-wif"
+  },
   "aws-sts-web-identity": {
     "title": "AWS STS — AssumeRoleWithWebIdentity",
     "url": "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html"
   },
+  "aws-iam-policy-evaluation": {
+    "title": "AWS IAM — Policy evaluation logic",
+    "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+  },
   "aws-cloudtrail-sts": {
     "title": "AWS IAM — Logging IAM and AWS STS API calls with AWS CloudTrail",
     "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html"
+  },
+  "aws-cloudtrail-data-events": {
+    "title": "AWS CloudTrail — Logging data events",
+    "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html"
   }
 } as const;
 
