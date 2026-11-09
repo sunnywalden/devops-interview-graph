@@ -13,7 +13,7 @@ export const diagramEnglish: Record<string, string> = {
   "阻塞系统调用中的 M": "M in a blocking system call",
   "P 可交给其他 M": "P can move to another M",
   "复用或创建 M": "Reuse or create M",
-  "调度关系（可拖动画布）": "Scheduling relationships — drag to pan",
+  "调度关系": "Scheduling relationships",
   "G 协程": "G goroutine",
   "用户态任务": "User-space task",
   "P 处理器": "P processor",

@@ -345,6 +345,44 @@ summary::-webkit-details-marker { display: none; }
 .react-flow__controls-button:hover { background: #eaf1df; }
 .react-flow__minimap { background: #f4f7ed; border: 1px solid #dce5d0; border-radius: 5px; }
 .react-flow__node { font-family: inherit; }
+.lesson-flow { display: grid; gap: 10px; }
+.lesson-flow__toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.lesson-flow__toolbar button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 44px; padding: 7px 12px; border: 1px solid var(--line);
+  border-radius: 7px; background: var(--paper); color: var(--green); font-size: 12px;
+}
+.lesson-flow__toolbar button:not(:disabled):hover { background: var(--sage); }
+.lesson-flow__toolbar button:disabled { color: var(--muted); opacity: .65; }
+.lesson-flow__toolbar .lesson-flow__play { background: var(--green); color: var(--paper); border-color: var(--green); font-weight: 600; }
+.lesson-flow__toolbar .lesson-flow__play:not(:disabled):hover { background: var(--green-dark); }
+.lesson-flow__count { margin-inline-start: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.lesson-flow__hint { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.lesson-flow__canvas { height: clamp(280px, 45vh, 360px); }
+.lesson-flow__canvas .react-flow__controls { border-radius: 7px; }
+.lesson-flow__canvas .react-flow__controls-button { width: 44px; height: 44px; }
+.lesson-flow__canvas .react-flow__controls-button:focus-visible { outline: 2px solid var(--green); outline-offset: -4px; }
+.lesson-flow__canvas .react-flow__handle { visibility: hidden; }
+.lesson-flow__toolbar button:focus-visible, .lesson-node:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.lesson-node {
+  display: grid; place-content: center; gap: 3px; width: 146px; min-height: 54px;
+  padding: 7px 8px; border: 1px solid #899a80; border-radius: 9px;
+  background: var(--paper); color: var(--ink); font-size: 13px; line-height: 1.3;
+  text-align: center; overflow-wrap: anywhere; pointer-events: auto;
+}
+.lesson-node span { color: var(--muted); font-size: 11px; }
+.lesson-node:hover, .lesson-node--source { background: var(--sage); border-color: var(--green); }
+.lesson-node--target, .lesson-node--inspected { background: var(--green); border-color: var(--green); color: var(--paper); }
+.lesson-node--target span, .lesson-node--inspected span { color: inherit; }
+.lesson-node--target:hover, .lesson-node--inspected:hover { background: var(--green-dark); }
+.lesson-flow__details {
+  min-height: 94px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--bg); color: var(--ink); font-size: 12px; line-height: 1.6;
+}
+.lesson-flow__detail-label { color: var(--muted); font-size: 11px; }
+.lesson-flow__detail-title { font-size: 14px; font-weight: 600; }
+.lesson-flow__relation { color: var(--muted); font-weight: 400; }
+.lesson-flow__details ul { display: grid; gap: 2px; margin: 4px 0 0; padding-inline-start: 1.35em; }
 .diagram-caption { font-size: 11px; color: var(--muted); line-height: 1.8; }
 .ant-tabs-content-holder, .ant-tabs-tabpane { min-width: 0; }
 

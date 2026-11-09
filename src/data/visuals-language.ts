@@ -22,7 +22,7 @@ export const languageVisuals: Record<string, CardVisual[]> = {
     },
     {
       kind: "flow",
-      title: "调度关系（可拖动画布）",
+      title: "调度关系",
       nodes: [
         { id: "g", label: "G 协程", detail: "用户态任务", x: 40, y: 40 },
         { id: "p", label: "P 处理器", detail: "本地 runq", x: 260, y: 40 },

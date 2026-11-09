@@ -13,8 +13,6 @@ import {
   type DiagramTab,
 } from "../../uiPrefs";
 
-const FLOW_HEIGHT = 360;
-
 const MermaidBlock = lazy(() =>
   import("./MermaidBlock").then((m) => ({ default: m.MermaidBlock })),
 );
@@ -39,7 +37,7 @@ function VisualBody({ visual }: { visual: CardVisual }) {
   }
   return (
     <Suspense fallback={<Fallback />}>
-      <FlowGraph nodes={visual.nodes} edges={visual.edges} height={FLOW_HEIGHT} />
+      <FlowGraph nodes={visual.nodes} edges={visual.edges} title={visual.title} />
     </Suspense>
   );
 }
@@ -88,7 +86,7 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           key: "flow" as const,
           label: (
             <span>
-              <ApartmentOutlined aria-hidden="true" />{t("可交互")}{flowItems.length > 1 ? ` (${flowItems.length})` : ""}
+              <ApartmentOutlined aria-hidden="true" />{t("交互演示")}{flowItems.length > 1 ? ` (${flowItems.length})` : ""}
             </span>
           ),
           children: (
