@@ -2,9 +2,6 @@ import { useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } fr
 import { createPortal } from "react-dom";
 import { CloseOutlined } from "@ant-design/icons";
 
-/** Dots stay readable at this size; longer segments use n/N plus a thin track. */
-const DOT_LIMIT = 12;
-
 export type TopicPagerItem = {
   id: string;
   label: string;
@@ -21,8 +18,7 @@ function focusable(root: HTMLElement): HTMLElement[] {
 }
 
 /**
- * Segment topic switcher: previous / title · n/N / next, plus a directory.
- * Not an Ant Select. Title and 「目录」 both open the same panel.
+ * Named previous/next destinations and an explicit position, plus a directory.
  */
 export function TopicPager({
   items,
@@ -59,7 +55,6 @@ export function TopicPager({
   const safeIndex = index >= 0 ? index : 0;
   const current = items[safeIndex];
   const total = items.length;
-  const mode = total > DOT_LIMIT ? "track" : total >= 2 ? "dots" : "count";
 
   const indexed = useMemo<IndexedItem[]>(
     () => items.map((item, itemIndex) => ({ ...item, index: itemIndex })),
@@ -219,43 +214,12 @@ export function TopicPager({
         role="group"
         aria-label={ariaLabel}
         data-topic-pager=""
-        data-pager-mode={mode}
       >
         <div className="topic-pager__row">
-          <button
-            type="button"
-            className="topic-pager__step"
-            aria-label={`上一${ariaLabel}`}
-            disabled={safeIndex <= 0}
-            onClick={() => step(-1)}
-          >
-            <span aria-hidden="true">‹</span>
-          </button>
-          <button
-            type="button"
-            className="topic-pager__title"
-            aria-haspopup="dialog"
-            aria-expanded={open}
-            aria-controls={dialogId}
-            onClick={(e: MouseEvent<HTMLButtonElement>) => openFrom(e.currentTarget)}
-          >
-            <span className="topic-pager__name">{current.label}</span>
-            <span className="topic-pager__pos">
-              <span className="topic-pager__sep" aria-hidden="true">
-                ·
-              </span>
-              {n}/{total}
-            </span>
-          </button>
-          <button
-            type="button"
-            className="topic-pager__step"
-            aria-label={`下一${ariaLabel}`}
-            disabled={safeIndex >= total - 1}
-            onClick={() => step(1)}
-          >
-            <span aria-hidden="true">›</span>
-          </button>
+          <div className="topic-pager__current" aria-live="polite" aria-atomic="true">
+            <span className="topic-pager__pos">{scopeLabel && `${scopeLabel} · `}第 {n} / {total} 个{ariaLabel}</span>
+            <strong className="topic-pager__name">{current.label}</strong>
+          </div>
           <button
             type="button"
             className="topic-pager__dir"
@@ -264,35 +228,35 @@ export function TopicPager({
             aria-controls={dialogId}
             onClick={(e: MouseEvent<HTMLButtonElement>) => openFrom(e.currentTarget)}
           >
-            目录
+            全部目录 · {total}
           </button>
         </div>
-        {mode === "dots" && (
-          <div className="topic-pager__dots" role="group" aria-label={`${ariaLabel}进度`}>
-            {items.map((item, itemIndex) => {
-              const on = itemIndex === safeIndex;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={on ? "topic-pager__dot is-current" : "topic-pager__dot"}
-                  tabIndex={-1}
-                  aria-label={`${item.label}，第 ${itemIndex + 1} 个，共 ${total} 个`}
-                  aria-current={on ? "true" : undefined}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    if (item.id !== value) onChange(item.id);
-                  }}
-                />
-              );
-            })}
-          </div>
-        )}
-        {mode === "track" && (
-          <div className="topic-pager__track" aria-hidden="true">
-            <span style={{ width: `${(n / total) * 100}%` }} />
-          </div>
-        )}
+        <div className="topic-pager__steps">
+          <button
+            type="button"
+            className="topic-pager__step"
+            disabled={safeIndex <= 0}
+            onClick={() => step(-1)}
+          >
+            <span className="topic-pager__arrow" aria-hidden="true">←</span>
+            <span className="topic-pager__destination">
+              <span>上一个{ariaLabel}</span>
+              <strong>{items[safeIndex - 1]?.label ?? "已是本组第一项"}</strong>
+            </span>
+          </button>
+          <button
+            type="button"
+            className="topic-pager__step topic-pager__step--next"
+            disabled={safeIndex >= total - 1}
+            onClick={() => step(1)}
+          >
+            <span className="topic-pager__destination">
+              <span>下一个{ariaLabel}</span>
+              <strong>{items[safeIndex + 1]?.label ?? "已是本组最后一项"}</strong>
+            </span>
+            <span className="topic-pager__arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
       </div>
       {open &&
         createPortal(

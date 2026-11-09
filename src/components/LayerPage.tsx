@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Button, Segmented, Typography } from "antd";
 import { ExpandOutlined, CompressOutlined } from "@ant-design/icons";
 import type { PageId, SegmentGroup } from "../types";
@@ -55,6 +55,7 @@ export function LayerPage({
   const visitedIds = new Set(isLayerPageId(page) ? prefs.visitedByPage?.[page] : []);
   const visitedCount = groups.flatMap((item) => item.cards).filter((item) => visitedIds.has(item.id)).length;
 
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLElement>(null);
   const previousLocation = useRef({ page, primary, topic });
   const scrollBehavior = useRef<ScrollBehavior>("smooth");
@@ -64,6 +65,25 @@ export function LayerPage({
     startY: 0,
     startAt: 0,
   });
+
+  // Keep anchor/focus targets below the actual sticky toolbar, including wrapped labels.
+  useLayoutEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar) return;
+    const measure = () => {
+      const height = getComputedStyle(toolbar).position === "sticky" ? toolbar.getBoundingClientRect().height : 0;
+      document.documentElement.style.setProperty("--layer-toolbar-height", `${height}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(toolbar);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--layer-toolbar-height");
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   useEffect(() => {
     const previous = previousLocation.current;
@@ -194,8 +214,16 @@ export function LayerPage({
   const pageLabel =
     page === "lang" ? "语言层" : page === "mid" ? "中间件层" : "场景层";
 
-  const progressPct =
-    totalCards > 0 ? Math.min(100, Math.round((visitedCount / totalCards) * 100)) : 0;
+  const cardIndex = group.cards.findIndex((item) => item.id === card.id);
+  const nextCard = group.cards[cardIndex + 1];
+  const nextGroup = groups[groups.findIndex((item) => item.id === group.id) + 1];
+  const remaining = group.cards.length - cardIndex - 1;
+  const continueLearning = () => {
+    // Move focus out of the footer before the newly selected content scrolls into view.
+    stageRef.current?.focus({ preventScroll: true });
+    if (nextCard) onTopic(nextCard.id);
+    else if (nextGroup) onPrimary(nextGroup.id);
+  };
 
   const toggleFocus = () => {
     const next = !focusMode;
@@ -214,7 +242,7 @@ export function LayerPage({
         </div>
       )}
 
-      <div className="layer-toolbar">
+      <div className="layer-toolbar" ref={toolbarRef}>
         <div className="train-bar" role="group" aria-label={`${pageLabel}导航`}>
           <div className="layer-toolbar__row">
             <div className="segmented-wrap layer-toolbar__seg">
@@ -251,17 +279,10 @@ export function LayerPage({
             <div
               className="layer-visit-progress"
               role="status"
-              aria-label={`本层已浏览 ${visitedCount} / ${totalCards}`}
-              title="本层已打开过的知识点（本机）"
+              aria-label={`本层浏览记录 ${visitedCount} / ${totalCards}，仅记录打开，不代表掌握`}
             >
-              <div className="layer-visit-progress__track">
-                <div
-                  className="layer-visit-progress__fill"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              <span key={visitedCount} className="layer-visit-progress__label is-tick">
-                已浏览 {visitedCount}/{totalCards}
+              <span className="layer-visit-progress__label">
+                本层浏览记录 {visitedCount}/{totalCards} · 仅记录打开
               </span>
             </div>
             <p className="train-hint" id="card-kbd-hint">
@@ -292,6 +313,24 @@ export function LayerPage({
           <CardView card={card} />
         </div>
       </section>
+
+      <nav className="study-continuation print-hide" aria-label="继续学习">
+        <div className="study-continuation__copy">
+          <p className="eyebrow">{group.label} · 第 {cardIndex + 1} / {group.cards.length} 个知识点</p>
+          <h2>{nextCard ? `本组后面还有 ${remaining} 个知识点` : "已到本组最后一个知识点"}</h2>
+          <p>{nextCard ? "先尝试脱稿口述，再继续下一个知识点。" : nextGroup ? `后面还有「${nextGroup.label}」一组，可以继续学习。` : "已到本层目录末尾。浏览不等于掌握，可通过全部目录回顾遗漏与薄弱知识点。"}</p>
+        </div>
+        {nextCard || nextGroup ? (
+          <button type="button" className="study-continuation__next" onClick={continueLearning}>
+            <span>{nextCard ? "继续下一个知识点" : "继续下一组"}<strong>{nextCard?.label ?? nextGroup?.label}</strong></span>
+            <span aria-hidden="true">→</span>
+          </button>
+        ) : (
+          <button type="button" className="study-continuation__review" onClick={() => {
+            toolbarRef.current?.querySelector<HTMLButtonElement>(".topic-pager__dir")?.click();
+          }}>打开全部目录，回顾本组</button>
+        )}
+      </nav>
 
       {!focusMode && (
         <nav className="related-links" aria-label="相关层">
