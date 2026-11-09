@@ -641,8 +641,8 @@ export const contentSources = {
     "url": "https://www.postgresql.org/docs/current/ddl-constraints.html"
   },
   "transactional-outbox": {
-    "title": "AWS：Transactional outbox pattern",
-    "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html"
+    "title": "Azure Architecture Center：Transactional outbox pattern",
+    "url": "https://learn.microsoft.com/en-us/azure/architecture/databases/guide/transactional-out-box-cosmos"
   },
   "saga-pattern": {
     "title": "Microsoft Architecture：Saga pattern",

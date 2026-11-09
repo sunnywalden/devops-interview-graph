@@ -2,7 +2,144 @@
 
 验收日期：2026-11-08。
 
-## 实现范围
+## 505 组追问逐条复核
+
+按课程顺序逐条对读 101 个知识点下的 505 组问答。每组先核对提问意图，再检查两版回答的术语、机制、适用条件、版本边界和验证方法。运行时机制以语言和产品的官方文档为准。架构、容量和排障类问题按具体场景给出选择条件与验证信号，保留与实现或部署相关的前提。
+
+| 模块 | 已复核 | 对读通过 | 双语修正 | 英文修正 | 中文修正 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 语言基础 | 130 | 96 | 9 | 25 | 0 |
+| 中间件与容器 | 225 | 181 | 26 | 17 | 1 |
+| 场景实战 | 150 | 127 | 13 | 10 | 0 |
+| 合计 | 505 | 404 | 48 | 52 | 1 |
+
+本轮修正包括 Go 1.25 默认 `GOMAXPROCS` 的自动更新条件、Python 3.14 进程启动方式的适用平台，以及自由线程构建与运行时 GIL 状态的区别。[Go 1.25 发布说明](https://go.dev/doc/go1.25) · [Go runtime](https://pkg.go.dev/runtime#GOMAXPROCS) · [Python multiprocessing](https://docs.python.org/3.14/library/multiprocessing.html) · [Python free-threading](https://docs.python.org/3.14/howto/free-threading-python.html)
+
+中间件部分区分了 InnoDB 死锁和锁等待超时的回滚范围、Kafka 事务覆盖的输出记录与消费位点，以及 Kubernetes ConfigMap 在环境变量、普通卷和 `subPath` 下的更新行为。[InnoDB 错误处理](https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-error-handling.html) · [Kafka 设计文档](https://kafka.apache.org/42/design/design/) · [Kubernetes ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)
+
+场景部分区分了 TLS 证书选择与服务身份校验、DRF 对列表和创建操作的授权边界，以及长短两个窗口同时触发的错误预算消耗速率告警。复核时 Google SRE Workbook 部分原始链接无法访问，相关内容通过 Grafana SLO 和 PagerDuty 事件响应文档交叉核对。失效的事务性发件箱链接已替换为 Azure Architecture Center 的官方文档。[RFC 9525](https://www.rfc-editor.org/rfc/rfc9525.html) · [DRF 对象级权限的限制](https://www.django-rest-framework.org/api-guide/permissions/#limitations-of-object-level-permissions) · [Grafana SLO 告警](https://grafana.com/docs/grafana-cloud/observe-and-act/alert-and-measure-reliability/slo/set-up/configure-burn-rate-notifications/#burn-rate-alerts) · [PagerDuty 事件分级](https://response.pagerduty.com/before/severity_levels/) · [PagerDuty 事后复盘](https://response.pagerduty.com/after/post_mortem_process/) · [Azure 事务性发件箱](https://learn.microsoft.com/en-us/azure/architecture/databases/guide/transactional-out-box-cosmos)
+
+下表列号对应每个知识点的五条追问。✓ 表示对读通过，双、英、中分别表示修改了两版、英文版或中文版。各知识点的引用可在课程卡片中查看，链接统一在[引用注册表](../src/data/sources.ts)中维护。
+
+### 语言基础
+
+| 知识点 | 第 1 问 | 第 2 问 | 第 3 问 | 第 4 问 | 第 5 问 |
+| --- | --- | --- | --- | --- | --- |
+| `go/gmp` GMP 调度 | ✓ | 英 | 双 | 英 | ✓ |
+| `go/ctx` context 取消 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `go/chan` channel / select | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `go/mem` 竞态·逃逸·pprof | 英 | 英 | 英 | ✓ | 英 |
+| `go/gozero` go-zero 服务 | ✓ | ✓ | ✓ | 英 | 英 |
+| `go/graphql` GraphQL/多协议 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `go/iface` interface / nil | 双 | ✓ | ✓ | 英 | ✓ |
+| `go/errwrap` error wrapping | 双 | 英 | ✓ | ✓ | ✓ |
+| `go/syncmap` sync.Map / Mutex | ✓ | ✓ | 双 | ✓ | ✓ |
+| `go/graceful` HTTP 优雅退出 | ✓ | ✓ | ✓ | 英 | ✓ |
+| `go/gotest` 测试 / 表驱动 | 英 | ✓ | 英 | ✓ | ✓ |
+| `go/gc` GC 面试要点 | ✓ | 双 | 英 | ✓ | ✓ |
+| `go/gomodel` 内存模型 | ✓ | ✓ | ✓ | ✓ | 英 |
+| `go/generics` 泛型边界 | ✓ | ✓ | ✓ | ✓ | 双 |
+| `python/gil` GIL | ✓ | 英 | ✓ | ✓ | 双 |
+| `python/free-threading` Free-threading / 自由线程 | ✓ | ✓ | ✓ | ✓ | 英 |
+| `python/asyncio` asyncio / 协程 | 英 | ✓ | 双 | ✓ | ✓ |
+| `python/django` Django 权限多租户 | ✓ | ✓ | ✓ | 英 | ✓ |
+| `python/exp` Exporter | ✓ | ✓ | ✓ | 英 | ✓ |
+| `python/syntax` 装饰器·生成器 | ✓ | 英 | ✓ | ✓ | ✓ |
+| `python/vsgo` Python vs Go | ✓ | ✓ | ✓ | 英 | ✓ |
+| `python/typing` typing / Pydantic | ✓ | ✓ | 英 | ✓ | ✓ |
+| `python/mp` 多进程 vs 线程 | ✓ | 双 | ✓ | ✓ | ✓ |
+| `python/poetry` 打包 / Poetry | ✓ | ✓ | 英 | ✓ | ✓ |
+| `python/asgi` WSGI / ASGI | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `python/stdlib` 运维常用标准库 | ✓ | 英 | ✓ | ✓ | ✓ |
+
+### 中间件与容器
+
+| 知识点 | 第 1 问 | 第 2 问 | 第 3 问 | 第 4 问 | 第 5 问 |
+| --- | --- | --- | --- | --- | --- |
+| `mysql/basic` 索引·事务·慢查（基础） | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `mysql/with-cache` 与 Redis 协作 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `mysql/isolation` 隔离级别 / MVCC | 双 | ✓ | 英 | 英 | ✓ |
+| `mysql/deadlock` 死锁与锁等待 | ✓ | ✓ | ✓ | 双 | ✓ |
+| `mysql/repl` 主从与读写分离 | ✓ | 双 | ✓ | 英 | ✓ |
+| `mysql/shard` 分库分表 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `mongo/mongo-idx` 索引与两阶段查询 | ✓ | ✓ | 双 | ✓ | ✓ |
+| `mongo/mongo-txn` 事务与边界 | 双 | ✓ | 英 | 双 | ✓ |
+| `mongo/replica` 副本集 / 写关注 | ✓ | ✓ | ✓ | 双 | ✓ |
+| `mongo/schema` 模型 / 嵌入 vs 引用 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `mongo/mongo-shard` 分片集群 | ✓ | ✓ | ✓ | 双 | 双 |
+| `mongo/changestream` Change Stream | 英 | ✓ | 英 | ✓ | 英 |
+| `redis/redis` 二级缓存与防护 | 英 | ✓ | ✓ | ✓ | ✓ |
+| `redis/persist` 持久化 AOF/RDB | 双 | ✓ | ✓ | 双 | ✓ |
+| `redis/cluster` Cluster vs Sentinel | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `redis/hotkey` 热 key / 大 key | ✓ | ✓ | 双 | ✓ | ✓ |
+| `redis/types` 数据结构选型 | ✓ | ✓ | ✓ | 双 | ✓ |
+| `redis/distlock` 分布式锁 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `mq/mq` 消息可靠性 | 双 | 英 | ✓ | ✓ | ✓ |
+| `mq/backlog` 积压治理 | 英 | ✓ | 英 | ✓ | 双 |
+| `mq/ordering` 分区键与顺序 | 中 | 双 | 英 | ✓ | ✓ |
+| `mq/choice` MQ 选型对比 | ✓ | ✓ | 英 | ✓ | ✓ |
+| `mq/txmsg` 延时与事务消息 | ✓ | 英 | ✓ | ✓ | ✓ |
+| `container/arch` K8s 架构与组件 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/workload` Pod 与控制器 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/cni` 网络模型 / CNI | ✓ | 双 | ✓ | 英 | ✓ |
+| `container/volume` PV / PVC / 存储类 | ✓ | 双 | ✓ | ✓ | ✓ |
+| `container/rbac` RBAC 与 SA | ✓ | 英 | ✓ | ✓ | ✓ |
+| `container/isol` 容器隔离 / cgroup | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/docker` Docker 镜像基础 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/probe` 探针与滚动 | 英 | ✓ | ✓ | ✓ | ✓ |
+| `container/sched` 调度与资源 | 双 | ✓ | ✓ | ✓ | ✓ |
+| `container/cicdlink` 承接 CI 部署 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/config` ConfigMap / Secret | 双 | ✓ | ✓ | ✓ | ✓ |
+| `container/svc` Service / Ingress | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/netpol` NetworkPolicy 要点 | ✓ | ✓ | 双 | ✓ | ✓ |
+| `container/etcd` etcd 意识 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/troubleshoot` 资源排障更深 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/node` 节点维护 / drain | ✓ | ✓ | 双 | ✓ | ✓ |
+| `container/helm` Helm / Kustomize | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `container/quota` LimitRange / 配额 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `net/dns` DNS 要点 | ✓ | ✓ | ✓ | 双 | ✓ |
+| `net/coredns` CoreDNS 要点 | ✓ | 双 | ✓ | ✓ | ✓ |
+| `net/tls` TLS 基础 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `net/cert` 证书生命周期 | ✓ | 双 | ✓ | ✓ | 双 |
+
+### 场景实战
+
+| 知识点 | 第 1 问 | 第 2 问 | 第 3 问 | 第 4 问 | 第 5 问 |
+| --- | --- | --- | --- | --- | --- |
+| `cicd/stages` stages / jobs / needs | 双 | 双 | ✓ | ✓ | ✓ |
+| `cicd/templates` include 模板与变量 | ✓ | ✓ | ✓ | 双 | ✓ |
+| `cicd/quality` cache / artifacts / Sonar | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `cicd/kaniko` 容器镜像构建 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `cicd/mrpipe` MR vs 分支 / Badge | ✓ | ✓ | 双 | ✓ | ✓ |
+| `cicd/deploy` CD 一键部署 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `cicd/canary` 金丝雀与灰度 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `cicd/supply` 供应链安全扫描 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `cicd/runners` Runner 标签与容量 | 英 | ✓ | ✓ | ✓ | ✓ |
+| `monitor/golden` 黄金信号排障 | ✓ | 双 | ✓ | ✓ | ✓ |
+| `monitor/prom` Prometheus 联邦 | 双 | ✓ | ✓ | ✓ | ✓ |
+| `monitor/slo` SLO / SLI / 错误预算 | ✓ | ✓ | 双 | ✓ | ✓ |
+| `monitor/alertfatigue` 告警疲劳治理 | ✓ | 英 | ✓ | ✓ | ✓ |
+| `log/elk` ELK / ILM | ✓ | 双 | ✓ | ✓ | ✓ |
+| `log/structured` 结构化日志与链路 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `log/trace` 全链路追踪 | 双 | ✓ | ✓ | ✓ | ✓ |
+| `ops/platform` 平台化叙事 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `ops/terraform` Terraform state / lock | ✓ | ✓ | 双 | ✓ | ✓ |
+| `ops/gitops` GitOps vs Push CD | ✓ | ✓ | ✓ | ✓ | 双 |
+| `cmdb/idem` 幂等 | ✓ | ✓ | ✓ | 英 | ✓ |
+| `cmdb/lease` Lease / Fencing | ✓ | 双 | ✓ | ✓ | 英 |
+| `cmdb/saga` 流程补偿 | ✓ | ✓ | ✓ | 英 | ✓ |
+| `cmdb/worker` 预计算 Worker | ✓ | ✓ | ✓ | ✓ | 英 |
+| `report/board` 看板与预计算 | 英 | ✓ | ✓ | ✓ | ✓ |
+| `other/nacos` Nacos 配置中心 | 英 | ✓ | ✓ | ✓ | ✓ |
+| `other/audit` SQL 审计 | ✓ | ✓ | ✓ | ✓ | 双 |
+| `other/backup` 备份恢复 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `other/secrets` 密钥管理 | ✓ | ✓ | ✓ | 英 | ✓ |
+| `other/oncall` 故障响应 / Oncall | 英 | ✓ | ✓ | ✓ | ✓ |
+| `other/capacity` 容量规划 | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+## 此前的实时切换评审
+
+### 实现范围
 
 - 页头提供「中文 / EN」切换，默认中文；偏好保存到现有 UI 存储并同步同源标签页。
 - 覆盖导航、目录、进度说明、专注模式、加载与错误状态、图谱控件和 Ant Design 组件语言；同步文档标题和 `html lang`。
@@ -10,7 +147,7 @@
 - 总览包含双语学习路线、5 个 STAR 经验草稿、3/5 天计划和 16 个知识图谱节点。
 - 两种语言随构建一起提供，切换无需联网翻译或刷新页面。
 
-## 设计与评审修正
+### 设计与评审修正
 
 课程、路由和卡片使用稳定 ID；语言只改变显示内容，不另建一套学习记录。切换语言不重新挂载页面，也不作为新增浏览记录的触发条件。目录保留筛选词，原生展开区域使用稳定键，专注模式和项目、计划选择继续使用现有偏好。
 
@@ -18,7 +155,7 @@
 
 图示翻译保留节点 ID 与关系，Mermaid 的中文子图标识改为稳定英文 ID。浏览器回归发现英文标签中的分号会被 Mermaid 解析为语法分隔符，已改为逗号并重新渲染全部图示。总览节点间距按实际节点宽度调整，修复了节点横向重叠；缩放控件与缩略图补充了双语无障碍名称。
 
-## 本轮发现与闭环
+### 本轮发现与闭环
 
 | 问题 | 修正与验证 |
 | --- | --- |
@@ -33,7 +170,7 @@
 
 技术依据采用官方文档：[Python 3.14 asyncio TaskGroup 与 gather](https://docs.python.org/3.14/library/asyncio-task.html)、[Python free-threading 与共享状态同步](https://docs.python.org/3.14/howto/free-threading-python.html)、[Go 1.25 的 GOMAXPROCS 行为](https://go.dev/doc/go1.25)。
 
-## 验收结果
+### 验收结果
 
 | 检查 | 结果 |
 | --- | --- |
