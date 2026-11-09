@@ -290,15 +290,15 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "Python vs Go 分工",
       source: `flowchart TB
-  subgraph Go层
+  subgraph GoLayer["Go 层"]
     Svc[服务 / Worker]
     Eng[工程化与并发]
   end
-  subgraph Py层
+  subgraph PyLayer["Python 层"]
     Plat[权限平台 / 审计]
     Auto[自动化 / Exporter]
   end
-  Go层 --- Py层`,
+  GoLayer --- PyLayer`,
     },
   ],
   "python/mp": [

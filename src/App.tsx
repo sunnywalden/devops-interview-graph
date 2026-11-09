@@ -1,10 +1,9 @@
+import { useLocale } from "./i18n/useLocale";
+import { localizedGroups, localizedIntro } from "./i18n/content";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Layout } from "./components/Layout";
 import { LayerPage } from "./components/LayerPage";
 import { OverviewPage } from "./pages/OverviewPage";
-import { languageGroups, languageIntro } from "./data/language";
-import { middlewareGroups, middlewareIntro } from "./data/middleware";
-import { scenarioGroups, scenarioIntro } from "./data/scenarios";
 import type { Bookmark, PageId } from "./types";
 import { toHash, writeBookmark, nowStamp } from "./bookmark";
 import { writeUiPrefs } from "./uiPrefs";
@@ -12,6 +11,7 @@ import { useBookmarkStore, useUiPrefs } from "./useSavedState";
 import { groupsForPage, overviewSelection, resolveRoute, routeLabel } from "./routing";
 
 export default function App() {
+  const { t, locale } = useLocale();
   const initial = useMemo(() => resolveRoute(window.location.hash), []);
   const [page, setPage] = useState<PageId>(initial.page);
   const [primary, setPrimary] = useState(initial.primary);
@@ -154,17 +154,17 @@ export default function App() {
       {page === "lang" && (
         <LayerPage
           page="lang"
-          title="语言基础"
-          intro={languageIntro}
-          groups={languageGroups}
+          title={t("语言基础")}
+          intro={localizedIntro("lang", locale)}
+          groups={localizedGroups("lang", locale)}
           primary={primary}
           topic={topic}
           onPrimary={onPrimaryChange}
           onTopic={onTopicChange}
           links={[
-            { title: "总览", href: "#/overview" },
-            { title: "中间件层", href: "#/mid" },
-            { title: "场景层", href: "#/scene" },
+            { title: t("总览"), href: "#/overview" },
+            { title: t("中间件层"), href: "#/mid" },
+            { title: t("场景层"), href: "#/scene" },
           ]}
           {...layerProps}
         />
@@ -172,17 +172,17 @@ export default function App() {
       {page === "mid" && (
         <LayerPage
           page="mid"
-          title="中间件与容器"
-          intro={middlewareIntro}
-          groups={middlewareGroups}
+          title={t("中间件与容器")}
+          intro={localizedIntro("mid", locale)}
+          groups={localizedGroups("mid", locale)}
           primary={primary}
           topic={topic}
           onPrimary={onPrimaryChange}
           onTopic={onTopicChange}
           links={[
-            { title: "总览", href: "#/overview" },
-            { title: "语言层", href: "#/lang" },
-            { title: "场景层", href: "#/scene" },
+            { title: t("总览"), href: "#/overview" },
+            { title: t("语言层"), href: "#/lang" },
+            { title: t("场景层"), href: "#/scene" },
           ]}
           {...layerProps}
         />
@@ -190,17 +190,17 @@ export default function App() {
       {page === "scene" && (
         <LayerPage
           page="scene"
-          title="场景实战"
-          intro={scenarioIntro}
-          groups={scenarioGroups}
+          title={t("场景实战")}
+          intro={localizedIntro("scene", locale)}
+          groups={localizedGroups("scene", locale)}
           primary={primary}
           topic={topic}
           onPrimary={onPrimaryChange}
           onTopic={onTopicChange}
           links={[
-            { title: "总览", href: "#/overview" },
-            { title: "中间件层", href: "#/mid" },
-            { title: "语言层", href: "#/lang" },
+            { title: t("总览"), href: "#/overview" },
+            { title: t("中间件层"), href: "#/mid" },
+            { title: t("语言层"), href: "#/lang" },
           ]}
           {...layerProps}
         />

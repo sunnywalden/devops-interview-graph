@@ -11,7 +11,7 @@ const cacheDir = await mkdtemp(join(tmpdir(), "devops-study-tests-"));
 const vite = await createServer({
   cacheDir,
   logLevel: "error",
-  server: { middlewareMode: true, hmr: false, watch: null },
+  server: { middlewareMode: true, hmr: false, ws: false, watch: null },
   appType: "custom",
 });
 after(async () => {
@@ -120,6 +120,35 @@ test("revisiting cards does not inflate progress or overwrite other settings", (
     focusMode: true, overviewPlan: "3d",
     visitedByPage: { lang: ["gmp", "chan"], mid: [middle.topic] },
   });
+});
+
+test("language preference validates input and preserves learning state across switches", () => {
+  assert.equal(preferences.readUiPrefs().locale, undefined);
+  for (const locale of [null, "de", true, 1]) assert.equal(preferences.readUiPrefs(JSON.stringify({ locale })).locale, undefined);
+  for (const locale of ["zh", "en"]) assert.equal(preferences.readUiPrefs(JSON.stringify({ locale })).locale, locale);
+  bookmarks.writeBookmark(language);
+  preferences.writeUiPrefs({ focusMode: true, diagramExpanded: true, diagramTab: "flow", overviewPlan: "3d", overviewStar: "bili" });
+  preferences.markCardVisited("lang", "chan");
+  const before = preferences.readUiPrefs();
+  for (const locale of ["en", "zh", "en"]) {
+    preferences.writeUiPrefs({ locale });
+    assert.deepEqual(preferences.readUiPrefs(), { ...before, locale });
+    assert.deepEqual(bookmarks.readBookmark(), language);
+    const snapshot = study.readStudySnapshot();
+    assert.equal(snapshot.resume.href, "#/lang/go/chan");
+    assert.equal(snapshot.visited, 1);
+    assert.equal(snapshot.total, 101);
+    if (locale === "en") assert.doesNotMatch(snapshot.resume.layer + snapshot.resume.card.label, /\p{Script=Han}/u);
+  }
+});
+
+test("language switches still work when persistent storage is unavailable", () => {
+  denied = true;
+  preferences.writeUiPrefs({ locale: "en", focusMode: true });
+  assert.equal(preferences.readUiPrefs().locale, "en");
+  preferences.markCardVisited("lang", "gmp");
+  preferences.writeUiPrefs({ locale: "zh" });
+  assert.deepEqual(preferences.readUiPrefs(), { locale: "zh", focusMode: true, visitedByPage: { lang: ["gmp"] } });
 });
 
 test("blocked storage keeps bookmarks and progress usable for this session", () => {

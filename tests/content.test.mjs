@@ -9,7 +9,7 @@ const cacheDir = await mkdtemp(join(tmpdir(), "devops-content-tests-"));
 const vite = await createServer({
   cacheDir,
   logLevel: "error",
-  server: { middlewareMode: true, hmr: false, watch: null },
+  server: { middlewareMode: true, hmr: false, ws: false, watch: null },
   appType: "custom",
 });
 after(async () => {
@@ -24,6 +24,86 @@ const [{ studyLayers }, { contentSources }, { starStories }] = await Promise.all
 const entries = studyLayers.flatMap((layer) => layer.groups.flatMap((group) =>
   group.cards.map((card) => ({ route: `${layer.id}/${group.id}/${card.id}`, card })),
 ));
+const [{ localizedGroups, localizedIntro, localizedOverview, englishCards }, { translate, uiEnglish }, { diagramNodes }] = await Promise.all([
+  vite.ssrLoadModule("/src/i18n/content.ts"),
+  vite.ssrLoadModule("/src/i18n/ui.ts"),
+  vite.ssrLoadModule("/src/data/overview.ts"),
+]);
+
+function assertEnglish(value, path) {
+  if (typeof value === "string") {
+    assert.doesNotMatch(value, /\p{Script=Han}/u, `${path}: untranslated Chinese text`);
+  } else if (value && typeof value === "object") {
+    for (const [key, nested] of Object.entries(value)) assertEnglish(nested, `${path}.${key}`);
+  }
+}
+
+test("both languages cover the same curriculum, references and scope boundaries", () => {
+  const expectedKeys = [];
+  for (const layer of studyLayers) {
+    const translated = localizedGroups(layer.id, "en");
+    assert.equal(localizedGroups(layer.id, "zh"), layer.groups);
+    assert.deepEqual(translated.map(({ id, defaultTopic }) => ({ id, defaultTopic })), layer.groups.map(({ id, defaultTopic }) => ({ id, defaultTopic })));
+    assertEnglish(localizedIntro(layer.id, "en"), `${layer.id}.intro`);
+    translated.forEach((group, groupIndex) => {
+      assertEnglish(group, `${layer.id}.${group.id}`);
+      const original = layer.groups[groupIndex];
+      assert.deepEqual(group.cards.map(({ id }) => id), original.cards.map(({ id }) => id));
+      group.cards.forEach((card, index) => {
+        const source = original.cards[index];
+        const key = `${group.id}/${card.id}`;
+        expectedKeys.push(key);
+        assert.deepEqual(card.sources, source.sources, `${key}: changed references`);
+        for (const field of ["followUps", "principles", "pitfalls"]) {
+          assert.equal(card[field].length, source[field].length, `${key}: changed ${field} coverage`);
+        }
+        for (const field of ["label", "oneLiner", "resumeAnchor", "oral"]) assert.ok(card[field]?.trim(), `${key}: missing ${field}`);
+        for (const field of ["scope", "warning"]) assert.equal(Boolean(card[field]), Boolean(source[field]), `${key}: changed ${field} coverage`);
+        assert.ok(card.principles.length && card.pitfalls.length, `${key}: incomplete learning material`);
+        assert.ok(card.followUps.every(({ q, a }) => q.trim() && a.trim()), `${key}: incomplete answer`);
+        assert.equal(card.visuals?.length, source.visuals?.length, `${key}: lost diagrams`);
+        card.visuals?.forEach((visual, visualIndex) => {
+          const originalVisual = source.visuals[visualIndex];
+          assert.equal(visual.kind, originalVisual.kind);
+          if (visual.kind !== "flow") return;
+          const structure = (item) => ({
+            ...item,
+            title: undefined,
+            nodes: item.nodes.map(({ label: _label, detail: _detail, ...node }) => node),
+            edges: item.edges.map(({ label: _label, ...edge }) => edge),
+          });
+          assert.deepEqual(structure(visual), structure(originalVisual), `${key}: changed graph structure`);
+        });
+      });
+    });
+  }
+  assert.deepEqual(Object.keys(englishCards).sort(), expectedKeys.sort(), "orphaned or missing English cards");
+});
+
+test("overview stories, plans, guidance and knowledge map are translated without changing identifiers", () => {
+  const zh = localizedOverview("zh");
+  const en = localizedOverview("en");
+  assertEnglish(en, "overview");
+  assert.deepEqual(en.starStories.map(({ id }) => id), zh.starStories.map(({ id }) => id));
+  for (const story of en.starStories) {
+    for (const field of ["label", "role", "s", "t", "a", "r", "followUp", "evidence"]) assert.ok(story[field]?.trim(), `${story.id}: missing ${field}`);
+  }
+  for (const field of ["sprint3d", "sprint5d"]) {
+    assert.equal(en[field].length, zh[field].length);
+    assert.deepEqual(en[field].map(({ items }) => items.length), zh[field].map(({ items }) => items.length));
+  }
+  assert.deepEqual(Object.keys(en.diagramCopy).sort(), diagramNodes.map(({ id }) => id).sort());
+});
+
+test("UI interpolation retains values and primary reference titles are available in English", () => {
+  assert.equal(translate("zh", "第 {n} / {total} 个知识点", { n: 2, total: 14 }), "第 2 / 14 个知识点");
+  assert.equal(translate("en", "第 {n} / {total} 个知识点", { n: 2, total: 14 }), "Topic 2 of 14");
+  for (const [key, value] of Object.entries(uiEnglish)) {
+    assertEnglish(value, key);
+    assert.deepEqual(value.match(/\{\w+\}/g)?.sort() ?? [], key.match(/\{\w+\}/g)?.sort() ?? [], `${key}: changed placeholders`);
+  }
+  for (const source of Object.values(contentSources)) assertEnglish(translate("en", source.title), source.title);
+});
 
 test("the content revision preserves all existing deep links and reading identifiers", async () => {
   const previousRoutes = JSON.parse(await readFile(new URL("./fixtures/curriculum-routes.json", import.meta.url), "utf8"));

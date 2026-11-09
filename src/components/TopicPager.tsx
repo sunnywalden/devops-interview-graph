@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/useLocale";
 import { useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { CloseOutlined } from "@ant-design/icons";
@@ -35,6 +36,7 @@ export function TopicPager({
   scopeLabel?: string;
   filterPlaceholder?: string;
 }) {
+  const { t } = useLocale();
   const reactId = useId();
   const dialogId = `topic-dir-${reactId.replace(/:/g, "")}`;
   const titleId = `${dialogId}-title`;
@@ -203,9 +205,8 @@ export function TopicPager({
   }, [open, value]);
 
   if (!current) return null;
-
   const n = safeIndex + 1;
-  const placeholder = filterPlaceholder ?? `筛选${ariaLabel}`;
+  const placeholder = filterPlaceholder ?? t("筛选{name}", { name: ariaLabel });
 
   return (
     <>
@@ -217,7 +218,7 @@ export function TopicPager({
       >
         <div className="topic-pager__row">
           <div className="topic-pager__current" aria-live="polite" aria-atomic="true">
-            <span className="topic-pager__pos">{scopeLabel && `${scopeLabel} · `}第 {n} / {total} 个{ariaLabel}</span>
+            <span className="topic-pager__pos">{scopeLabel && `${scopeLabel} · `}{t("第 {n} / {total} 个{name}", { n, total, name: ariaLabel })}</span>
             <strong className="topic-pager__name">{current.label}</strong>
           </div>
           <button
@@ -227,8 +228,7 @@ export function TopicPager({
             aria-expanded={open}
             aria-controls={dialogId}
             onClick={(e: MouseEvent<HTMLButtonElement>) => openFrom(e.currentTarget)}
-          >
-            全部目录 · {total}
+          >{t("全部目录 · {total}", { total })}
           </button>
         </div>
         <div className="topic-pager__steps">
@@ -240,8 +240,8 @@ export function TopicPager({
           >
             <span className="topic-pager__arrow" aria-hidden="true">←</span>
             <span className="topic-pager__destination">
-              <span>上一个{ariaLabel}</span>
-              <strong>{items[safeIndex - 1]?.label ?? "已是本组第一项"}</strong>
+              <span>{t("上一个{name}", { name: ariaLabel })}</span>
+              <strong>{items[safeIndex - 1]?.label ?? t("已是本组第一项")}</strong>
             </span>
           </button>
           <button
@@ -251,8 +251,8 @@ export function TopicPager({
             onClick={() => step(1)}
           >
             <span className="topic-pager__destination">
-              <span>下一个{ariaLabel}</span>
-              <strong>{items[safeIndex + 1]?.label ?? "已是本组最后一项"}</strong>
+              <span>{t("下一个{name}", { name: ariaLabel })}</span>
+              <strong>{items[safeIndex + 1]?.label ?? t("已是本组最后一项")}</strong>
             </span>
             <span className="topic-pager__arrow" aria-hidden="true">→</span>
           </button>
@@ -277,18 +277,16 @@ export function TopicPager({
           >
             <div className="topic-dir__head">
               <div className="topic-dir__head-copy">
-                <h2 id={titleId} className="topic-dir__title">
-                  目录
-                </h2>
+                <h2 id={titleId} className="topic-dir__title">{t("目录")}</h2>
                 <p className="topic-dir__scope">
                   {scopeLabel ? `${scopeLabel} · ` : ""}
-                  {total} 个{ariaLabel}
+                  {t("共 {total} 项", { total })}
                 </p>
               </div>
               <button
                 type="button"
                 className="topic-dir__close"
-                aria-label="关闭目录"
+                aria-label={t("关闭目录")}
                 onClick={close}
               >
                 <CloseOutlined aria-hidden="true" />
@@ -311,12 +309,11 @@ export function TopicPager({
                 className="topic-dir__meta"
                 aria-live={needle ? "polite" : undefined}
               >
-                {needle ? `${visible.length} 个匹配` : "点一项即可跳转"}
+                {needle ? t("{count} 个匹配", { count: visible.length }) : t("点一项即可跳转")}
               </p>
             </div>
             {visible.length === 0 ? (
-              <p className="topic-dir__empty" role="status">
-                没有匹配的{ariaLabel}
+              <p className="topic-dir__empty" role="status">{t("没有匹配的内容")}
               </p>
             ) : (
               <ul ref={listRef} className="topic-dir__list">

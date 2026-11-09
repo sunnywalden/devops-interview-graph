@@ -10,6 +10,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { diagramNodes } from "../../data/overview";
+import { diagramCopy } from "../../i18n/overview.en";
+import { useLocale } from "../../i18n/useLocale";
 
 const LAYER_Y: Record<number, number> = { 1: 40, 2: 200, 3: 380 };
 
@@ -41,6 +43,7 @@ const SUPPORT_EDGES: { from: string; to: string; label?: string }[] = [
 ];
 
 export function OverviewFlow({ height }: { height?: number } = {}) {
+  const { locale, t } = useLocale();
   const nodes: Node[] = useMemo(() => {
     const byLayer: Record<number, typeof diagramNodes> = { 1: [], 2: [], 3: [] };
     for (const n of diagramNodes) byLayer[n.layer].push(n);
@@ -48,7 +51,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
     const out: Node[] = [];
     for (const layer of [1, 2, 3] as const) {
       const list = byLayer[layer];
-      const gap = 140;
+      const gap = 176;
       const totalW = (list.length - 1) * gap;
       const startX = Math.max(20, 520 - totalW / 2);
       list.forEach((n, i) => {
@@ -58,8 +61,8 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
           data: {
             label: (
               <div style={{ textAlign: "center", lineHeight: 1.3 }}>
-                <div style={{ fontWeight: 600 }}>{n.label}</div>
-                <div style={{ fontSize: 11, opacity: 1 }}>{n.detail}</div>
+                <div style={{ fontWeight: 600 }}>{locale === "en" ? diagramCopy[n.id][0] : n.label}</div>
+                <div style={{ fontSize: 11, opacity: 1 }}>{locale === "en" ? diagramCopy[n.id][1] : n.detail}</div>
               </div>
             ),
           },
@@ -70,7 +73,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
             borderRadius: 10,
             padding: 8,
             fontSize: 12,
-            minWidth: 110,
+            width: 150,
             boxShadow: "none",
           },
         });
@@ -83,10 +86,10 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         data: {
           label:
             layer === 1
-              ? "① 语言"
+              ? t("① 语言")
               : layer === 2
-                ? "② 中间件"
-                : "③ 场景",
+                ? t("② 中间件")
+                : t("③ 场景"),
         },
         style: {
           background: "transparent",
@@ -101,7 +104,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
       });
     }
     return out;
-  }, []);
+  }, [locale, t]);
 
   const edges: Edge[] = useMemo(
     () =>
@@ -109,7 +112,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         id: `ov-${i}`,
         source: e.from,
         target: e.to,
-        label: e.label,
+        label: e.label ? t(e.label) : undefined,
         animated: false,
         style: { stroke: "#849477" },
         labelStyle: { fill: "#59694f", fontSize: 10 },
@@ -121,7 +124,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
           color: "#849477",
         },
       })),
-    [],
+    [t],
   );
 
   return (
@@ -143,11 +146,12 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         maxZoom={1.5}
         proOptions={{ hideAttribution: true }}
         colorMode="light"
-        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": "放大图谱", "controls.zoomOut.ariaLabel": "缩小图谱", "controls.fitView.ariaLabel": "适应画布" }}
+        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": t("放大图谱"), "controls.zoomOut.ariaLabel": t("缩小图谱"), "controls.fitView.ariaLabel": t("适应画布") }}
       >
         <Background gap={20} size={1} color="#dce5d1" />
-        <Controls showInteractive={false} />
+        <Controls showInteractive={false} aria-label={t("图谱控件")} />
         <MiniMap
+          ariaLabel={t("图谱缩略图")}
           pannable
           zoomable
           maskColor="rgba(247,249,241,0.8)"

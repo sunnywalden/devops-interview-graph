@@ -1,3 +1,4 @@
+import { useLocale } from "../../i18n/useLocale";
 import { useEffect, useId, useState } from "react";
 import { Button, Spin } from "antd";
 import { renderMermaid } from "./renderMermaid";
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export function MermaidBlock({ source, className }: Props) {
+  const { t } = useLocale();
   const reactId = useId().replace(/:/g, "");
   const [svg, setSvg] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -42,13 +44,9 @@ export function MermaidBlock({ source, className }: Props) {
         style={{ marginBottom: 0 }}
       >
         <div>
-          <div className="callout__lead">图示渲染失败</div>
-          <div className="callout__body">
-            图示暂时无法加载，可以刷新页面后重试。正文仍可继续阅读。
-          </div>
-          <Button size="small" onClick={() => window.location.reload()}>
-            刷新页面
-          </Button>
+          <div className="callout__lead">{t("图示渲染失败")}</div>
+          <div className="callout__body">{t("图示暂时无法加载，可以刷新页面后重试。正文仍可继续阅读。")}</div>
+          <Button size="small" onClick={() => window.location.reload()}>{t("刷新页面")}</Button>
         </div>
       </div>
     );
@@ -57,7 +55,7 @@ export function MermaidBlock({ source, className }: Props) {
   if (!svg) {
     return (
       <div style={{ padding: 24, textAlign: "center" }}>
-        <Spin aria-label="渲染图示" />
+        <Spin aria-label={t("渲染图示")} />
       </div>
     );
   }

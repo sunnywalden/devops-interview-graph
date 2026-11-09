@@ -1,3 +1,5 @@
+import { localizedGroups } from "./i18n/content";
+import { translate } from "./i18n/ui";
 import { readStore, toHash } from "./bookmark";
 import { languageGroups } from "./data/language";
 import { middlewareGroups } from "./data/middleware";
@@ -16,7 +18,13 @@ function bookmarkTime(value: unknown): number {
 
 /** Derive reading counts and a valid resume target from the actual curriculum. */
 export function readStudySnapshot(store = readStore(), prefs = readUiPrefs()) {
-  const layers = studyLayers.map((layer) => {
+  const localizedLayers = studyLayers.map(layer => ({
+    ...layer, title: translate(prefs.locale ?? "zh", layer.title),
+    subtitle: translate(prefs.locale ?? "zh", layer.subtitle),
+    description: translate(prefs.locale ?? "zh", layer.description),
+    groups: localizedGroups(layer.id, prefs.locale ?? "zh"),
+  }));
+  const layers = localizedLayers.map((layer) => {
     const cards = layer.groups.flatMap((group) => group.cards);
     const visitedIds = new Set(prefs.visitedByPage?.[layer.id] ?? []);
     return { ...layer, total: cards.length, visited: cards.filter((card) => visitedIds.has(card.id)).length };
@@ -26,12 +34,12 @@ export function readStudySnapshot(store = readStore(), prefs = readUiPrefs()) {
     .sort((a, b) => bookmarkTime(b.updatedAt) - bookmarkTime(a.updatedAt));
   if (store?.current && store.current.page !== "overview") candidates.unshift(store.current);
 
-  let resumeLayer = studyLayers[0];
+  let resumeLayer = localizedLayers[0];
   let resumeGroup = resumeLayer.groups[0];
   let resumeCard = resumeGroup.cards.find((card) => card.id === resumeGroup.defaultTopic) ?? resumeGroup.cards[0];
   let hasBookmark = false;
   for (const bookmark of candidates) {
-    const layer = studyLayers.find((item) => item.id === bookmark.page);
+    const layer = localizedLayers.find((item) => item.id === bookmark.page);
     const group = layer?.groups.find((item) => item.id === bookmark.primary);
     const card = group?.cards.find((item) => item.id === bookmark.topic);
     if (layer && group && card) {

@@ -1,3 +1,4 @@
+import { useLocale } from "../../i18n/useLocale";
 import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
 import { Tabs } from "antd";
 import {
@@ -22,10 +23,9 @@ const FlowGraph = lazy(() =>
 );
 
 function Fallback() {
+  const { t } = useLocale();
   return (
-    <div style={{ padding: 32, textAlign: "center", color: "var(--muted)" }}>
-      加载图示…
-    </div>
+    <div style={{ padding: 32, textAlign: "center", color: "var(--muted)" }}>{t("加载图示…")}</div>
   );
 }
 
@@ -56,6 +56,7 @@ function initialTab(keys: string[]): string {
 }
 
 export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
+  const { t } = useLocale();
   if (!visuals?.length) return null;
 
   const mermaidItems = visuals.filter((v) => v.kind === "mermaid");
@@ -67,8 +68,7 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           key: "mermaid" as const,
           label: (
             <span>
-              <PartitionOutlined aria-hidden="true" /> 流程
-              {mermaidItems.length > 1 ? ` (${mermaidItems.length})` : ""}
+              <PartitionOutlined aria-hidden="true" />{t("流程")}{mermaidItems.length > 1 ? ` (${mermaidItems.length})` : ""}
             </span>
           ),
           children: (
@@ -88,8 +88,7 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           key: "flow" as const,
           label: (
             <span>
-              <ApartmentOutlined aria-hidden="true" /> 可交互
-              {flowItems.length > 1 ? ` (${flowItems.length})` : ""}
+              <ApartmentOutlined aria-hidden="true" />{t("可交互")}{flowItems.length > 1 ? ` (${flowItems.length})` : ""}
             </span>
           ),
           children: (
@@ -120,6 +119,7 @@ function DiagramPanelInner({
 }: {
   tabItems: { key: DiagramTab; label: ReactNode; children: ReactNode }[];
 }) {
+  const { t } = useLocale();
   const keys = useMemo(() => tabItems.map((t) => t.key), [tabItems]);
   const [expanded, setExpanded] = useState(initialExpanded);
   const [activeKey, setActiveKey] = useState(() => initialTab(keys));
@@ -143,14 +143,12 @@ function DiagramPanelInner({
   return (
     <section
       className={`stage-card diagram-panel${expanded ? " is-open" : ""}`}
-      aria-label="知识图示"
+      aria-label={t("知识图示")}
     >
       <header className="diagram-panel__bar">
-        <h3 className="diagram-panel__title">知识图示</h3>
+        <h3 className="diagram-panel__title">{t("知识图示")}</h3>
         <div className="diagram-panel__extra">
-          <a className="diagram-skip" href="#card-followups" onClick={(event) => { event.preventDefault(); document.getElementById("card-followups")?.focus(); }}>
-            跳到追问
-          </a>
+          <a className="diagram-skip" href="#card-followups" onClick={(event) => { event.preventDefault(); document.getElementById("card-followups")?.focus(); }}>{t("跳到追问")}</a>
           <button
             type="button"
             className="diagram-panel__toggle"
@@ -158,7 +156,7 @@ function DiagramPanelInner({
             aria-expanded={expanded}
           >
             <RightOutlined aria-hidden="true" className="diagram-panel__chevron" />
-            {expanded ? "收起" : "展开"}
+            {expanded ? t("收起") : t("展开")}
           </button>
         </div>
       </header>

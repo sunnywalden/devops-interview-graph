@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/useLocale";
 import { useId, useState, type ReactNode } from "react";
 import {
   AlertOutlined,
@@ -12,31 +13,32 @@ import { DiagramPanel } from "./diagrams/DiagramPanel";
 import { contentSources } from "../data/sources";
 
 export function CardView({ card }: { card: CardType }) {
+  const { t } = useLocale();
   return (
     <div className="card-stack">
       {card.warning && (
-        <Callout lead="诚实边界" tone="warn">
+        <Callout lead={t("诚实边界")} tone="warn">
           {card.warning}
         </Callout>
       )}
 
       <header className="stage-card card-head print-keep">
-        <p className="card-head__kicker eyebrow">FIELD NOTES / 知识点</p>
+        <p className="card-head__kicker eyebrow">{t("FIELD NOTES / 知识点")}</p>
         <h2 className="card-head__title">{card.label}</h2>
         <p className="card-head__one">{card.oneLiner}</p>
         <p className="card-head__resume print-hide">
-          <span className="card-head__resume-tag">项目关联</span>
+          <span className="card-head__resume-tag">{t("项目关联")}</span>
           <span className="card-head__resume-text">{card.resumeAnchor}</span>
         </p>
       </header>
 
-      <section className="stage-card oral-hero print-keep" aria-label="核心回答">
+      <section className="stage-card oral-hero print-keep" aria-label={t("核心回答")}>
         <div className="oral-hero__label">
-          <span><CommentOutlined aria-hidden="true" /> 核心回答</span>
+          <span><CommentOutlined aria-hidden="true" />{t("核心回答")}</span>
           <span className="eyebrow">UNDERSTAND & EXPLAIN</span>
         </div>
         <div className="oral-block">{card.oral.split("\n\n").map((paragraph, i) => <p key={`${card.id}-answer-${i}`}>{paragraph}</p>)}</div>
-        {card.scope && <p className="answer-scope"><strong>适用范围</strong>{card.scope}</p>}
+        {card.scope && <p className="answer-scope"><strong>{t("适用范围")}</strong>{card.scope}</p>}
       </section>
 
       <div className="print-hide">
@@ -46,14 +48,14 @@ export function CardView({ card }: { card: CardType }) {
       <section
         id="card-followups"
         className="followups print-hide"
-        aria-label="追问"
+        aria-label={t("追问")}
         tabIndex={-1}
       >
         <div className="section-label">
           <QuestionCircleOutlined aria-hidden="true" />
-          <span>追问</span>
+          <span>{t("追问")}</span>
           <span className="section-label__count">{card.followUps.length}</span>
-          <span className="section-label__hint">先想一想，再展开答案</span>
+          <span className="section-label__hint">{t("先想一想，再展开答案")}</span>
         </div>
         <div className="qa-list">
           {card.followUps.map((f, i) => (
@@ -77,7 +79,7 @@ export function CardView({ card }: { card: CardType }) {
       </section>
 
       <Disclosure
-        title="原理"
+        title={t("原理")}
         icon={<BookOutlined aria-hidden="true" />}
         count={card.principles.length}
       >
@@ -89,7 +91,7 @@ export function CardView({ card }: { card: CardType }) {
       </Disclosure>
 
       <Disclosure
-        title="易错"
+        title={t("易错")}
         icon={<AlertOutlined aria-hidden="true" />}
         count={card.pitfalls.length}
       >
@@ -99,11 +101,11 @@ export function CardView({ card }: { card: CardType }) {
           ))}
         </ul>
       </Disclosure>
-      <section className="content-sources" aria-label="官方文档与参考">
-        <h3><BookOutlined aria-hidden="true" /> 官方文档与参考</h3>
-        <p>核对定义、适用条件与版本差异。项目关联是练习方向，个人职责和成果需另行举证。</p>
+      <section className="content-sources" aria-label={t("官方文档与参考")}>
+        <h3><BookOutlined aria-hidden="true" />{t("官方文档与参考")}</h3>
+        <p>{t("核对定义、适用条件与版本差异。项目关联是练习方向，个人职责和成果需另行举证。")}</p>
         <ul>{card.sources.map((id) => (
-          <li key={id}><a href={contentSources[id].url} target="_blank" rel="noreferrer">{contentSources[id].title}<span className="sr-only">（新窗口打开）</span><span aria-hidden="true"> ↗</span></a></li>
+          <li key={id}><a href={contentSources[id].url} target="_blank" rel="noreferrer">{t(contentSources[id].title)}<span className="sr-only">{t("（新窗口打开）")}</span><span aria-hidden="true"> ↗</span></a></li>
         ))}</ul>
       </section>
     </div>

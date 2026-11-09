@@ -5,6 +5,7 @@ import { MermaidBlock } from "../src/components/diagrams/MermaidBlock";
 import { languageGroups } from "../src/data/language";
 import { middlewareGroups } from "../src/data/middleware";
 import { scenarioGroups } from "../src/data/scenarios";
+import { localizeVisual } from "../src/i18n/visuals";
 import "../src/index.css";
 
 const sources = {
@@ -19,7 +20,7 @@ const curriculumDiagrams = [...languageGroups, ...middlewareGroups, ...scenarioG
   ));
 
 export function Harness() {
-  const [mode, setMode] = useState<keyof typeof sources | "hidden" | "all">("invalid");
+  const [mode, setMode] = useState<keyof typeof sources | "hidden" | "all" | "english">("invalid");
   return (
     <main style={{ padding: 24 }}>
       <h1>Mermaid 回归验证</h1>
@@ -28,17 +29,18 @@ export function Harness() {
         <button onClick={() => setMode("valid")}>正常图示</button>
         <button onClick={() => setMode("hidden")}>卸载图示</button>
         <button onClick={() => setMode("all")}>核验全部课程图示</button>
+        <button onClick={() => setMode("english")}>Verify all English diagrams</button>
       </nav>
       {(mode === "invalid" || mode === "valid") && [0, 1].map((index) => (
         <section key={`${mode}-${index}`} style={{ marginTop: 24 }}>
           <MermaidBlock source={sources[mode]} />
         </section>
       ))}
-      {mode === "all" && <section aria-label="全部课程图示">
+      {(mode === "all" || mode === "english") && <section aria-label="全部课程图示">
         <p>共 {curriculumDiagrams.length} 张 Mermaid 图示；每张均应显示 SVG，且没有错误提示或遗留渲染容器。</p>
         {curriculumDiagrams.map((visual) => <section key={visual.id} style={{ marginTop: 24 }}>
           <h2>{visual.id} · {visual.title}</h2>
-          <MermaidBlock source={visual.source} />
+          <MermaidBlock source={mode === "english" ? (localizeVisual(visual) as typeof visual).source : visual.source} />
         </section>)}
       </section>}
       <footer>页面底部：此处之后不应出现图示或错误 SVG。</footer>

@@ -1,3 +1,4 @@
+import { useLocale } from "../../i18n/useLocale";
 import { useMemo } from "react";
 import {
   Background,
@@ -43,6 +44,7 @@ function autoPosition(nodes: FlowNode[]): Map<string, { x: number; y: number }> 
 }
 
 export function FlowGraph({ nodes, edges, height = 400 }: Props) {
+  const { t } = useLocale();
   const pos = useMemo(() => autoPosition(nodes), [nodes]);
 
   const rfNodes: Node[] = useMemo(
@@ -108,11 +110,12 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
         maxZoom={1.6}
         proOptions={{ hideAttribution: true }}
         colorMode="light"
-        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": "放大图谱", "controls.zoomOut.ariaLabel": "缩小图谱", "controls.fitView.ariaLabel": "适应画布" }}
+        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": t("放大图谱"), "controls.zoomOut.ariaLabel": t("缩小图谱"), "controls.fitView.ariaLabel": t("适应画布") }}
       >
         <Background gap={18} size={1} color="#dce5d1" />
-        <Controls showInteractive={false} />
+        <Controls showInteractive={false} aria-label={t("图谱控件")} />
         <MiniMap
+          ariaLabel={t("图谱缩略图")}
           pannable
           zoomable
           maskColor="rgba(247,249,241,0.8)"

@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/useLocale";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Button, Segmented, Typography } from "antd";
 import { ExpandOutlined, CompressOutlined } from "@ant-design/icons";
@@ -37,6 +38,7 @@ export function LayerPage({
   focusMode: boolean;
   onFocusMode: (on: boolean) => void;
 }) {
+  const { t } = useLocale();
   const group = useMemo(
     () => groups.find((g) => g.id === primary) ?? groups[0],
     [groups, primary],
@@ -212,7 +214,7 @@ export function LayerPage({
   }, [page, card.id]);
 
   const pageLabel =
-    page === "lang" ? "语言层" : page === "mid" ? "中间件层" : "场景层";
+    page === "lang" ? t("语言层") : page === "mid" ? t("中间件层") : t("场景层");
 
   const cardIndex = group.cards.findIndex((item) => item.id === card.id);
   const nextCard = group.cards[cardIndex + 1];
@@ -232,18 +234,18 @@ export function LayerPage({
 
   return (
     <div className="layer-page">
-      {focusMode && <h1 className="sr-only">{title} · 专注口述</h1>}
+      {focusMode && <h1 className="sr-only">{title}{t("· 专注口述")}</h1>}
       {!focusMode && (
         <div className="layer-page__intro">
           <p className="eyebrow">THE LEARNING ROOM / {page === "lang" ? "01" : page === "mid" ? "02" : "03"}</p>
           <h1>{title}</h1>
-          <p className="page-subtitle">把原理、取舍与项目经验，连成一段清楚的表达。</p>
-          <details className="layer-intro-note"><summary>本层学习提示</summary><p>{intro}</p></details>
+          <p className="page-subtitle">{t("把原理、取舍与项目经验，连成一段清楚的表达。")}</p>
+          <details className="layer-intro-note"><summary>{t("本层学习提示")}</summary><p>{intro}</p></details>
         </div>
       )}
 
       <div className="layer-toolbar" ref={toolbarRef}>
-        <div className="train-bar" role="group" aria-label={`${pageLabel}导航`}>
+        <div className="train-bar" role="group" aria-label={t("{name}导航", { name: pageLabel })}>
           <div className="layer-toolbar__row">
             <div className="segmented-wrap layer-toolbar__seg">
               <Segmented
@@ -252,7 +254,7 @@ export function LayerPage({
                 value={group.id}
                 options={groups.map((g) => ({ value: g.id, label: g.label }))}
                 onChange={(v) => onPrimary(String(v))}
-                aria-label={`${pageLabel}分段`}
+                aria-label={t("{name}分段", { name: pageLabel })}
               />
             </div>
             <Button
@@ -262,9 +264,9 @@ export function LayerPage({
               icon={focusMode ? <CompressOutlined aria-hidden="true" /> : <ExpandOutlined aria-hidden="true" />}
               onClick={toggleFocus}
               aria-pressed={focusMode}
-              aria-label={focusMode ? "退出专注练习" : "进入专注练习"}
+              aria-label={focusMode ? t("退出专注练习") : t("进入专注练习")}
             >
-              {focusMode ? "退出专注" : "专注练习"}
+              {focusMode ? t("退出专注") : t("专注练习")}
             </Button>
           </div>
           <TopicPager
@@ -272,30 +274,26 @@ export function LayerPage({
             items={group.cards}
             value={card.id}
             onChange={onTopic}
-            ariaLabel="知识点"
+            ariaLabel={t("知识点")}
             scopeLabel={group.label}
           />
           <div className="train-bar__meta">
             <div
               className="layer-visit-progress"
               role="status"
-              aria-label={`本层浏览记录 ${visitedCount} / ${totalCards}，仅记录打开，不代表掌握`}
+              aria-label={t("本层浏览记录 {count} / {total}，仅记录打开，不代表掌握", { count: visitedCount, total: totalCards })}
             >
-              <span className="layer-visit-progress__label">
-                本层浏览记录 {visitedCount}/{totalCards} · 仅记录打开
-              </span>
+              <span className="layer-visit-progress__label">{t("本层浏览记录 {count}/{total} · 仅记录打开", { count: visitedCount, total: totalCards })}</span>
             </div>
-            <p className="train-hint" id="card-kbd-hint">
-              聚焦卡片或导航后
-              <kbd>←</kbd>
+            <p className="train-hint" id="card-kbd-hint">{t("聚焦卡片或导航后")}<kbd>←</kbd>
               <kbd>→</kbd>
-              <span className="train-hint__or">或</span>
+              <span className="train-hint__or">{t("或")}</span>
               <kbd>j</kbd>
               <kbd>k</kbd>
               <span className="train-hint__or">·</span>
               <kbd>Home</kbd>
               <kbd>End</kbd>
-              <span className="train-hint__swipe">口播区可左右滑</span>
+              <span className="train-hint__swipe">{t("口播区可左右滑")}</span>
             </p>
           </div>
         </div>
@@ -305,7 +303,7 @@ export function LayerPage({
         ref={stageRef}
         className="card-stage"
         tabIndex={0}
-        aria-label={`${pageLabel}知识点`}
+        aria-label={t("{name}知识点", { name: pageLabel })}
         aria-keyshortcuts="ArrowLeft ArrowRight j k Home End"
         aria-describedby="card-kbd-hint"
       >
@@ -314,27 +312,27 @@ export function LayerPage({
         </div>
       </section>
 
-      <nav className="study-continuation print-hide" aria-label="继续学习">
+      <nav className="study-continuation print-hide" aria-label={t("继续学习")}>
         <div className="study-continuation__copy">
-          <p className="eyebrow">{group.label} · 第 {cardIndex + 1} / {group.cards.length} 个知识点</p>
-          <h2>{nextCard ? `本组后面还有 ${remaining} 个知识点` : "已到本组最后一个知识点"}</h2>
-          <p>{nextCard ? "先尝试脱稿口述，再继续下一个知识点。" : nextGroup ? `后面还有「${nextGroup.label}」一组，可以继续学习。` : "已到本层目录末尾。浏览不等于掌握，可通过全部目录回顾遗漏与薄弱知识点。"}</p>
+          <p className="eyebrow">{group.label} · {t("第 {n} / {total} 个知识点", { n: cardIndex + 1, total: group.cards.length })}</p>
+          <h2>{nextCard ? t("本组后面还有 {count} 个知识点", { count: remaining }) : t("已到本组最后一个知识点")}</h2>
+          <p>{nextCard ? t("先尝试脱稿口述，再继续下一个知识点。") : nextGroup ? t("后面还有「{name}」一组，可以继续学习。", { name: nextGroup.label }) : t("已到本层目录末尾。浏览不等于掌握，可通过全部目录回顾遗漏与薄弱知识点。")}</p>
         </div>
         {nextCard || nextGroup ? (
           <button type="button" className="study-continuation__next" onClick={continueLearning}>
-            <span>{nextCard ? "继续下一个知识点" : "继续下一组"}<strong>{nextCard?.label ?? nextGroup?.label}</strong></span>
+            <span>{nextCard ? t("继续下一个知识点") : t("继续下一组")}<strong>{nextCard?.label ?? nextGroup?.label}</strong></span>
             <span aria-hidden="true">→</span>
           </button>
         ) : (
           <button type="button" className="study-continuation__review" onClick={() => {
             toolbarRef.current?.querySelector<HTMLButtonElement>(".topic-pager__dir")?.click();
-          }}>打开全部目录，回顾本组</button>
+          }}>{t("打开全部目录，回顾本组")}</button>
         )}
       </nav>
 
       {!focusMode && (
-        <nav className="related-links" aria-label="相关层">
-          <Text type="secondary">相关：</Text>
+        <nav className="related-links" aria-label={t("相关层")}>
+          <Text type="secondary">{t("相关：")}</Text>
           {links.map((l) => (
             <a key={l.href + l.title} href={l.href}>
               {l.title}

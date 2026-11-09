@@ -8,6 +8,7 @@ export type DiagramTab = "mermaid" | "flow";
 export type LayerPageId = "lang" | "mid" | "scene";
 
 export type UiPrefs = {
+  locale?: "zh" | "en";
   /** Diagram panel expanded. Default false when unset. */
   diagramExpanded?: boolean;
   /** Last active diagram tab when both kinds exist. */
@@ -54,6 +55,7 @@ export function readUiPrefs(raw = readStorage(UI_PREFS_KEY)): UiPrefs {
     if (!parsed || typeof parsed !== "object") return {};
     const o = parsed as Record<string, unknown>;
     const out: UiPrefs = {};
+    if (o.locale === "zh" || o.locale === "en") out.locale = o.locale;
     if (typeof o.diagramExpanded === "boolean") {
       out.diagramExpanded = o.diagramExpanded;
     }
