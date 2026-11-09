@@ -1,4 +1,6 @@
 import { useLocale } from "../i18n/useLocale";
+import { localizedGroups } from "../i18n/content";
+import { bilingualDirectory } from "../i18n/directory";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Button, Segmented, Typography } from "antd";
 import { ExpandOutlined, CompressOutlined } from "@ant-design/icons";
@@ -38,7 +40,7 @@ export function LayerPage({
   focusMode: boolean;
   onFocusMode: (on: boolean) => void;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const group = useMemo(
     () => groups.find((g) => g.id === primary) ?? groups[0],
     [groups, primary],
@@ -271,7 +273,9 @@ export function LayerPage({
           </div>
           <TopicPager
             key={`${page}:${group.id}`}
-            items={group.cards}
+            items={bilingualDirectory(group.cards, isLayerPageId(page)
+              ? localizedGroups(page, locale === "zh" ? "en" : "zh").find(item => item.id === group.id)?.cards ?? []
+              : [])}
             value={card.id}
             onChange={onTopic}
             ariaLabel={t("知识点")}
@@ -334,7 +338,7 @@ export function LayerPage({
         <nav className="related-links" aria-label={t("相关层")}>
           <Text type="secondary">{t("相关：")}</Text>
           {links.map((l) => (
-            <a key={l.href + l.title} href={l.href}>
+            <a key={l.href} href={l.href}>
               {l.title}
             </a>
           ))}

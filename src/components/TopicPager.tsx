@@ -2,11 +2,9 @@ import { useLocale } from "../i18n/useLocale";
 import { useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { CloseOutlined } from "@ant-design/icons";
+import { filterDirectory, type DirectoryItem } from "../i18n/directory";
 
-export type TopicPagerItem = {
-  id: string;
-  label: string;
-};
+export type TopicPagerItem = DirectoryItem;
 
 type IndexedItem = TopicPagerItem & { index: number };
 
@@ -62,10 +60,7 @@ export function TopicPager({
     () => items.map((item, itemIndex) => ({ ...item, index: itemIndex })),
     [items],
   );
-  const needle = query.trim().toLowerCase();
-  const visible = needle
-    ? indexed.filter((item) => item.label.toLowerCase().includes(needle))
-    : indexed;
+  const visible = filterDirectory(indexed, query);
 
   const openFrom = (el: HTMLElement) => {
     openerRef.current = el;
@@ -307,9 +302,9 @@ export function TopicPager({
               />
               <p
                 className="topic-dir__meta"
-                aria-live={needle ? "polite" : undefined}
+                aria-live={query.trim() ? "polite" : undefined}
               >
-                {needle ? t("{count} 个匹配", { count: visible.length }) : t("点一项即可跳转")}
+                {query.trim() ? t("{count} 个匹配", { count: visible.length }) : t("点一项即可跳转")}
               </p>
             </div>
             {visible.length === 0 ? (

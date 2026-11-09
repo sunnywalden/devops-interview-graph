@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { Segmented, Spin, Tabs } from "antd";
 import { ArrowRightOutlined, ArrowUpOutlined, ClockCircleOutlined, FlagOutlined, ReadOutlined } from "@ant-design/icons";
 import { localizedOverview } from "../i18n/content";
+import { bilingualDirectory } from "../i18n/directory";
 import { TopicPager } from "../components/TopicPager";
 import { StudyIllustration } from "../components/StudyIllustration";
 import { readStudySnapshot } from "../study";
@@ -87,7 +88,7 @@ export function OverviewPage({
                 children: (
                   <section className="paper-panel" aria-labelledby="star-title">
                     <header className="panel-heading"><div><p className="eyebrow">TELL YOUR STORY</p><h2 id="star-title">{t("把项目讲成一个好故事。")}</h2></div><span className="subtle-pill">{t("90 秒 · STAR")}</span></header>
-                    <TopicPager items={starStories} value={story.id} onChange={onStar} ariaLabel={t("项目")} scopeLabel="STAR" />
+                    <TopicPager items={bilingualDirectory(starStories, localizedOverview(locale === "zh" ? "en" : "zh").starStories)} value={story.id} onChange={onStar} ariaLabel={t("项目")} scopeLabel="STAR" />
                     <p className="story-evidence">{story.evidence}</p>
                     <div className="story-context"><p><span>{t("角色方向 · 待核实")}</span>{story.role}</p><p><span>{t("知识关联")}</span>{story.layerMap}</p></div>
                     <div className="star-steps">

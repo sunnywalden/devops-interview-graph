@@ -11,6 +11,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { FlowEdge, FlowNode } from "../../types";
+import { graphAccessibility } from "./graphAccessibility";
 
 const ACCENT = "#78956b";
 const EDGE = "#8b9c7e";
@@ -44,7 +45,7 @@ function autoPosition(nodes: FlowNode[]): Map<string, { x: number; y: number }> 
 }
 
 export function FlowGraph({ nodes, edges, height = 400 }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const pos = useMemo(() => autoPosition(nodes), [nodes]);
 
   const rfNodes: Node[] = useMemo(
@@ -97,6 +98,7 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
   return (
     <div className="flow-graph-host" style={{ height, width: "100%" }}>
       <ReactFlow
+        aria-label={t("只读知识图谱")}
         nodes={rfNodes}
         edges={rfEdges}
         fitView
@@ -104,13 +106,14 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
+        deleteKeyCode={null}
         panOnScroll={false}
         zoomOnScroll={false}
         minZoom={0.15}
         maxZoom={1.6}
         proOptions={{ hideAttribution: true }}
         colorMode="light"
-        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": t("放大图谱"), "controls.zoomOut.ariaLabel": t("缩小图谱"), "controls.fitView.ariaLabel": t("适应画布") }}
+        ariaLabelConfig={graphAccessibility(locale)}
       >
         <Background gap={18} size={1} color="#dce5d1" />
         <Controls showInteractive={false} aria-label={t("图谱控件")} />

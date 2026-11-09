@@ -12,6 +12,7 @@ import "@xyflow/react/dist/style.css";
 import { diagramNodes } from "../../data/overview";
 import { diagramCopy } from "../../i18n/overview.en";
 import { useLocale } from "../../i18n/useLocale";
+import { graphAccessibility } from "./graphAccessibility";
 
 const LAYER_Y: Record<number, number> = { 1: 40, 2: 200, 3: 380 };
 
@@ -133,6 +134,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
       style={{ height: height ?? undefined, width: "100%" }}
     >
       <ReactFlow
+        aria-label={t("只读知识图谱")}
         nodes={nodes}
         edges={edges}
         fitView
@@ -140,13 +142,14 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
+        deleteKeyCode={null}
         panOnScroll={false}
         zoomOnScroll={false}
         minZoom={0.15}
         maxZoom={1.5}
         proOptions={{ hideAttribution: true }}
         colorMode="light"
-        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": t("放大图谱"), "controls.zoomOut.ariaLabel": t("缩小图谱"), "controls.fitView.ariaLabel": t("适应画布") }}
+        ariaLabelConfig={graphAccessibility(locale)}
       >
         <Background gap={20} size={1} color="#dce5d1" />
         <Controls showInteractive={false} aria-label={t("图谱控件")} />

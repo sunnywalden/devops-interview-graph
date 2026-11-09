@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer } from "vite";
@@ -28,6 +28,10 @@ const [{ localizedGroups, localizedIntro, localizedOverview, englishCards }, { t
   vite.ssrLoadModule("/src/i18n/content.ts"),
   vite.ssrLoadModule("/src/i18n/ui.ts"),
   vite.ssrLoadModule("/src/data/overview.ts"),
+]);
+const [{ bilingualDirectory, filterDirectory }, { graphAccessibility }] = await Promise.all([
+  vite.ssrLoadModule("/src/i18n/directory.ts"),
+  vite.ssrLoadModule("/src/components/diagrams/graphAccessibility.ts"),
 ]);
 
 function assertEnglish(value, path) {
@@ -103,6 +107,59 @@ test("UI interpolation retains values and primary reference titles are available
     assert.deepEqual(value.match(/\{\w+\}/g)?.sort() ?? [], key.match(/\{\w+\}/g)?.sort() ?? [], `${key}: changed placeholders`);
   }
   for (const source of Object.values(contentSources)) assertEnglish(translate("en", source.title), source.title);
+});
+
+test("every literal UI translation call has an English entry", async () => {
+  const src = new URL("../src/", import.meta.url);
+  const files = await readdir(src, { recursive: true });
+  const missing = [];
+  for (const file of files.filter(file => /\.tsx?$/.test(file))) {
+    const source = await readFile(new URL(file, src), "utf8");
+    for (const match of source.matchAll(/\bt\(\s*(["'])((?:\\.|(?!\1)[^\\])*)\1/g)) {
+      const key = match[2];
+      if (/\p{Script=Han}/u.test(key) && !Object.hasOwn(uiEnglish, key)) missing.push(`${file}: ${key}`);
+    }
+  }
+  assert.deepEqual(missing, [], "untranslated UI keys");
+});
+
+test("directory searches retain the same curriculum and project matches in either language", () => {
+  const pairs = studyLayers.flatMap(layer => localizedGroups(layer.id, "zh").map((group, index) => [
+    group.cards, localizedGroups(layer.id, "en")[index].cards,
+  ]));
+  pairs.push([localizedOverview("zh").starStories, localizedOverview("en").starStories]);
+  for (const [zh, en] of pairs) {
+    const chinese = bilingualDirectory(zh, en);
+    const english = bilingualDirectory(en, zh);
+    for (const { id, label } of [...zh, ...en]) {
+      const ids = items => filterDirectory(items, label).map(item => item.id);
+      assert.ok(ids(chinese).includes(id), `${label}: missing search result`);
+      assert.deepEqual(ids(english), ids(chinese), `${label}: language switch changes results`);
+    }
+  }
+});
+
+test("directory aliases follow IDs and normalize case, width and surrounding space", () => {
+  const zh = [{ id: "gmp", label: "GMP 调度" }, { id: "ctx", label: "上下文与取消" }];
+  const en = [{ id: "ctx", label: "Context and cancellation" }, { id: "gmp", label: "GMP scheduling" }];
+  const items = bilingualDirectory(zh, en);
+  assert.deepEqual(filterDirectory(items, "  ＳＣＨＥＤＵＬＩＮＧ  ").map(item => item.id), ["gmp"]);
+  assert.deepEqual(filterDirectory(items, "cancellation").map(item => item.id), ["ctx"]);
+  assert.deepEqual(filterDirectory(items, "调度").map(item => item.id), ["gmp"]);
+  assert.deepEqual(filterDirectory(items, "not in this directory"), []);
+  assert.equal(filterDirectory(items, "  "), items);
+  assert.deepEqual(items.map(item => item.label), zh.map(item => item.label));
+});
+
+test("knowledge maps provide localized instructions for their read-only interaction", () => {
+  const zh = graphAccessibility("zh");
+  const en = graphAccessibility("en");
+  assert.deepEqual(Object.keys(zh), Object.keys(en));
+  for (const [key, value] of Object.entries(en)) {
+    assertEnglish(value, `graph.${key}`);
+    assert.match(zh[key], /\p{Script=Han}/u, `graph.${key}: missing Chinese instructions`);
+    assert.doesNotMatch(value, /delete|arrow keys to move/i, `graph.${key}: unsupported editing instruction`);
+  }
 });
 
 test("the content revision preserves all existing deep links and reading identifiers", async () => {

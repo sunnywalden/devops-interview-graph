@@ -74,7 +74,7 @@ export const diagramEnglish: Record<string, string> = {
   "是": "Yes",
   "普通 map 加锁": "Ordinary map with a lock",
   "否": "No",
-  "一次写入多次读取或不同键集合并发操作": "Write-once reads or disjoint key sets?",
+  "一次写入多次读取或不同键集合并发操作": "Write once, read many, or access disjoint key sets?",
   "评估 sync.Map": "Evaluate sync.Map",
   "不匹配": "No match",
   "按实际负载验证": "Verify with representative workloads",
