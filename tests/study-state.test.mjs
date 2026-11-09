@@ -1,20 +1,30 @@
 import assert from "node:assert/strict";
 import { after, beforeEach, test } from "node:test";
 import { createServer } from "vite";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 // Use the application's own TS loader; no browser or test-only dependencies.
+// Never let the test loader invalidate the live dev server's dependency cache.
+const cacheDir = await mkdtemp(join(tmpdir(), "devops-study-tests-"));
 const vite = await createServer({
+  cacheDir,
   logLevel: "error",
   server: { middlewareMode: true, hmr: false, watch: null },
   appType: "custom",
 });
-after(() => vite.close());
-const [bookmarks, preferences, routing, study, storage] = await Promise.all([
+after(async () => {
+  await vite.close();
+  await rm(cacheDir, { recursive: true, force: true });
+});
+const [bookmarks, preferences, routing, study, storage, diagrams] = await Promise.all([
   vite.ssrLoadModule("/src/bookmark.ts"),
   vite.ssrLoadModule("/src/uiPrefs.ts"),
   vite.ssrLoadModule("/src/routing.ts"),
   vite.ssrLoadModule("/src/study.ts"),
   vite.ssrLoadModule("/src/storage.ts"),
+  vite.ssrLoadModule("/src/components/diagrams/renderMermaid.ts"),
 ]);
 
 const values = new Map();
@@ -234,5 +244,49 @@ test("every curriculum group has a valid default and unambiguous card identifier
     for (const group of layer.groups) {
       assert.ok(group.cards.some((card) => card.id === group.defaultTopic), `${layer.id}/${group.id}: invalid default`);
     }
+  }
+});
+
+test("diagram renders isolate temporary DOM and clean up after success and engine failure", async () => {
+  const originalDocument = globalThis.document;
+  const attached = new Set();
+  globalThis.document = {
+    createElement() {
+      return { style: {}, setAttribute() {}, remove() { attached.delete(this); } };
+    },
+    body: { appendChild(element) { attached.add(element); } },
+  };
+  try {
+    const failure = new Error("Failed to fetch dynamically imported module");
+    let finishValid;
+    let failInvalid;
+    const containers = [];
+    const engine = {
+      initialize(config) { assert.equal(config.suppressErrorRendering, true); },
+      render(id, source, container) {
+        assert.ok(attached.has(container), "measurement needs an attached container");
+        assert.equal(source, "sequenceDiagram");
+        containers.push(container);
+        return new Promise((resolve, reject) => {
+          if (id === "valid") finishValid = resolve;
+          else failInvalid = reject;
+        });
+      },
+    };
+    const valid = diagrams.renderMermaid(engine, "valid", " sequenceDiagram ");
+    const invalid = diagrams.renderMermaid(engine, "invalid", "sequenceDiagram");
+    assert.equal(attached.size, 2);
+    assert.notEqual(containers[0], containers[1]);
+    failInvalid(failure);
+    await assert.rejects(invalid, (error) => error === failure);
+    assert.equal(attached.size, 1, "failed render must not remove another in-flight render");
+    finishValid({ svg: "<svg></svg>" });
+    assert.deepEqual(await valid, { svg: "<svg></svg>" });
+    assert.equal(attached.size, 0);
+    await assert.rejects(diagrams.renderMermaid({ ...engine, render() { throw failure; } }, "sync", "sequenceDiagram"));
+    assert.equal(attached.size, 0, "synchronous throws also clean up");
+  } finally {
+    if (originalDocument === undefined) delete globalThis.document;
+    else globalThis.document = originalDocument;
   }
 });
