@@ -62,10 +62,10 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   "cicd/kaniko": [
     {
       kind: "mermaid",
-      title: "Kaniko → Artifactory",
+      title: "构建器 → 镜像仓库",
       source: `flowchart LR
-  Ctx[构建上下文] --> Kaniko
-  Kaniko --> Reg[Artifactory 镜像]
+  Ctx[构建上下文与 Dockerfile] --> Builder[维护中的构建器：如 BuildKit]
+  Builder --> Reg[Artifactory 等镜像仓库]
   Reg --> Deploy[部署引用 digest]`,
     },
   ],
@@ -87,8 +87,9 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       source: `flowchart LR
   Base[基线] --> Gate{黄金信号}
   Canary[小流量新版本] --> Gate
-  Gate -->|过线| Stop[停并回滚镜像+配置]
-  Gate -->|守住| More[加大权重或副本]`,
+  Gate -->|超过失败阈值| Stop[停止放量并执行回滚方案]
+  Gate -->|满足观察条件| More[逐步提高流量权重]
+  Stop --> State[核对配置与数据变更的兼容性]`,
     },
   ],
   "cicd/deploy": [
@@ -124,11 +125,12 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   "cicd/runners": [
     {
       kind: "mermaid",
-      title: "Runner 标签与容量",
+      title: "Runner 匹配与隔离",
       source: `flowchart TB
   Job[Job tags] --> Match[匹配 Runner]
   Match --> Cap[并发/资源配额]
-  Cap --> Iso[租户或环境隔离]`,
+  Match --> Iso[另行配置执行器、凭据与网络隔离]
+  Iso --> Boundary[标签本身不是安全边界]`,
     },
   ],
   "monitor/golden": [
@@ -147,11 +149,11 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "Prometheus 拉取 / 联邦",
       source: `flowchart LR
-  T1[目标A] -->|scrape| P1[Prom 区域]
-  T2[目标B] -->|scrape| P2[Prom 区域]
-  P1 -->|federation| Central[中央 Prom]
-  P2 -->|federation| Central
-  Central --> Graf[Grafana]`,
+  P1[Prom 区域 A] -->|scrape 请求| T1[目标 A]
+  P2[Prom 区域 B] -->|scrape 请求| T2[目标 B]
+  Central[中央 Prom] -->|拉取 federation 端点| P1
+  Central -->|拉取 federation 端点| P2
+  Graf[Grafana] -->|查询| Central`,
     },
     {
       kind: "flow",
@@ -163,8 +165,8 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
         { id: "am", label: "Alertmanager", x: 220, y: 200 },
       ],
       edges: [
-        { from: "exp", to: "p", label: "pull" },
-        { from: "p", to: "fed" },
+        { from: "p", to: "exp", label: "拉取指标" },
+        { from: "fed", to: "p", label: "拉取选定序列" },
         { from: "p", to: "am", label: "告警" },
       ],
     },
@@ -174,10 +176,12 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "SLO / 错误预算",
       source: `flowchart LR
-  SLI[SLI 实测] --> SLO[SLO 目标]
-  SLO --> Budget[错误预算]
-  Budget -->|耗尽| Freeze[冻结发版/保稳定]
-  Budget -->|充裕| Ship[可继续迭代]`,
+  SLI[有效事件与良好事件的计量] --> Used[计算失败比例与预算消耗]
+  SLO[SLO 目标及时间窗口] --> Budget[允许的错误预算]
+  Used --> Policy[根据消耗和燃烧率执行约定策略]
+  Budget --> Policy
+  Policy --> Freeze[必要时限制发布并优先修复]
+  Policy --> Ship[满足条件时继续迭代]`,
     },
   ],
   "monitor/alertfatigue": [
@@ -210,7 +214,7 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   In[入口 trace id] --> RPC[RPC 协议头]
   RPC --> Span[子 span]
   In --> MQ[消息头]
-  MQ --> Cons[消费端接上同一棵树]
+  MQ --> Cons[消费端按语义创建子 span 或 span link]
   Span --> Log[日志打同一个 id]`,
     },
   ],
@@ -254,7 +258,7 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   participant TF as Terraform
   participant BE as Remote State
   Dev->>TF: plan/apply
-  TF->>BE: 获取锁
+  TF->>BE: 后端支持且已启用时获取状态锁
   TF->>BE: 读写 state
   TF->>BE: 释放锁`,
     },
@@ -278,9 +282,13 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "幂等",
       source: `flowchart LR
-  Req[请求 + IdemKey] --> Store{已成功?}
-  Store -->|是| Replay[返回原结果]
-  Store -->|否| Exec[执行并记录]`,
+  Req[请求、作用域与幂等键] --> Claim[唯一约束或原子操作登记请求摘要]
+  Claim --> State{登记结果}
+  State -->|相同请求已成功| Replay[返回已保存结果]
+  State -->|键相同但参数不同| Reject[拒绝冲突请求]
+  State -->|正在处理或结果未知| Wait[等待、查询或对账]
+  State -->|获得执行权| Exec[执行业务与记录结果]
+  Exec --> Commit[同库事务提交；跨系统另行协调]`,
     },
   ],
   "cmdb/lease": [
@@ -291,22 +299,26 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
   participant W1 as Worker旧
   participant L as Lease服务
   participant W2 as Worker新
-  W1->>L: 持有租约 token=1
-  W1--xL: 租约过期
-  W2->>L: 抢租约 token=2
-  W1->>L: 写操作带 token=1
-  L-->>W1: 拒绝(fencing)`,
+  participant R as 受保护资源
+  L-->>W1: 授予租约及单调 token=1
+  Note over W1,L: 旧 Worker 暂停，租约过期
+  L-->>W2: 授予新租约及 token=2
+  W2->>R: 写入携带 token=2
+  R->>R: 原子校验 token 并更新数据与最大 token
+  W1->>R: 恢复后尝试写入 token=1
+  R-->>W1: 拒绝旧 token
+  Note over L,R: 资源端必须实现校验；租约过期本身不会撤销旧进程`,
     },
     {
       kind: "flow",
       title: "互斥折旧示意",
       nodes: [
         { id: "job", label: "折旧任务", x: 40, y: 80 },
-        { id: "lease", label: "租约", detail: "TTL + token", x: 220, y: 80 },
-        { id: "write", label: "写资产", x: 400, y: 80 },
+        { id: "lease", label: "租约", detail: "TTL + 单调递增 token", x: 220, y: 80 },
+        { id: "write", label: "资源端写入", detail: "原子校验 token 并更新", x: 400, y: 80 },
       ],
       edges: [
-        { from: "job", to: "lease", label: "抢锁" },
+        { from: "job", to: "lease", label: "申请执行权" },
         { from: "lease", to: "write", label: "带 fencing token" },
       ],
     },
@@ -318,8 +330,9 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       source: `flowchart LR
   S1[步骤1] --> S2[步骤2]
   S2 --> S3[步骤3]
-  S3 -->|失败| C3[补偿3]
-  C3 --> C2[补偿2]
+  S3 -->|明确失败且未生效| C2[补偿已提交步骤2]
+  S3 -->|结果未知| Check[先查询或对账确认状态]
+  Check --> Plan[按实际生效步骤执行补偿]
   C2 --> C1[补偿1]`,
     },
   ],
@@ -339,9 +352,11 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "报表读路径",
       source: `flowchart LR
-  UI[看板] --> API
-  API --> Pre[(预计算表)]
-  Pre --> Raw[(原始明细)]`,
+  UI[看板] -->|查询| API
+  API -->|读取汇总| Pre[(预计算表)]
+  Raw[(原始明细)] -->|增量或批量计算| Worker[计算任务]
+  Worker -->|带版本与水位写入| Pre
+  API -->|必要时明细下钻| Raw`,
     },
   ],
   "other/nacos": [
@@ -349,8 +364,10 @@ export const scenarioVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "配置中心推送",
       source: `flowchart LR
-  Nacos[配置中心] -->|监听| App[服务实例]
-  App --> Reload[热更新 / 重启策略]`,
+  App[服务实例] -->|订阅配置变化| Nacos[配置中心]
+  Nacos -->|变更通知| App
+  App --> Fetch[读取并校验新配置]
+  Fetch --> Reload[原子替换可热更新项或受控重启]`,
     },
   ],
   "other/secrets": [

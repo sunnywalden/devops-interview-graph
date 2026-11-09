@@ -16,9 +16,9 @@ export const languageVisuals: Record<string, CardVisual[]> = {
   M1[M 线程] --> P1
   M2[M 线程] --> P2
   Global[全局 runq] -.-> P1
-  P2 -->|"偷一半"| P1
+  P2 -->|转移部分可运行 G| P1
   P1 --> Netpoll[网络轮询器]
-  Syscall[阻塞 syscall] -.->|另起 M| M3[M']`,
+  Syscall[阻塞系统调用中的 M] -.->|P 可交给其他 M| M3[复用或创建 M]`,
     },
     {
       kind: "flow",
@@ -27,7 +27,7 @@ export const languageVisuals: Record<string, CardVisual[]> = {
         { id: "g", label: "G 协程", detail: "用户态任务", x: 40, y: 40 },
         { id: "p", label: "P 处理器", detail: "本地 runq", x: 260, y: 40 },
         { id: "m", label: "M 线程", detail: "OS thread", x: 480, y: 40 },
-        { id: "steal", label: "工作窃取", detail: "空闲 P 偷邻 P", x: 260, y: 180 },
+        { id: "steal", label: "工作窃取", detail: "转移其他 P 队列中的可运行 G", x: 260, y: 180 },
         { id: "bound", label: "业务背压", detail: "信号量/有界队列", x: 40, y: 180 },
       ],
       edges: [
@@ -75,20 +75,23 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       title: "happens-before",
       source: `flowchart LR
   Send[通道发送] --> Recv[对应接收完成]
-  Unlock[Unlock] --> Lock[之后的 Lock 返回]
+  Unlock[Mutex.Unlock] --> Lock[同一 Mutex 后续 Lock 返回]
   Write[先写完数据] --> Flag[再原子发布标志]
-  Flag --> Read[读者看见数据]`,
+  Flag --> Observe[原子读取观察到该标志写入]
+  Observe --> Read[读取已发布且不再修改的数据]`,
     },
   ],
   "go/mem": [
     {
       kind: "mermaid",
-      title: "逃逸与分配直觉",
+      title: "逃逸分析与实际分配",
       source: `flowchart TB
-  Stack[栈上分配] --> Fast[快 / 随函数结束释放]
-  Heap[堆上分配] --> GC[需 GC]
-  Escape[逃逸分析] -->|返回指针/闭包捕获| Heap
-  Escape -->|仅局部使用| Stack`,
+  Source[指针使用与对象生命周期] --> Compiler[编译器逃逸分析与优化]
+  Compiler --> Stack[可能在栈上分配]
+  Compiler --> Heap[可能在堆上分配]
+  Compiler --> Elide[分配可能被优化消除]
+  Heap --> GC[纳入垃圾回收]
+  Compiler --> Verify[编译诊断与分配基准验证]`,
     },
   ],
   "go/gozero": [
@@ -128,7 +131,7 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "interface 与 nil",
       source: `flowchart TB
-  I["interface{} 两词: type + data"]
+  I["接口值：动态类型与动态值"]
   I --> T[动态类型]
   I --> D[动态值]
   N1["typed nil 赋给 interface"] --> Trap["interface ≠ nil"]
@@ -152,10 +155,13 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "何时 Mutex / sync.Map",
       source: `flowchart TB
-  Need[共享状态] --> Q{读多写少且 key 独立?}
-  Q -->|是| SM[sync.Map]
-  Q -->|否 / 复杂临界区| MU[Mutex / RWMutex]
-  MU --> Crit[把临界区缩到最短]`,
+  Need[共享状态] --> Q{是否需要维护多个字段的不变量}
+  Q -->|是| MU[普通 map 加锁]
+  Q -->|否| Pattern{一次写入多次读取或不同键集合并发操作}
+  Pattern -->|匹配| SM[评估 sync.Map]
+  Pattern -->|不匹配| MU
+  SM --> Bench[按实际负载验证]
+  MU --> Bench`,
     },
   ],
   "go/graceful": [
@@ -169,7 +175,12 @@ export const languageVisuals: Record<string, CardVisual[]> = {
   K->>S: SIGTERM
   S->>S: 停监听新连接
   S->>H: Shutdown 等待 inflight
-  H-->>S: 完成或超时强杀
+  alt 活跃请求完成
+    H-->>S: Shutdown 返回 nil
+  else Shutdown 的 context 到期
+    S->>S: Shutdown 返回超时错误
+    Note over S,H: 调用方决定 Close 连接并取消后台任务
+  end
   S-->>K: 进程退出`,
     },
   ],
@@ -181,31 +192,33 @@ export const languageVisuals: Record<string, CardVisual[]> = {
   Alloc[分配速率] --> GC[并发标记清除]
   GC --> Pause[STW 短暂停]
   Tune[GOGC / GOMEMLIMIT] --> GC
-  Pprof[pprof heap] --> Alloc`,
+  Pprof[allocs 累计分配剖析] --> Alloc
+  Heap[heap 存活对象剖析] --> Live[定位对象保留来源]`,
     },
   ],
   "python/gil": [
     {
       kind: "mermaid",
-      title: "GIL 与并行边界",
+      title: "启用 GIL 的 CPython：并行边界",
       source: `flowchart TB
-  CPU[CPU 密集] --> MP[多进程 / 别的语言]
+  CPU[纯 Python CPU 密集任务] --> MP[评估多进程或释放 GIL 的扩展]
   IO[IO 密集] --> Async[asyncio / 线程]
-  GIL[GIL] -.->|同一时刻一线程执行字节码| CPU
-  GIL -.->|IO 等待会释放| IO`,
+  GIL[GIL] -.->|同一解释器中通常仅一线程执行 Python 代码| CPU
+  GIL -.->|阻塞 IO 通常释放 GIL| IO
+  Free[可选 free-threaded 构建] --> Check[另行检查扩展兼容性和线程安全]`,
     },
     {
       kind: "flow",
       title: "选型示意",
       nodes: [
-        { id: "gil", label: "GIL", detail: "CPython", x: 200, y: 20 },
+        { id: "gil", label: "GIL", detail: "启用 GIL 的 CPython", x: 200, y: 20 },
         { id: "th", label: "线程", detail: "适合 IO", x: 40, y: 140 },
         { id: "mp", label: "多进程", detail: "适合 CPU", x: 200, y: 140 },
         { id: "as", label: "asyncio", detail: "单线程高并发 IO", x: 360, y: 140 },
       ],
       edges: [
-        { from: "gil", to: "th", label: "释放于阻塞" },
-        { from: "gil", to: "mp", label: "绕开" },
+        { from: "gil", to: "th", label: "阻塞 IO 通常释放" },
+        { from: "gil", to: "mp", label: "独立解释器" },
         { from: "gil", to: "as", label: "协作式" },
       ],
     },
@@ -219,7 +232,7 @@ export const languageVisuals: Record<string, CardVisual[]> = {
   Loop --> T2[Task B await IO]
   T1 -->|就绪| Loop
   T2 -->|就绪| Loop
-  Block[误用同步阻塞] -.->|卡住整环| Loop`,
+  Block[同步阻塞调用] -.->|阻塞事件循环线程| Loop`,
     },
   ],
   "python/django": [
@@ -230,7 +243,7 @@ export const languageVisuals: Record<string, CardVisual[]> = {
         { id: "req", label: "请求", detail: "租户上下文", x: 40, y: 80 },
         { id: "mw", label: "中间件", detail: "解析 tenant", x: 220, y: 80 },
         { id: "orm", label: "ORM 过滤", detail: "强制 tenant_id", x: 400, y: 80 },
-        { id: "audit", label: "审计", detail: "协程配额隔离", x: 400, y: 200 },
+        { id: "audit", label: "审计与配额", detail: "租户任务额度与访问记录", x: 400, y: 200 },
       ],
       edges: [
         { from: "req", to: "mw" },
@@ -274,9 +287,10 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "多进程 vs 线程",
       source: `flowchart LR
-  Job[任务类型] --> CPU{CPU?}
-  CPU -->|是| Proc[multiprocessing]
-  CPU -->|否 IO| Thr[threading / asyncio]`,
+  Job[任务类型与解释器构建] --> CPU{启用 GIL 的纯 Python CPU 任务}
+  CPU -->|是| Proc[评估 multiprocessing]
+  CPU -->|IO 等待为主| Thr[评估 threading / asyncio]
+  CPU -->|扩展释放 GIL 或 free-threaded| Bench[测试线程并行收益与安全性]`,
     },
   ],
   "python/asgi": [
@@ -284,9 +298,10 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "WSGI / ASGI",
       source: `flowchart TB
-  WSGI[WSGI 同步] --> SyncApp[Django 经典]
-  ASGI[ASGI 异步] --> AsyncApp[Channels / FastAPI]
-  ASGI --> Long[长连接 / SSE]`,
+  WSGI[WSGI 同步调用接口] --> SyncApp[同步请求处理]
+  ASGI[ASGI 异步事件接口] --> AsyncApp[Django 异步视图 / FastAPI / Channels]
+  ASGI --> Adapter[同步代码仍需适配与隔离]
+  ASGI --> Long[可支持长连接：取决于服务器与应用实现]`,
     },
   ],
 };

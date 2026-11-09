@@ -76,11 +76,13 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
   "mongo/mongo-idx": [
     {
       kind: "mermaid",
-      title: "索引与两阶段查询",
+      title: "索引与文档访问",
       source: `flowchart TB
-  Q[查询] --> Ix[索引扫描]
-  Ix --> Fetch[回表取文档]
-  Q --> Coll[COLLSCAN 危险]
+  Q[查询计划] --> Ix[IXSCAN 索引扫描]
+  Ix --> Fetch[需要文档字段时 FETCH]
+  Ix --> Cover[覆盖查询可避免 FETCH]
+  Q --> Coll[COLLSCAN 集合扫描]
+  Coll --> Check[结合集合大小与选择性评估成本]
   Hint[复合索引最左前缀] --> Ix`,
     },
   ],
@@ -144,12 +146,13 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
         { id: "sent", label: "Sentinel", detail: "高可用主从", x: 40, y: 80 },
         { id: "master", label: "Master", x: 220, y: 40 },
         { id: "slave", label: "Replica", x: 220, y: 140 },
-        { id: "cls", label: "Cluster", detail: "分片 16384 slot", x: 420, y: 80 },
+        { id: "cls", label: "Cluster", detail: "分片 16384 slot", x: 440, y: 40 },
+        { id: "shards", label: "分片主节点与副本", detail: "Cluster 自身负责故障转移", x: 440, y: 180 },
       ],
       edges: [
         { from: "sent", to: "master", label: "监控/故障转移" },
         { from: "master", to: "slave", label: "复制" },
-        { from: "cls", to: "master", label: "槽位路由" },
+        { from: "cls", to: "shards", label: "槽位路由" },
       ],
     },
   ],
@@ -160,7 +163,7 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
       source: `flowchart TB
   Hot[热 key] --> Local[本地缓存]
   Hot --> Split[拆 key]
-  Big[大 key] --> Del[渐进删除]
+  Big[大 key] --> Del[评估 UNLINK 异步回收]
   Big --> Break[拆分结构]`,
     },
   ],
@@ -172,11 +175,13 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
   participant P as Producer
   participant B as Broker
   participant C as Consumer
-  P->>B: 发送 + 确认
-  B->>B: 持久化
+  P->>B: 发送消息
+  B->>B: 按配置持久化或复制
+  B-->>P: 达到确认条件后响应
   B->>C: 投递
-  C->>C: 业务幂等
-  C-->>B: ack / nack`,
+  C->>C: 幂等执行业务并提交
+  C-->>B: 确认消费 / 提交 offset
+  Note over B,C: 确认前故障可能导致重复投递`,
     },
   ],
   "mq/backlog": [
@@ -184,10 +189,11 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "积压治理",
       source: `flowchart LR
-  Lag[消费滞后] --> Scale[扩消费者]
-  Lag --> Batch[批量/并行]
-  Lag --> Drop[降级丢弃非关键]
-  Lag --> Replay[独立重放通道]`,
+  Lag[消费滞后] --> Cause[定位生产速率与消费瓶颈]
+  Cause --> Scale[在分区数和下游容量内扩容]
+  Cause --> Batch[按顺序约束评估批量或并行]
+  Cause --> Isolate[隔离失败消息并建立可追溯重放]
+  Cause --> Backpressure[限流或暂缓非关键生产]`,
     },
   ],
   "mq/ordering": [
@@ -196,7 +202,8 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
       title: "分区键与顺序",
       source: `flowchart TB
   Key[业务键 hash] --> Part[同一分区]
-  Part --> Order[分区内有序]
+  Part --> Order[日志分区内有序]
+  Order --> Serial[业务完成顺序还需约束并发和重试]
   Cross[跨分区] --> NoOrder[不保证全局序]`,
     },
   ],
@@ -216,14 +223,14 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "探针与滚动发布",
       source: `sequenceDiagram
-  participant RS as ReplicaSet
+  participant RS as Deployment / ReplicaSet 控制器
   participant New as 新 Pod
   participant Old as 旧 Pod
   RS->>New: 创建
   New->>New: startup/readiness
   New-->>RS: Ready
-  RS->>Old: 缩容
-  Note over New: liveness 只杀复活,别误伤慢启动`,
+  RS->>Old: 按滚动策略和可用性条件缩容
+  Note over New: liveness 失败可重启容器；startup 保护启动阶段`,
     },
   ],
   "container/sched": [
@@ -339,9 +346,9 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
       source: `flowchart TB
   Dep[Deployment] --> RS[ReplicaSet]
   RS --> Pod[可替换 Pod]
-  STS[StatefulSet] --> Stable[稳定序号 + 独立盘]
-  DS[DaemonSet] --> PerNode[每节点一份]
-  Job[Job / CronJob] --> Done[跑完即走]`,
+  STS[StatefulSet] --> Stable[稳定身份与按需配置的持久卷]
+  DS[DaemonSet] --> PerNode[每个符合条件的节点部署 Pod]
+  Job[Job / CronJob] --> Done[运行至完成；任务需处理重试]`,
     },
   ],
   "container/cni": [
@@ -352,9 +359,11 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
   CNI[CNI 分配 Pod IP] --> A[Pod]
   CNI --> B[Pod]
   A -->|按 IP 直连| B
-  Svc[Service] --> Proxy[kube-proxy]
-  Proxy -->|只转发就绪端点| A
-  Proxy --> B`,
+  Svc[Service 与 EndpointSlice] --> Proxy[kube-proxy 或替代实现]
+  Proxy --> Rules[配置 Service 转发规则]
+  Traffic[访问 Service 虚拟 IP] --> Rules
+  Rules -->|默认选择就绪端点| A
+  Rules --> B`,
     },
   ],
   "container/volume": [
@@ -362,11 +371,12 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
       kind: "mermaid",
       title: "PVC 绑定",
       source: `flowchart LR
-  PVC[PVC 申请] --> SC{存储类}
-  SC -->|动态| Prov[供给器]
-  Prov --> PV[PV]
-  SC -->|静态匹配| PV
-  PV --> Bound[Bound]
+  PVC[PVC 申请] --> Match{现有 PV 是否满足条件}
+  Match -->|静态匹配| PV[PV]
+  Match -->|需要且支持动态供给| SC[StorageClass 指定供给器]
+  SC --> Prov[动态创建 PV]
+  Prov --> PV
+  PV --> Bound[PVC 与 PV 绑定]
   Bound --> Pod[Pod 挂载]`,
     },
   ],
@@ -396,14 +406,17 @@ export const middlewareVisuals: Record<string, CardVisual[]> = {
   "net/tls": [
     {
       kind: "mermaid",
-      title: "TLS 握手要点",
+      title: "TLS 1.3 证书认证握手概要",
       source: `sequenceDiagram
   participant C as Client
   participant S as Server
-  C->>S: ClientHello
-  S->>C: Certificate
-  C->>S: 密钥交换
-  Note over C,S: 之后应用数据加密`,
+  C->>S: ClientHello 与 key_share
+  S->>C: ServerHello 与 key_share
+  Note over C,S: 派生握手密钥，后续握手消息加密
+  S->>C: Certificate / CertificateVerify / Finished
+  C->>C: 验证证书链、服务身份与签名
+  C->>S: Finished
+  Note over C,S: 使用应用流量密钥交换数据；恢复握手可不同`,
     },
   ],
 };

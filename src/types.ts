@@ -1,3 +1,5 @@
+import type { ContentSourceId } from "./data/sources";
+
 export type PageId = "overview" | "lang" | "mid" | "scene";
 
 export type Bookmark = {
@@ -50,6 +52,9 @@ export type Card = {
   pitfalls: string[];
   oral: string;
   followUps: FollowUp[];
+  /** Primary references; these do not verify the reader's project experience. */
+  sources: ContentSourceId[];
+  scope?: string;
   warning?: string;
   /** Mermaid diagrams and/or interactive React Flow graphs. */
   visuals?: CardVisual[];
@@ -72,6 +77,7 @@ export type StarStory = {
   a: string;
   r: string;
   followUp: string;
+  evidence: string;
 };
 
 export type SprintDay = {

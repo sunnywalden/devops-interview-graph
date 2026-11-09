@@ -1,190 +1,316 @@
 import type { StarStory, SprintDay } from "../types";
 
-export const narrative =
-  "我做了大概 13 年 DevOps 和平台开发。知识按三层串，不是一条运行时调用链：①语言层里 Golang 和 Python 都是我的主开发语言，并列——Go 偏服务/Worker/工程化，Python 偏权限平台/审计/Exporter；②中间件/基础设施（MySQL、Mongo、Redis、MQ、Docker、K8s，以及 DNS/TLS）承托数据与运行；③DevOps 场景（CI/CD 含供应链与 Runner、监控 SLO、日志链路、运维平台 IaC/GitOps、CMDB、报表、密钥/oncall/容量等）用前两层把平台做出来。数字只报简历写过的：可用性 99.9999%、成本大概降了 40%。";
+export const narrative = "知识分为语言、基础设施和工程场景三层，这是一张能力关联图，并非系统运行时调用链。Go 与 Python 并列提供开发能力，数据库、消息与 Kubernetes 提供数据和运行基础，交付、监控及资产管理等场景将这些能力组合为可验证的工程方案。";
 
 export const layerSteps = [
   {
-    title: "① 语言层（并列主开发语言）",
-    detail:
-      "Golang：GMP/ctx/channel、interface/error、同步与优雅退出、测试与 GC、go-zero/GraphQL。Python：GIL/asyncio、Django 权限、Exporter、typing/Pydantic、多进程、Poetry、WSGI/ASGI、运维标准库。两边都是开发语言，不是『Go 主、Python 附属脚本』。",
+    "title": "① 语言与运行时",
+    "detail": "Go：调度、并发、接口、错误、内存与服务工程。Python：执行模型、异步、类型、Web 框架与自动化。先理解语义与版本条件，再讨论适用场景。"
   },
   {
-    title: "② 中间件 / 基础设施",
-    detail:
-      "MySQL（索引/隔离/死锁/主从）、Mongo（索引/事务/副本/分片）、Redis（结构选型/缓存防护/集群/热 key）、MQ（可靠/积压/顺序/选型）、Docker/K8s（架构与组件、工作负载、网络存储、探针滚动、Service、RBAC、排障）、DNS/CoreDNS/TLS/证书。",
+    "title": "② 数据与运行基础",
+    "detail": "数据库事务与复制、缓存、消息传递、容器编排、网络和存储。区分单组件保证与端到端业务保证。"
   },
   {
-    title: "③ DevOps 场景",
-    detail:
-      "GitLab CI 专区（含供应链扫描、Runner 容量）、监控（黄金信号/联邦/SLO/告警疲劳）、日志（ELK + 结构化链路）、运维平台（Terraform/GitOps）、CMDB 一致性、报表，以及配置/审计/备份/密钥/oncall/容量。",
+    "title": "③ 工程场景",
+    "detail": "交付、可观测性、平台、CMDB 与安全运维。通过约束、失败路径和测量结果解释方案选择。"
   },
   {
-    title: "回总览收口",
-    detail: "STAR 与 3～5 天冲刺只在本页统一调度；细节下钻到对应子页。换页/换下拉进度由本机书签自动保存。",
-  },
+    "title": "练习与验证",
+    "detail": "用追问检查理解，用项目记录补充证据。阅读位置会自动保存；打开卡片不代表已经掌握。"
+  }
 ];
 
 export const diagramNodes = [
-  { id: "go", label: "Golang", detail: "主开发语言 · 服务/Worker", layer: 1 },
-  { id: "py", label: "Python", detail: "主开发语言 · 平台/自动化", layer: 1 },
-  { id: "mysql", label: "MySQL", detail: "关系库/事务", layer: 2 },
-  { id: "mongo", label: "MongoDB", detail: "文档库/副本", layer: 2 },
-  { id: "redis", label: "Redis", detail: "缓存/热 key", layer: 2 },
-  { id: "mq", label: "消息 MQ", detail: "可靠/顺序/积压", layer: 2 },
-  { id: "docker", label: "Docker", detail: "镜像/容器", layer: 2 },
-  { id: "k8s", label: "Kubernetes", detail: "架构/编排", layer: 2 },
-  { id: "net", label: "DNS/TLS", detail: "解析与证书", layer: 2 },
-  { id: "cicd", label: "CI/CD", detail: "GitLab+供应链", layer: 3 },
-  { id: "monitor", label: "监控", detail: "Prom/SLO/告警", layer: 3 },
-  { id: "log", label: "日志", detail: "ELK/结构化", layer: 3 },
-  { id: "ops", label: "运维平台", detail: "IaC/GitOps", layer: 3 },
-  { id: "cmdb", label: "CMDB", detail: "资产/一致性", layer: 3 },
-  { id: "report", label: "报表", detail: "看板/预计算", layer: 3 },
-  { id: "other", label: "其他", detail: "密钥/oncall/容量", layer: 3 },
+  {
+    "id": "go",
+    "label": "Golang",
+    "detail": "并列语言路径 · 服务与并发",
+    "layer": 1
+  },
+  {
+    "id": "py",
+    "label": "Python",
+    "detail": "并列语言路径 · 平台与自动化",
+    "layer": 1
+  },
+  {
+    "id": "mysql",
+    "label": "MySQL",
+    "detail": "关系库/事务",
+    "layer": 2
+  },
+  {
+    "id": "mongo",
+    "label": "MongoDB",
+    "detail": "文档库/副本",
+    "layer": 2
+  },
+  {
+    "id": "redis",
+    "label": "Redis",
+    "detail": "缓存与数据结构",
+    "layer": 2
+  },
+  {
+    "id": "mq",
+    "label": "消息 MQ",
+    "detail": "可靠/顺序/积压",
+    "layer": 2
+  },
+  {
+    "id": "docker",
+    "label": "Docker",
+    "detail": "镜像/容器",
+    "layer": 2
+  },
+  {
+    "id": "k8s",
+    "label": "Kubernetes",
+    "detail": "架构/编排",
+    "layer": 2
+  },
+  {
+    "id": "net",
+    "label": "DNS/TLS",
+    "detail": "解析与证书",
+    "layer": 2
+  },
+  {
+    "id": "cicd",
+    "label": "CI/CD",
+    "detail": "GitLab+供应链",
+    "layer": 3
+  },
+  {
+    "id": "monitor",
+    "label": "监控",
+    "detail": "Prom/SLO/告警",
+    "layer": 3
+  },
+  {
+    "id": "log",
+    "label": "日志",
+    "detail": "ELK/结构化",
+    "layer": 3
+  },
+  {
+    "id": "ops",
+    "label": "运维平台",
+    "detail": "IaC/GitOps",
+    "layer": 3
+  },
+  {
+    "id": "cmdb",
+    "label": "CMDB",
+    "detail": "资产/一致性",
+    "layer": 3
+  },
+  {
+    "id": "report",
+    "label": "报表",
+    "detail": "看板/预计算",
+    "layer": 3
+  },
+  {
+    "id": "other",
+    "label": "其他",
+    "detail": "密钥/oncall/容量",
+    "layer": 3
+  }
 ];
 
 export const starStories: StarStory[] = [
   {
-    id: "mingfu",
-    label: "CMDB / 固定资产",
-    role: "Go 平台 · CMDB + 固定资产",
-    layerMap: "语言 Go/go-zero → 中间件 Mongo/MQ → 场景 CMDB/报表",
-    s: "做 CMDB 和固定资产。概览要聚合，直查太贵；折旧绝不能双跑；跨系统变更拖长事务撑不住。读多形查询还要对内 gRPC、对外 REST/GraphQL。",
-    t: "我扛核心服务：模型、预计算、折旧互斥，还有跨系统最终一致；同时把超时取消、幂等和可观测嵌进日常交付。",
-    a: "服务用 go-zero，对外 REST/GraphQL、对内 gRPC。概览做成 Worker 预计算加 BulkWrite，有界并发和 ctx 取消。折旧抢租约带 fencing token。跨系统拆步补偿，消息走 MQ，顺序按业务键。短事务保本地不变量，配置挂 Nacos，错误可包装可判断。",
-    r: "读写拆开了，概览和折旧能稳定跑。出故障时靠幂等、租约和状态机收敛，不靠运气；排障能顺着 trace 和版本对账。",
-    followUp:
-      "怎么保证只跑一次？租约加 token，再加状态机。补偿失败？重试、死信、人工。为啥不用长事务？跨系统一抖就全挂，我宁肯最终一致。预计算漂了？对账作业，不是等用户投诉。GraphQL N+1？DataLoader 和复杂度限制。",
+    "id": "mingfu",
+    "label": "CMDB / 固定资产",
+    "role": "Go 平台 · CMDB + 固定资产",
+    "layerMap": "语言 Go/go-zero → 中间件 Mongo/MQ → 场景 CMDB/报表",
+    "s": "说明 CMDB 与固定资产系统的业务范围、数据规模，以及聚合查询、重复任务或跨系统一致性带来的具体问题。",
+    "t": "明确本人负责的 API、后台任务或数据流程，并给出响应时间、数据新鲜度和一致性要求。",
+    "a": "按实际实现介绍 Go 服务、读模型预计算、批量写入和并发控制。若使用幂等、租约或 Saga，说明状态存储、资源端条件校验、补偿和对账如何协作；未实现的机制应标为后续方案。",
+    "r": "待补充：优化前后的查询延迟、计算延迟、资源消耗、重复执行测试与对账结果。没有测量记录时，只陈述已交付功能及其验证方式。",
+    "followUp": "如何定义操作幂等？旧租约持有者的写入由谁拒绝？任务重试和批量部分失败如何恢复？读模型如何全量重建与对账？",
+    "evidence": "经验草稿 · 待本人核实。以下是组织项目表达的提纲；请以代码、设计记录、运行数据和实际职责补全，勿将参考方案直接陈述为个人成果。"
   },
   {
-    id: "bili",
-    label: "资源效能 / 日志",
-    role: "CMDB / 资源效能 / 日志",
-    layerMap: "中间件 MySQL/Redis → 场景日志/监控降本",
-    s: "做资源效能和日志。读多写少，库和日志集群又贵又不稳；慢 SQL 和缓存失效会互相放大。",
-    t: "目标很明确：可用性拉上去，成本压下来；过程上把 SQL、缓存、日志生命周期一起治。",
-    a: "业务侧上本地加 Redis 二级缓存，SQL 和索引一起抠，击穿单飞、穿透空值。日志侧 Mapping 写死，上 ILM，查询走代理限流；字段规范防止爆炸。",
-    r: "可用性做到 99.9999%，成本大概降了 40%。这两个数简历上有，我只报这两个；方法上强调缓存不是真相、日志要控成本。",
-    followUp:
-      "击穿怎么防？单飞合并回源，穿透垫空值。一致性？写后删缓存，跟产品谈 SLA。冷数据？ILM 降级，该归档归档。热 key？本地缓存加拆分。隔离级别？讲原理，不吹未做过的调参。",
+    "id": "bili",
+    "label": "资源效能 / 日志",
+    "role": "CMDB / 资源效能 / 日志",
+    "layerMap": "中间件 MySQL/Redis → 场景日志/监控降本",
+    "s": "说明资源管理与日志检索的使用场景、主要性能或成本问题，以及当时的服务质量要求。",
+    "t": "界定本人负责的查询、缓存、日志索引或容量工作，并区分团队整体成果与个人贡献。",
+    "a": "按证据介绍数据库查询、缓存更新、热点治理、日志字段和生命周期策略，解释一致性与成本之间的取舍。说明具体压测、灰度和回退过程。",
+    "r": "待补充：可用性统计范围与周期、成本账单、流量和价格变化、优化前后基线。历史材料中的可用性与降本数字尚未由本项目核实，不作为可直接使用的结论。",
+    "followUp": "缓存更新期间如何处理旧值？热点是否可分散？日志分片与保留期如何确定？成本变化如何排除流量和价格因素？",
+    "evidence": "经验草稿 · 待本人核实。以下是组织项目表达的提纲；请以代码、设计记录、运行数据和实际职责补全，勿将参考方案直接陈述为个人成果。"
   },
   {
-    id: "tezign",
-    label: "运维平台 / CI·监控·审计",
-    role: "运维平台 / CI / 监控 / 审计",
-    layerMap: "语言 Python → 中间件 K8s → 场景 CI/运维平台/监控",
-    s: "云资源、发布、监控、SQL 变更散落各处，多租户一不小心就越权；CI 复制粘贴难以治理。",
-    t: "我要把这些收成一套平台：同一套权限，同一套工具链，发布可复跑，操作可审计。",
-    a: "多云用 Terraform（远程 state+锁）。CI 走 GitLab Templates，Kaniko 构建，Artifactory 存制品，质量与供应链扫描门禁，Runner 按标签隔离，研发测试可一键部署。监控 Influx 加 Prometheus 联邦，告警可行动。权限用 Django 按租户过滤。SQL 审计按租户协程配额隔离。缺指标用 Python 写 Exporter。",
-    r: "交付能复跑，监控能看清，操作能审计，运维变成产品而不是一堆脚本；多租户隔离和门禁成为默认。",
-    followUp:
-      "租户打满执行器？配额排队。IaC 漂移？定期 plan。CI 怎么治理？Templates 统一，门禁不许私自关。供应链？高危阻断、例外有到期。Exporter？快，但阻塞和标签基数必须管住。GitOps？讲清与 push CD 的取舍。",
+    "id": "tezign",
+    "label": "运维平台 / CI·监控·审计",
+    "role": "运维平台 / CI / 监控 / 审计",
+    "layerMap": "语言 Python → 中间件 K8s → 场景 CI/运维平台/监控",
+    "s": "描述云资源、交付、监控与 SQL 审核分散管理的实际问题，并列出多租户权限与流程一致性的约束。",
+    "t": "明确本人承担的平台模块、接口与运维职责，以及需要改善的具体用户流程。",
+    "a": "结合实际版本说明 Django 授权、Terraform 状态管理、GitLab 模板、制品、扫描和监控链路。若历史使用 Kaniko，应标明当时版本；新方案需评估受维护的构建器。不要把待规划功能计为已交付。",
+    "r": "待补充：采用范围、交付耗时、失败率、权限测试、审计覆盖与维护成本。通过上线记录和测试说明实际结果，避免仅以“平台化”作为效果证据。",
+    "followUp": "租户隔离是否覆盖列表、任务和导出？Runner 标签之外有哪些安全边界？state 锁如何恢复？采集成功与上游健康如何区分？",
+    "evidence": "经验草稿 · 待本人核实。以下是组织项目表达的提纲；请以代码、设计记录、运行数据和实际职责补全，勿将参考方案直接陈述为个人成果。"
   },
   {
-    id: "cr",
-    label: "配置中心 / 容器交付",
-    role: "配置中心 + 容器交付",
-    layerMap: "中间件 K8s → 场景配置/交付",
-    s: "多环境配置容易漂，容器交付也不标准；回滚经常只回了一半。",
-    t: "配置要能版本化、能回滚；交付要能复制，滚动时流量要接得住。",
-    a: "用 Go Template 渲多环境配置，版本跟发布绑死。底下是 OpenStack 上的 K8s，CI 构建镜像再部署，探针、滚动参数和扩缩容按规范来；密钥运行时注入。",
-    r: "交付标准化了，配置跟着发布走，回滚也能成套回；近零停机靠 readiness 和排水，不只靠『发完了』。",
-    followUp: "密钥？运行时注入或接 KMS，绝不进仓库。回滚？镜像和配置同一版本一起回。探针？liveness 不打库。ConfigMap 热更新？看挂载方式，别想当然。",
+    "id": "cr",
+    "label": "配置中心 / 容器交付",
+    "role": "配置中心 + 容器交付",
+    "layerMap": "中间件 K8s → 场景配置/交付",
+    "s": "说明多环境配置与容器发布中出现过的漂移、兼容或恢复问题，并明确部署环境。",
+    "t": "界定本人负责的配置生成、版本管理或发布链路，写清变更成功与回退的验收条件。",
+    "a": "按实际实现介绍配置模板校验、镜像与配置版本关联、Secret 交付、探针、滚动更新及流量排空。对数据库等外部状态单独设计兼容与恢复。",
+    "r": "待补充：发布过程的错误率与延迟、回退演练和配置一致性验证。未测量业务中断前，不使用“零停机”或“近零停机”作为成果。",
+    "followUp": "ConfigMap 更新在何种挂载方式下生效？readiness 与连接排空如何配合？回退镜像时配置和数据是否仍兼容？",
+    "evidence": "经验草稿 · 待本人核实。以下是组织项目表达的提纲；请以代码、设计记录、运行数据和实际职责补全，勿将参考方案直接陈述为个人成果。"
   },
   {
-    id: "huawei",
-    label: "HPC 备份恢复",
-    role: "HPC 备份恢复（Java + Shell）",
-    layerMap: "场景·其他（备份）；方法可迁移到 Go 岗",
-    s: "做 HPC 备份恢复。数据量大，作业窗口紧，备了恢复不了等于没备。",
-    t: "我要把备份和恢复做成可重复、能校验的流程，不是靠人肉，也不是只看成功日志。",
-    a: "Java 编排流程，Shell 对接存储和作业。窗口里拆增量全量。做校验和，定期抽检真正恢复一把。失败有重试和告警，步骤写进 runbook。",
-    r: "HPC 场景备份恢复能交付。我强调可验证，不是日志里写一句『备份成功』就交差；窗口不够就切分并行。",
-    followUp:
-      "怎么证明恢复成功？校验和，再抽检挂载跑作业。窗口不够？增量、并行、按优先级切分。跟 Go 岗关系？窗口约束、可靠性、自动化与 oncall 思维可迁移。",
-  },
+    "id": "huawei",
+    "label": "HPC 备份恢复",
+    "role": "HPC 备份恢复（Java + Shell）",
+    "layerMap": "场景·其他（备份）；方法可迁移到 Go 岗",
+    "s": "描述 HPC 数据、备份窗口、存储依赖和恢复要求，明确原项目使用的 Java 与 Shell 等技术。",
+    "t": "说明本人负责的编排、存储接入、校验或演练，以及业务约定的 RPO、RTO。",
+    "a": "结合记录说明全量和增量策略、失败重试、隔离副本、校验与恢复步骤。区分文件校验、数据一致性和业务作业验证；技术迁移到 Go 时只说明可复用的方法。",
+    "r": "待补充：可恢复时间点、演练耗时、恢复范围与业务验证记录。备份任务成功不能替代恢复成功，也不应将 Java/Shell 项目描述成 Go 实践。",
+    "followUp": "如何证明增量链完整？恢复所需密钥与版本如何取得？演练覆盖哪些业务作业？窗口不足时如何在吞吐与源系统负载之间取舍？",
+    "evidence": "经验草稿 · 待本人核实。以下是组织项目表达的提纲；请以代码、设计记录、运行数据和实际职责补全，勿将参考方案直接陈述为个人成果。"
+  }
 ];
 
 export const sprint5d: SprintDay[] = [
   {
-    label: "Day1 ①语言",
-    items: [
-      { label: "背", value: "GMP/ctx/channel；iface/error；优雅退出；GIL/asyncio/Django" },
-      { label: "扫", value: "go-zero/GraphQL；typing/Poetry/ASGI；Exporter" },
-      { label: "练", value: "每卡 90–120 秒×2（加厚口述）" },
-    ],
+    "label": "Day 1 · 语言基础",
+    "items": [
+      {
+        "label": "理解",
+        "value": "Go 调度、取消、接口与错误；Python GIL、asyncio、权限与类型。"
+      },
+      {
+        "label": "核对",
+        "value": "阅读关键官方文档，记录版本条件和不确定之处。"
+      },
+      {
+        "label": "练习",
+        "value": "先独立作答，再用追问检查机制、边界与例子。"
+      }
+    ]
   },
   {
-    label: "Day2 ②中间件+CMDB",
-    items: [
-      { label: "背", value: "Mongo 四卡；Redis 热 key；MQ 积压/顺序；K8s 架构+探针+排障" },
-      { label: "扫", value: "MySQL 隔离/死锁/主从；DNS/证书" },
-      { label: "练", value: "CMDB STAR + 幂等/Lease" },
-    ],
+    "label": "Day 2 · 数据与一致性",
+    "items": [
+      {
+        "label": "理解",
+        "value": "MySQL、MongoDB、Redis 与消息队列的事务、复制、缓存和重试。"
+      },
+      {
+        "label": "练习",
+        "value": "串联 CMDB 幂等、租约、Saga、Worker 与数据对账。"
+      }
+    ]
   },
   {
-    label: "Day3 ③交付",
-    items: [
-      { label: "背", value: "GitLab CI 八卡（含供应链/Runner）；探针滚动；GitOps 对比" },
-      { label: "练", value: "白板 MR→扫描→Kaniko→部署→Ready" },
-    ],
+    "label": "Day 3 · 交付与运行",
+    "items": [
+      {
+        "label": "理解",
+        "value": "GitLab CI、镜像构建、Kubernetes、Terraform 与 GitOps。"
+      },
+      {
+        "label": "练习",
+        "value": "画出代码到部署的链路，标明验证、权限、失败与回退。"
+      }
+    ]
   },
   {
-    label: "Day4 ③平台可见性",
-    items: [
-      { label: "练", value: "资源效能 + 运维平台 STAR" },
-      { label: "补", value: "SLO/告警疲劳；结构化日志；密钥/oncall；配置交付与 HPC 备份各 1 遍" },
-    ],
+    "label": "Day 4 · 可观测性与运维",
+    "items": [
+      {
+        "label": "理解",
+        "value": "指标、SLO、日志、追踪、密钥、故障响应与备份恢复。"
+      },
+      {
+        "label": "核实",
+        "value": "整理项目的职责、设计记录、统计口径与运行证据。"
+      }
+    ]
   },
   {
-    label: "Day5 模拟",
-    items: [
-      { label: "上午", value: "一致性/故障/CI/容量追问" },
-      { label: "下午", value: "三主 STAR + 三层串讲（含双主语言）" },
-      { label: "产出", value: "一页口播稿" },
-    ],
-  },
+    "label": "Day 5 · 综合模拟",
+    "items": [
+      {
+        "label": "练习",
+        "value": "用追问检验故障分析、方案取舍和边界条件。"
+      },
+      {
+        "label": "产出",
+        "value": "形成有证据的 STAR 提纲与仍需补充的知识清单。"
+      }
+    ]
+  }
 ];
 
 export const sprint3d: SprintDay[] = [
   {
-    label: "Day1",
-    items: [
-      { label: "内容", value: "①语言核心（Go+Python）+ ③CMDB 一致性" },
-      { label: "产出", value: "CMDB STAR" },
-    ],
+    "label": "Day 1 · 语言与数据",
+    "items": [
+      {
+        "label": "重点",
+        "value": "Go、Python 核心语义及数据库、缓存和消息一致性。"
+      },
+      {
+        "label": "产出",
+        "value": "CMDB 方案图与待核实的项目事实。"
+      }
+    ]
   },
   {
-    label: "Day2",
-    items: [
-      { label: "内容", value: "③GitLab CI 八卡 + ②K8s 架构/探针/排障 + 运维平台/Terraform" },
-      { label: "产出", value: "CI→K8s 白板 + 运维平台要点" },
-    ],
+    "label": "Day 2 · 交付与平台",
+    "items": [
+      {
+        "label": "重点",
+        "value": "CI、Kubernetes、Terraform、GitOps 与权限边界。"
+      },
+      {
+        "label": "产出",
+        "value": "发布和回退链路、平台项目提纲。"
+      }
+    ]
   },
   {
-    label: "Day3",
-    items: [
-      { label: "内容", value: "②Redis/Mongo/MQ + ③监控 SLO/日志链路 + 资源效能 STAR + 模拟" },
-      { label: "补", value: "密钥/oncall/容量；配置交付与 HPC 备份各 5 分钟" },
-    ],
-  },
+    "label": "Day 3 · 验证与模拟",
+    "items": [
+      {
+        "label": "重点",
+        "value": "可观测性、故障响应、容量、密钥及恢复验证。"
+      },
+      {
+        "label": "产出",
+        "value": "完成模拟追问并列出尚未掌握的内容。"
+      }
+    ]
+  }
 ];
 
 export const sprintTips = [
-  "按层打开子页 → 先背『一句话』再背原理短句 → 脱稿 90–120 秒（卡片已加厚）",
-  "场景提问先答场景，再下钻中间件/语言；被问语言细节再上提场景价值；Go/Python 并列主语言",
-  "GitLab CI 八卡必须能讲清：stages/needs/rules、Templates、门禁、Kaniko、MR、一键部署、供应链、Runner",
-  "高频加餐：SLO/错误预算、告警疲劳、结构化日志+trace、Terraform state、GitOps vs push、密钥、oncall、容量",
-  "主 STAR 录音超时 100 秒就删减；数字只用 99.9999% 与约 -40%",
+  "先独立解释核心概念，再展开答案核对；能够复述不等于能够处理反例。",
+  "按照结论、机制、适用条件和验证方法组织技术回答，不必机械使用固定时长。",
+  "区分语言规范、运行时实现和产品配置；对版本敏感行为查看卡片来源。",
+  "项目表达只使用实际职责与可核对事实，明确参与范围和未实施的设想。",
+  "浏览进度只记录打开卡片；理解程度需要通过追问、示例或实际验证判断。"
 ];
 
 export const checklist = [
-  "①语言层 Go：GMP/ctx/channel、iface/nil、error wrap、Mutex/sync.Map、优雅退出、表驱动测试、GC、go-zero/GraphQL",
-  "①语言层 Python：GIL/asyncio、Django 多租户、Exporter、typing/Pydantic、多进程、Poetry、WSGI/ASGI、标准库脚本",
-  "②中间件：MySQL 索引+隔离+死锁+主从；Mongo 索引/事务/副本/分片；Redis 结构选型+防护+集群+热 key；MQ 可靠+积压+顺序+选型",
-  "②中间件 K8s：架构与组件、Pod 控制器、CNI 与存储、探针滚动、Config/Secret、Service/Ingress、RBAC、NetworkPolicy、etcd、排障；DNS/CoreDNS/TLS/证书",
-  "③场景 CI：GitLab 八卡（含供应链/Runner/金丝雀）；监控黄金信号/联邦/SLO/告警疲劳；日志 ELK+结构化链路+追踪",
-  "③场景：运维平台+Terraform+GitOps；CMDB 四卡；报表；Nacos/审计/备份/密钥/oncall/容量",
-  "总览：CMDB、资源效能、运维平台 STAR 录音≤90s；配置交付与 HPC 备份各过一遍；只报简历已有数字",
+  "语言：能解释 Go 与 Python 的执行、并发、取消、错误与类型语义。",
+  "数据：能区分事务、复制、缓存和消息各自保证及跨系统边界。",
+  "运行：能解释 Kubernetes 网络、存储、探针、权限和故障定位。",
+  "交付：能说明制品来源、测试、部署、回退与基础设施状态管理。",
+  "运维：能定义 SLI/SLO，关联指标、日志与追踪，验证备份恢复和容量。",
+  "项目：职责和结果有依据，数字有基线、周期、口径与来源。",
+  "学习：每组后续知识点均已检查，未理解的追问列入复习清单。"
 ];

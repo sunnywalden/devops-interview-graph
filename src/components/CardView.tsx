@@ -9,6 +9,7 @@ import {
 import type { Card as CardType } from "../types";
 import { Callout } from "./Callout";
 import { DiagramPanel } from "./diagrams/DiagramPanel";
+import { contentSources } from "../data/sources";
 
 export function CardView({ card }: { card: CardType }) {
   return (
@@ -24,17 +25,18 @@ export function CardView({ card }: { card: CardType }) {
         <h2 className="card-head__title">{card.label}</h2>
         <p className="card-head__one">{card.oneLiner}</p>
         <p className="card-head__resume print-hide">
-          <span className="card-head__resume-tag">简历锚点</span>
+          <span className="card-head__resume-tag">项目关联</span>
           <span className="card-head__resume-text">{card.resumeAnchor}</span>
         </p>
       </header>
 
-      <section className="stage-card oral-hero print-keep" aria-label="60–90 秒口述">
+      <section className="stage-card oral-hero print-keep" aria-label="核心回答">
         <div className="oral-hero__label">
-          <span><CommentOutlined aria-hidden="true" /> 60–90 秒口述</span>
-          <span className="eyebrow">SPEAK IT OUT</span>
+          <span><CommentOutlined aria-hidden="true" /> 核心回答</span>
+          <span className="eyebrow">UNDERSTAND & EXPLAIN</span>
         </div>
-        <div className="oral-block">{card.oral}</div>
+        <div className="oral-block">{card.oral.split("\n\n").map((paragraph, i) => <p key={`${card.id}-answer-${i}`}>{paragraph}</p>)}</div>
+        {card.scope && <p className="answer-scope"><strong>适用范围</strong>{card.scope}</p>}
       </section>
 
       <div className="print-hide">
@@ -97,6 +99,13 @@ export function CardView({ card }: { card: CardType }) {
           ))}
         </ul>
       </Disclosure>
+      <section className="content-sources" aria-label="官方文档与参考">
+        <h3><BookOutlined aria-hidden="true" /> 官方文档与参考</h3>
+        <p>核对定义、适用条件与版本差异。项目关联是练习方向，个人职责和成果需另行举证。</p>
+        <ul>{card.sources.map((id) => (
+          <li key={id}><a href={contentSources[id].url} target="_blank" rel="noreferrer">{contentSources[id].title}<span className="sr-only">（新窗口打开）</span><span aria-hidden="true"> ↗</span></a></li>
+        ))}</ul>
+      </section>
     </div>
   );
 }

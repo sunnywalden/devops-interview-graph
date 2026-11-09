@@ -85,7 +85,8 @@ export function OverviewPage({
                   <section className="paper-panel" aria-labelledby="star-title">
                     <header className="panel-heading"><div><p className="eyebrow">TELL YOUR STORY</p><h2 id="star-title">把项目讲成一个好故事。</h2></div><span className="subtle-pill">90 秒 · STAR</span></header>
                     <TopicPager items={starStories} value={story.id} onChange={onStar} ariaLabel="项目" scopeLabel="STAR" />
-                    <div className="story-context"><p><span>你的角色</span>{story.role}</p><p><span>知识关联</span>{story.layerMap}</p></div>
+                    <p className="story-evidence">{story.evidence}</p>
+                    <div className="story-context"><p><span>角色方向 · 待核实</span>{story.role}</p><p><span>知识关联</span>{story.layerMap}</p></div>
                     <div className="star-steps">
                       {[{ key: "S", label: "背景", time: "20s", text: story.s }, { key: "T", label: "任务", time: "10s", text: story.t }, { key: "A", label: "行动", time: "40s", text: story.a }, { key: "R", label: "结果", time: "20s", text: story.r }].map((step) => (
                         <div className="star-step" key={step.key}><span className="star-letter">{step.key}</span><div><h3>{step.label}<small>{step.time}</small></h3><p>{step.text}</p></div></div>
