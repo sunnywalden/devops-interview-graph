@@ -1,5 +1,7 @@
 import type { SegmentGroup } from "../types";
 import { attachVisuals } from "./attachVisuals";
+import { goBackend } from "./go-backend";
+import { pythonBackend } from "./python-backend";
 import { shell } from "./shell";
 import { languageVisuals } from "./visuals-language";
 
@@ -629,7 +631,8 @@ const rawLanguageGroups: SegmentGroup[] = [
           "go-spec",
           "go-generics"
         ]
-      }
+      },
+      ...goBackend.cards
     ]
   },
   {
@@ -1173,7 +1176,8 @@ const rawLanguageGroups: SegmentGroup[] = [
           "py-logging",
           "py-futures"
         ]
-      }
+      },
+      ...pythonBackend.cards
     ]
   }
 ];

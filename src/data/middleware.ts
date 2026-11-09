@@ -1,6 +1,11 @@
 import type { SegmentGroup } from "../types";
 import { attachVisuals } from "./attachVisuals";
+import { kafkaConsumers, postgres, redisAtomicity } from "./data-services";
 import { gitlab, jenkins } from "./delivery";
+import { kubernetesAdvanced } from "./kubernetes-advanced";
+import { linux } from "./linux";
+import { mysqlEngine } from "./mysql-engine";
+import { networking } from "./networking";
 import { elk, prometheus } from "./observability";
 import { middlewareVisuals } from "./visuals-middleware";
 
@@ -8,8 +13,9 @@ const rawMiddlewareGroups: SegmentGroup[] = [
   {
     "id": "mysql",
     "label": "MySQL",
-    "defaultTopic": "basic",
+    "defaultTopic": "innodb",
     "cards": [
+      ...mysqlEngine.cards,
       {
         "id": "basic",
         "label": "索引·事务·慢查（基础）",
@@ -278,6 +284,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
       }
     ]
   },
+  postgres.group,
   {
     "id": "mongo",
     "label": "MongoDB",
@@ -815,7 +822,8 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           "redis-lock",
           "etcd-concurrency"
         ]
-      }
+      },
+      ...redisAtomicity.cards
     ]
   },
   {
@@ -1041,7 +1049,8 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         "sources": [
           "rocket-transaction"
         ]
-      }
+      },
+      ...kafkaConsumers.cards
     ]
   },
   {
@@ -1823,12 +1832,13 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           "k8s-quota",
           "k8s-limits"
         ]
-      }
+      },
+      ...kubernetesAdvanced.cards
     ]
   },
   {
     "id": "net",
-    "label": "DNS/TLS",
+    "label": "网络 / DNS / TLS",
     "defaultTopic": "dns",
     "cards": [
       {
@@ -2003,9 +2013,11 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           "tls-rfc",
           "certmanager-renewal"
         ]
-      }
+      },
+      ...networking.cards
     ]
-  }
+  },
+  linux.group,
 ];
 
 export const middlewareGroups = [
@@ -2013,4 +2025,4 @@ export const middlewareGroups = [
   elk.group, prometheus.group, gitlab.group, jenkins.group,
 ];
 
-export const middlewareIntro = "从数据与运行环境理解系统约束，涵盖存储与一致性、缓存、消息传递、容器编排、DNS/TLS、日志与监控，以及持续集成和交付。回答时先说明机制，再补充故障条件、工程取舍和验证方法。具体保证取决于产品版本、配置与部署方式。";
+export const middlewareIntro = "从数据与运行环境理解系统约束，涵盖存储与一致性、缓存、消息传递、Linux、网络、容器编排、日志与监控，以及持续集成和交付。回答时先说明机制，再补充故障条件、工程取舍和验证方法。具体保证取决于产品版本、配置与部署方式。";

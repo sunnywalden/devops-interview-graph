@@ -8,20 +8,22 @@ type BilingualTopic = {
   en: CardCopy;
 };
 
+export function bilingualTopics(id: string, topics: Record<string, BilingualTopic>) {
+  const cards: SegmentGroup["cards"] = Object.entries(topics)
+    .map(([topic, { sources, zh }]) => ({ id: topic, sources, ...zh }));
+  const english: Record<string, CardCopy> = Object.fromEntries(
+    Object.entries(topics).map(([topic, { en }]) => [`${id}/${topic}`, en]),
+  );
+  return { cards, english };
+}
+
 export function bilingualGroup(
   id: string,
   label: string,
   defaultTopic: string,
   topics: Record<string, BilingualTopic>,
 ) {
-  const group: SegmentGroup = {
-    id,
-    label,
-    defaultTopic,
-    cards: Object.entries(topics).map(([topic, { sources, zh }]) => ({ id: topic, sources, ...zh })),
-  };
-  const english: Record<string, CardCopy> = Object.fromEntries(
-    Object.entries(topics).map(([topic, { en }]) => [`${id}/${topic}`, en]),
-  );
+  const { cards, english } = bilingualTopics(id, topics);
+  const group: SegmentGroup = { id, label, defaultTopic, cards };
   return { group, english };
 }

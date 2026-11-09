@@ -1,5 +1,7 @@
 import type { SegmentGroup } from "../types";
 import { attachVisuals } from "./attachVisuals";
+import { api } from "./backend-api";
+import { platformPractice } from "./platform-practice";
 import { scenarioVisuals } from "./visuals-scenarios";
 
 const rawScenarioGroups: SegmentGroup[] = [
@@ -860,9 +862,11 @@ const rawScenarioGroups: SegmentGroup[] = [
           "argocd-sync",
           "helm-docs"
         ]
-      }
+      },
+      ...platformPractice.cards
     ]
   },
+  api.group,
   {
     "id": "cmdb",
     "label": "CMDB",
@@ -1370,4 +1374,4 @@ const rawScenarioGroups: SegmentGroup[] = [
 
 export const scenarioGroups = attachVisuals(rawScenarioGroups, scenarioVisuals);
 
-export const scenarioIntro = "将语言与基础设施知识用于交付、可观测性、平台和一致性场景。每个方案都要说明目标、约束、失败恢复与验证方式；技术参考不代表已完成的个人项目，成果数字须有可核对的记录。";
+export const scenarioIntro = "将语言与基础设施知识用于后端 API、交付、可观测性、平台和一致性场景。每个方案都要说明目标、约束、失败恢复与验证方式；技术参考不代表已完成的个人项目，成果数字须有可核对的记录。";

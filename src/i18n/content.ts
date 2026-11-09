@@ -1,5 +1,14 @@
+import { api } from '../data/backend-api';
+import { kafkaConsumers, postgres, redisAtomicity } from '../data/data-services';
+import { goBackend } from '../data/go-backend';
+import { kubernetesAdvanced } from '../data/kubernetes-advanced';
 import { languageGroups, languageIntro } from '../data/language';
+import { linux } from '../data/linux';
 import { middlewareGroups, middlewareIntro } from '../data/middleware';
+import { mysqlEngine } from '../data/mysql-engine';
+import { networking } from '../data/networking';
+import { platformPractice } from '../data/platform-practice';
+import { pythonBackend } from '../data/python-backend';
 import { scenarioGroups, scenarioIntro } from '../data/scenarios';
 import { shell } from '../data/shell';
 import { elk, prometheus } from '../data/observability';
@@ -16,14 +25,18 @@ import type { LayerPageId } from '../uiPrefs';
 import type { Locale } from './ui';
 
 export const englishCards = {
-  ...languageEnglish, ...pythonEnglish, ...shell.english, ...middlewareEnglish,
-  ...elk.english, ...prometheus.english, ...gitlab.english, ...jenkins.english, ...scenarioEnglish,
+  ...languageEnglish, ...goBackend.english, ...pythonEnglish, ...pythonBackend.english, ...shell.english,
+  ...middlewareEnglish, ...mysqlEngine.english, ...postgres.english, ...redisAtomicity.english,
+  ...kafkaConsumers.english, ...kubernetesAdvanced.english, ...networking.english, ...linux.english,
+  ...elk.english, ...prometheus.english, ...gitlab.english, ...jenkins.english,
+  ...scenarioEnglish, ...platformPractice.english, ...api.english,
 };
 const groupLabels: Record<string, string> = {
   go: 'Golang', python: 'Python', shell: 'Shell', mysql: 'MySQL', mongo: 'MongoDB', redis: 'Redis', mq: 'Messaging',
-  container: 'Containers / Kubernetes', net: 'DNS / TLS', elk: 'ELK', prometheus: 'Prometheus',
+  postgres: 'PostgreSQL', container: 'Containers / Kubernetes', net: 'Networking / DNS / TLS', linux: 'Linux',
+  elk: 'ELK', prometheus: 'Prometheus',
   'gitlab-ci': 'GitLab CI/CD', 'jenkins-ci': 'Jenkins CI', cicd: 'CI/CD', monitor: 'Monitoring',
-  log: 'Logs / Tracing', ops: 'Platform engineering', cmdb: 'CMDB / Consistency', report: 'Reporting', other: 'Operations',
+  log: 'Logs / Tracing', ops: 'Platform engineering', api: 'Backend APIs', cmdb: 'CMDB / Consistency', report: 'Reporting', other: 'Operations',
 };
 const chineseGroups: Record<LayerPageId, SegmentGroup[]> = { lang: languageGroups, mid: middlewareGroups, scene: scenarioGroups };
 function translateGroups(groups: SegmentGroup[]): SegmentGroup[] {
@@ -46,8 +59,8 @@ const intros = {
   zh: { lang: languageIntro, mid: middlewareIntro, scene: scenarioIntro },
   en: {
     lang: 'Go, Python and Shell are parallel learning paths. Understand language and runtime semantics before discussing services, concurrency, platform authorization and script automation. Check the official documentation for version-specific behavior and portability limits. Use these answers to organize your explanation and base any project claims on your actual implementation.',
-    mid: 'Understand infrastructure constraints across storage and consistency, caching, messaging, container orchestration, DNS/TLS, logging and monitoring, and continuous integration and delivery. Explain the mechanism, failure conditions, trade-offs and verification. Specific guarantees depend on versions, configuration and deployment.',
-    scene: 'Apply language and infrastructure knowledge to delivery, observability, platforms and consistency. Explain objectives, constraints, recovery and verification. Technical guidance does not establish personal project experience; claimed results require verifiable records.',
+    mid: 'Understand infrastructure constraints across storage and consistency, caching, messaging, Linux, networking, container orchestration, logging and monitoring, and continuous integration and delivery. Explain the mechanism, failure conditions, trade-offs and verification. Specific guarantees depend on versions, configuration and deployment.',
+    scene: 'Apply language and infrastructure knowledge to backend APIs, delivery, observability, platforms and consistency. Explain objectives, constraints, recovery and verification. Base any claims about your own work on verifiable records.',
   },
 };
 export function localizedIntro(page: LayerPageId, locale: Locale): string { return intros[locale][page]; }

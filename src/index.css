@@ -139,6 +139,15 @@ button, a, summary, input, [tabindex] { scroll-margin-block: 12px; }
 .course-arrow { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border: 1px solid #e4e7dc; border-radius: 50%; font-size: 11px; color: #59694f; transition: transform 160ms, background-color 160ms; }
 .panel-footnote { color: #59694f; font-size: 10px; line-height: 1.8; padding-top: 17px; border-top: 1px solid var(--line); }
 .panel-footnote .anticon { margin-right: 6px; }
+.role-paths { margin-top: 24px; }
+.role-paths h3 { font-family: var(--serif); font-size: 17px; }
+.role-paths > p { color: #59694f; font-size: 12px; margin-top: 5px; }
+.role-paths-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 12px; margin-top: 14px; }
+.role-path { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.role-path h4 { font-size: 13px; color: var(--ink); }
+.role-path ol { margin: 6px 0 0; padding-inline-start: 18px; color: #59694f; font-size: 12px; }
+.role-path a { display: inline-flex; align-items: center; min-height: 44px; color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+.role-path a:hover { color: var(--ink); }
 .dashboard-aside { display: flex; flex-direction: column; gap: 20px; }
 .progress-panel { padding: 25px 24px 20px; }
 .panel-topline { display: flex; justify-content: space-between; align-items: center; color: #59694f; }

@@ -775,6 +775,454 @@ export const contentSources = {
   "jenkins-libraries": {
     "title": "Jenkins — Shared Libraries",
     "url": "https://www.jenkins.io/doc/book/pipeline/shared-libraries/"
+  },
+  "innodb-intro": {
+    "title": "MySQL 8.4 — Introduction to InnoDB",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-introduction.html"
+  },
+  "mysql-storage-engines": {
+    "title": "MySQL 8.4 — Alternative storage engines",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/storage-engines.html"
+  },
+  "innodb-indexes": {
+    "title": "MySQL 8.4 — Clustered and secondary indexes",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-index-types.html"
+  },
+  "innodb-index-structure": {
+    "title": "MySQL 8.4 — Physical structure of an InnoDB index",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-physical-structure.html"
+  },
+  "innodb-buffer": {
+    "title": "MySQL 8.4 — InnoDB buffer pool",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-buffer-pool.html"
+  },
+  "innodb-locks": {
+    "title": "MySQL 8.4 — InnoDB locking",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-locking.html"
+  },
+  "innodb-redo": {
+    "title": "MySQL 8.4 — InnoDB redo log",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-redo-log.html"
+  },
+  "innodb-undo": {
+    "title": "MySQL 8.4 — InnoDB undo logs",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-undo-logs.html"
+  },
+  "innodb-crash-recovery": {
+    "title": "MySQL 8.4 — InnoDB recovery",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-recovery.html"
+  },
+  "innodb-doublewrite": {
+    "title": "MySQL 8.4 — InnoDB doublewrite buffer",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-doublewrite-buffer.html"
+  },
+  "innodb-parameters": {
+    "title": "MySQL 8.4 — InnoDB log flush at commit",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-parameters.html#sysvar_innodb_flush_log_at_trx_commit"
+  },
+  "mysql-binlog-options": {
+    "title": "MySQL 8.4 — Binary log options",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/replication-options-binary-log.html#sysvar_sync_binlog"
+  },
+  "mysql-composite-indexes": {
+    "title": "MySQL 8.4 — Multiple-column indexes",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/multiple-column-indexes.html"
+  },
+  "mysql-plan-analysis": {
+    "title": "MySQL 8.4 — EXPLAIN and EXPLAIN ANALYZE",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/explain.html"
+  },
+  "mysql-icp": {
+    "title": "MySQL 8.4 — Index condition pushdown",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/index-condition-pushdown-optimization.html"
+  },
+  "mysql-order-optimization": {
+    "title": "MySQL 8.4 — ORDER BY optimization",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/order-by-optimization.html"
+  },
+  "mysql-skip-scan": {
+    "title": "MySQL 8.4 — Skip scan range access",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/range-optimization.html#range-access-skip-scan"
+  },
+  "go-errgroup": {
+    "title": "Go — errgroup package",
+    "url": "https://pkg.go.dev/golang.org/x/sync/errgroup"
+  },
+  "go-pipelines": {
+    "title": "Go — Pipelines and cancellation",
+    "url": "https://go.dev/blog/pipelines"
+  },
+  "go-httptest": {
+    "title": "Go — net/http/httptest package",
+    "url": "https://pkg.go.dev/net/http/httptest"
+  },
+  "gin-middleware": {
+    "title": "Gin — Using middleware",
+    "url": "https://github.com/gin-gonic/gin/blob/master/docs/doc.md#using-middleware"
+  },
+  "go-database-sql": {
+    "title": "Go — database/sql package",
+    "url": "https://pkg.go.dev/database/sql"
+  },
+  "go-sql-connections": {
+    "title": "Go — Managing connections",
+    "url": "https://go.dev/doc/database/manage-connections"
+  },
+  "go-sql-transactions": {
+    "title": "Go — Executing transactions",
+    "url": "https://go.dev/doc/database/execute-transactions"
+  },
+  "go-sql-injection": {
+    "title": "Go — Avoiding SQL injection risk",
+    "url": "https://go.dev/doc/database/sql-injection"
+  },
+  "grpc-deadlines": {
+    "title": "gRPC — Deadlines",
+    "url": "https://grpc.io/docs/guides/deadlines/"
+  },
+  "grpc-status": {
+    "title": "gRPC — Status codes",
+    "url": "https://grpc.io/docs/guides/status-codes/"
+  },
+  "grpc-retries": {
+    "title": "gRPC — Retry",
+    "url": "https://grpc.io/docs/guides/retry/"
+  },
+  "protobuf-schema": {
+    "title": "Protocol Buffers — Updating a message type",
+    "url": "https://protobuf.dev/programming-guides/proto3/#updating"
+  },
+  "go-modules-reference": {
+    "title": "Go — Modules reference",
+    "url": "https://go.dev/ref/mod"
+  },
+  "go-managing-dependencies": {
+    "title": "Go — Managing dependencies",
+    "url": "https://go.dev/doc/modules/managing-dependencies"
+  },
+  "py-data-model": {
+    "title": "Python 3.14 — Data model",
+    "url": "https://docs.python.org/3.14/reference/datamodel.html"
+  },
+  "py-compound": {
+    "title": "Python 3.14 — Function definitions",
+    "url": "https://docs.python.org/3.14/reference/compound_stmts.html#function-definitions"
+  },
+  "py-copy": {
+    "title": "Python 3.14 — Shallow and deep copy operations",
+    "url": "https://docs.python.org/3.14/library/copy.html"
+  },
+  "py-gc": {
+    "title": "Python 3.14 — Garbage collector interface",
+    "url": "https://docs.python.org/3.14/library/gc.html"
+  },
+  "py-contextlib": {
+    "title": "Python 3.14 — Context management utilities",
+    "url": "https://docs.python.org/3.14/library/contextlib.html"
+  },
+  "py-tracemalloc": {
+    "title": "Python 3.14 — Tracing Python memory allocations",
+    "url": "https://docs.python.org/3.14/library/tracemalloc.html"
+  },
+  "django-queryset": {
+    "title": "Django 5.2 — QuerySet API reference",
+    "url": "https://docs.djangoproject.com/en/5.2/ref/models/querysets/"
+  },
+  "django-transactions": {
+    "title": "Django 5.2 — Database transactions",
+    "url": "https://docs.djangoproject.com/en/5.2/topics/db/transactions/"
+  },
+  "django-migrations": {
+    "title": "Django 5.2 — Migrations",
+    "url": "https://docs.djangoproject.com/en/5.2/topics/migrations/"
+  },
+  "fastapi-async": {
+    "title": "FastAPI — Concurrency and async / await",
+    "url": "https://fastapi.tiangolo.com/async/"
+  },
+  "fastapi-lifespan": {
+    "title": "FastAPI — Lifespan events",
+    "url": "https://fastapi.tiangolo.com/advanced/events/"
+  },
+  "fastapi-body": {
+    "title": "FastAPI — Request body",
+    "url": "https://fastapi.tiangolo.com/tutorial/body/"
+  },
+  "fastapi-workers": {
+    "title": "FastAPI — Server workers",
+    "url": "https://fastapi.tiangolo.com/deployment/server-workers/"
+  },
+  "celery-tasks": {
+    "title": "Celery — Tasks",
+    "url": "https://docs.celeryq.dev/en/stable/userguide/tasks.html"
+  },
+  "celery-django": {
+    "title": "Celery — Django integration and transaction commit",
+    "url": "https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html#trigger-tasks-at-the-end-of-the-database-transaction"
+  },
+  "sqlalchemy-session": {
+    "title": "SQLAlchemy 2.0 — Session basics",
+    "url": "https://docs.sqlalchemy.org/en/20/orm/session_basics.html"
+  },
+  "sqlalchemy-async": {
+    "title": "SQLAlchemy 2.0 — AsyncSession with concurrent tasks",
+    "url": "https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html#using-asyncsession-with-concurrent-tasks"
+  },
+  "sqlalchemy-loaders": {
+    "title": "SQLAlchemy 2.0 — Relationship loading techniques",
+    "url": "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html"
+  },
+  "alembic-tutorial": {
+    "title": "Alembic — Migration tutorial",
+    "url": "https://alembic.sqlalchemy.org/en/latest/tutorial.html"
+  },
+  "pytest-fixtures": {
+    "title": "pytest — How to use fixtures",
+    "url": "https://docs.pytest.org/en/stable/how-to/fixtures.html"
+  },
+  "pytest-parametrize": {
+    "title": "pytest — Parametrizing tests and fixtures",
+    "url": "https://docs.pytest.org/en/stable/how-to/parametrize.html"
+  },
+  "py-unittest-mock": {
+    "title": "Python 3.14 — Where to patch",
+    "url": "https://docs.python.org/3.14/library/unittest.mock.html#where-to-patch"
+  },
+  "linux-load": {
+    "title": "Linux man-pages — proc_loadavg(5)",
+    "url": "https://man7.org/linux/man-pages/man5/proc_loadavg.5.html"
+  },
+  "linux-psi": {
+    "title": "Linux kernel — Pressure stall information",
+    "url": "https://docs.kernel.org/accounting/psi.html"
+  },
+  "linux-cgroup": {
+    "title": "Linux kernel — Control Group v2",
+    "url": "https://docs.kernel.org/admin-guide/cgroup-v2.html"
+  },
+  "linux-df": {
+    "title": "GNU Coreutils — df",
+    "url": "https://www.gnu.org/software/coreutils/manual/html_node/df-invocation.html"
+  },
+  "linux-unlink": {
+    "title": "Linux man-pages — unlink(2)",
+    "url": "https://man7.org/linux/man-pages/man2/unlink.2.html"
+  },
+  "linux-signal": {
+    "title": "Linux man-pages — signal(7)",
+    "url": "https://man7.org/linux/man-pages/man7/signal.7.html"
+  },
+  "linux-fork": {
+    "title": "Linux man-pages — fork(2)",
+    "url": "https://man7.org/linux/man-pages/man2/fork.2.html"
+  },
+  "linux-wait": {
+    "title": "Linux man-pages — wait(2)",
+    "url": "https://man7.org/linux/man-pages/man2/wait.2.html"
+  },
+  "linux-path": {
+    "title": "Linux man-pages — path_resolution(7)",
+    "url": "https://man7.org/linux/man-pages/man7/path_resolution.7.html"
+  },
+  "systemd-service": {
+    "title": "systemd — Service unit configuration",
+    "url": "https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html"
+  },
+  "systemd-journal": {
+    "title": "systemd — journalctl",
+    "url": "https://www.freedesktop.org/software/systemd/man/latest/journalctl.html"
+  },
+  "rfc9293": {
+    "title": "RFC 9293 — Transmission Control Protocol",
+    "url": "https://www.rfc-editor.org/rfc/rfc9293.html"
+  },
+  "linux-ss": {
+    "title": "Linux man-pages — ss(8)",
+    "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+  },
+  "rfc9113": {
+    "title": "RFC 9113 — HTTP/2",
+    "url": "https://www.rfc-editor.org/rfc/rfc9113.html"
+  },
+  "rfc9114": {
+    "title": "RFC 9114 — HTTP/3",
+    "url": "https://www.rfc-editor.org/rfc/rfc9114.html"
+  },
+  "rfc7239": {
+    "title": "RFC 7239 — Forwarded HTTP extension",
+    "url": "https://www.rfc-editor.org/rfc/rfc7239.html"
+  },
+  "nginx-proxy": {
+    "title": "NGINX — HTTP proxy module",
+    "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html"
+  },
+  "nginx-upstream": {
+    "title": "NGINX — Upstream timing variables",
+    "url": "https://nginx.org/en/docs/http/ngx_http_upstream_module.html#variables"
+  },
+  "pg-mvcc": {
+    "title": "PostgreSQL — MVCC introduction",
+    "url": "https://www.postgresql.org/docs/current/mvcc-intro.html"
+  },
+  "pg-isolation": {
+    "title": "PostgreSQL — Transaction isolation",
+    "url": "https://www.postgresql.org/docs/current/transaction-iso.html"
+  },
+  "pg-vacuum": {
+    "title": "PostgreSQL — Routine vacuuming",
+    "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html"
+  },
+  "pg-wal": {
+    "title": "PostgreSQL — Write-ahead logging",
+    "url": "https://www.postgresql.org/docs/current/wal-intro.html"
+  },
+  "pg-explain": {
+    "title": "PostgreSQL — Using EXPLAIN",
+    "url": "https://www.postgresql.org/docs/current/using-explain.html"
+  },
+  "pg-index-only": {
+    "title": "PostgreSQL — Index-only scans and covering indexes",
+    "url": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html"
+  },
+  "pg-index-types": {
+    "title": "PostgreSQL — Index types",
+    "url": "https://www.postgresql.org/docs/current/indexes-types.html"
+  },
+  "pg-index-partial": {
+    "title": "PostgreSQL — Partial indexes",
+    "url": "https://www.postgresql.org/docs/current/indexes-partial.html"
+  },
+  "redis-pipeline": {
+    "title": "Redis — Pipelining",
+    "url": "https://redis.io/docs/latest/develop/using-commands/pipelining/"
+  },
+  "redis-transactions": {
+    "title": "Redis — Transactions",
+    "url": "https://redis.io/docs/latest/develop/using-commands/transactions/"
+  },
+  "redis-scripts": {
+    "title": "Redis — Scripting with Lua",
+    "url": "https://redis.io/docs/latest/develop/programmability/eval-intro/"
+  },
+  "kafka-consumer": {
+    "title": "Kafka 4.2 — KafkaConsumer API",
+    "url": "https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html"
+  },
+  "rabbitmq-confirms": {
+    "title": "RabbitMQ — Consumer acknowledgements and publisher confirms",
+    "url": "https://github.com/rabbitmq/rabbitmq-website/blob/main/docs/confirms.md"
+  },
+  "k8s-node-autoscaling": {
+    "title": "Kubernetes — Node autoscaling",
+    "url": "https://kubernetes.io/docs/concepts/cluster-administration/node-autoscaling/"
+  },
+  "k8s-resource": {
+    "title": "Kubernetes — Resource management for pods and containers",
+    "url": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+  },
+  "k8s-controller": {
+    "title": "Kubernetes — Controllers",
+    "url": "https://kubernetes.io/docs/concepts/architecture/controller/"
+  },
+  "k8s-api-concepts": {
+    "title": "Kubernetes — API concepts",
+    "url": "https://kubernetes.io/docs/reference/using-api/api-concepts/"
+  },
+  "k8s-finalizers": {
+    "title": "Kubernetes — Finalizers",
+    "url": "https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/"
+  },
+  "k8s-owners": {
+    "title": "Kubernetes — Owners and dependents",
+    "url": "https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/"
+  },
+  "k8s-workqueue": {
+    "title": "Kubernetes client-go — workqueue package",
+    "url": "https://pkg.go.dev/k8s.io/client-go/util/workqueue"
+  },
+  "git-rebase": {
+    "title": "Git — git-rebase",
+    "url": "https://git-scm.com/docs/git-rebase"
+  },
+  "git-revert": {
+    "title": "Git — git-revert",
+    "url": "https://git-scm.com/docs/git-revert"
+  },
+  "git-bisect": {
+    "title": "Git — git-bisect",
+    "url": "https://git-scm.com/docs/git-bisect"
+  },
+  "git-merge": {
+    "title": "Git — git-merge",
+    "url": "https://git-scm.com/docs/git-merge"
+  },
+  "ansible-playbooks": {
+    "title": "Ansible — Playbooks",
+    "url": "https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html"
+  },
+  "ansible-check": {
+    "title": "Ansible — Check mode and diff mode",
+    "url": "https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html"
+  },
+  "ansible-strategies": {
+    "title": "Ansible — Playbook execution strategies",
+    "url": "https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_strategies.html"
+  },
+  "ansible-logging": {
+    "title": "Ansible — Logging and no_log",
+    "url": "https://docs.ansible.com/ansible/latest/reference_appendices/logging.html"
+  },
+  "aws-vpc-security": {
+    "title": "Amazon VPC — Infrastructure security",
+    "url": "https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Security.html"
+  },
+  "aws-vpc-nat": {
+    "title": "Amazon VPC — NAT gateways",
+    "url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
+  },
+  "aws-vpc-routing": {
+    "title": "Amazon VPC — Route tables",
+    "url": "https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html"
+  },
+  "aws-iam-roles": {
+    "title": "AWS IAM — Roles",
+    "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html"
+  },
+  "http-rate-limit": {
+    "title": "RFC 6585 — 429 Too Many Requests",
+    "url": "https://www.rfc-editor.org/rfc/rfc6585.html#section-4"
+  },
+  "stripe-idempotency": {
+    "title": "Stripe API — Idempotent requests",
+    "url": "https://docs.stripe.com/api/idempotent_requests"
+  },
+  "owasp-bola": {
+    "title": "OWASP API Security — Broken object-level authorization",
+    "url": "https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization/"
+  },
+  "oidc-core": {
+    "title": "OpenID Connect — Core 1.0",
+    "url": "https://openid.net/specs/openid-connect-core-1_0.html"
+  },
+  "oauth-security-bcp": {
+    "title": "RFC 9700 — OAuth 2.0 security best current practice",
+    "url": "https://www.rfc-editor.org/rfc/rfc9700.html"
+  },
+  "jwt-bcp": {
+    "title": "RFC 8725 — JWT best current practices",
+    "url": "https://www.rfc-editor.org/rfc/rfc8725.html"
+  },
+  "owasp-csrf": {
+    "title": "OWASP — Cross-Site Request Forgery prevention",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
+  },
+  "fetch-standard": {
+    "title": "WHATWG Fetch — CORS protocol",
+    "url": "https://fetch.spec.whatwg.org/#http-cors-protocol"
+  },
+  "aws-retry-jitter": {
+    "title": "Amazon Builders' Library — Timeouts, retries, and backoff with jitter",
+    "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
   }
 } as const;
 

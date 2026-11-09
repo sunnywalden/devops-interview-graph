@@ -26,7 +26,7 @@ export function OverviewPage({
   const { t, locale } = useLocale();
   const { starStories, sprint5d, sprint3d, sprintTips, checklist, narrative } = localizedOverview(locale);
   const story = starStories.find((s) => s.id === star) ?? starStories[0];
-  const { layers, total, visited, resume } = readStudySnapshot(useBookmarkStore(), useUiPrefs());
+  const { layers, rolePaths, total, visited, resume } = readStudySnapshot(useBookmarkStore(), useUiPrefs());
   const percent = total ? Math.round((visited / total) * 100) : 0;
   const days = plan === "5d" ? sprint5d : sprint3d;
   const activeTab = ["home", "star", "plan", "map"].includes(section) ? section : "home";
@@ -68,7 +68,7 @@ export function OverviewPage({
                 key: "home", label: t("学习路线"),
                 children: (
                   <section className="paper-panel route-panel" aria-labelledby="route-title">
-                    <header className="panel-heading"><div><p className="eyebrow">YOUR LEARNING PATH</p><h2 id="route-title">{t("由浅入深，连成体系。")}</h2></div><span className="subtle-pill">{t("3 条学习路径")}</span></header>
+                    <header className="panel-heading"><div><p className="eyebrow">YOUR LEARNING PATH</p><h2 id="route-title">{t("由浅入深，连成体系。")}</h2></div><span className="subtle-pill">{t("3 个学习层级")}</span></header>
                     <nav className="course-list" aria-label={t("学习路线")}>
                       {layers.map((layer, index) => (
                         <a className="course-link" href={`#/${layer.id}`} key={layer.id}>
@@ -80,6 +80,18 @@ export function OverviewPage({
                       ))}
                     </nav>
                     <p className="panel-footnote"><ReadOutlined aria-hidden="true" />{t("每个知识点都有口述、追问和原理，按自己的节奏推进。")}</p>
+                    <nav className="role-paths" aria-labelledby="role-paths-title">
+                      <h3 id="role-paths-title">{t("按岗位开始学习")}</h3>
+                      <p>{t("每条路线精选 5 个知识点，点击即可开始。")}</p>
+                      <div className="role-paths-grid">
+                        {rolePaths.map(({ id, title, topics }) => (
+                          <div className="role-path" key={id}>
+                            <h4>{title}</h4>
+                            <ol>{topics.map(({ label, href }) => <li key={href}><a href={href}>{label}</a></li>)}</ol>
+                          </div>
+                        ))}
+                      </div>
+                    </nav>
                   </section>
                 ),
               },
