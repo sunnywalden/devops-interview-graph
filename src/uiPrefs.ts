@@ -1,3 +1,5 @@
+import { readStorage, writeStorage } from "./storage";
+
 /** UI prefs (diagram / focus / layer visit) — independent of bookmark v2. */
 export const UI_PREFS_KEY = "devops-kg-ui-prefs";
 
@@ -6,12 +8,14 @@ export type DiagramTab = "mermaid" | "flow";
 export type LayerPageId = "lang" | "mid" | "scene";
 
 export type UiPrefs = {
-  /** Diagram panel expanded. Default true when unset. */
+  /** Diagram panel expanded. Default false when unset. */
   diagramExpanded?: boolean;
   /** Last active diagram tab when both kinds exist. */
   diagramTab?: DiagramTab;
   /** Oral focus mode: hide chrome for reading. Default false. */
   focusMode?: boolean;
+  overviewStar?: string;
+  overviewPlan?: "3d" | "5d";
   /**
    * Card ids visited per layer page (weak progress).
    * Keys are layer page ids only; unknown keys ignored on read.
@@ -43,9 +47,8 @@ function parseVisited(
   return any ? out : undefined;
 }
 
-export function readUiPrefs(): UiPrefs {
+export function readUiPrefs(raw = readStorage(UI_PREFS_KEY)): UiPrefs {
   try {
-    const raw = localStorage.getItem(UI_PREFS_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as unknown;
     if (!parsed || typeof parsed !== "object") return {};
@@ -60,6 +63,8 @@ export function readUiPrefs(): UiPrefs {
     if (typeof o.focusMode === "boolean") {
       out.focusMode = o.focusMode;
     }
+    if (typeof o.overviewStar === "string") out.overviewStar = o.overviewStar;
+    if (o.overviewPlan === "3d" || o.overviewPlan === "5d") out.overviewPlan = o.overviewPlan;
     const visited = parseVisited(o.visitedByPage);
     if (visited) out.visitedByPage = visited;
     return out;
@@ -68,7 +73,7 @@ export function readUiPrefs(): UiPrefs {
   }
 }
 
-export function writeUiPrefs(patch: Partial<UiPrefs>): void {
+export function writeUiPrefs(patch: Partial<UiPrefs>): boolean {
   const prev = readUiPrefs();
   const next: UiPrefs = { ...prev, ...patch };
   if (patch.visitedByPage) {
@@ -77,7 +82,7 @@ export function writeUiPrefs(patch: Partial<UiPrefs>): void {
       ...patch.visitedByPage,
     };
   }
-  localStorage.setItem(UI_PREFS_KEY, JSON.stringify(next));
+  return writeStorage(UI_PREFS_KEY, JSON.stringify(next));
 }
 
 /** Mark a card visited on a layer page; returns updated id list for that page. */

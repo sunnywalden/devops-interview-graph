@@ -11,10 +11,10 @@ import {
 import "@xyflow/react/dist/style.css";
 import type { FlowEdge, FlowNode } from "../../types";
 
-const ACCENT = "#E6A23C";
-const EDGE = "#8B9BB0";
-const NODE_BG = "#161E29";
-const NODE_FG = "#E8EEF4";
+const ACCENT = "#78956b";
+const EDGE = "#8b9c7e";
+const NODE_BG = "#f8faf2";
+const NODE_FG = "#395438";
 
 type Props = {
   nodes: FlowNode[];
@@ -55,7 +55,7 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
             <div style={{ textAlign: "center", lineHeight: 1.35 }}>
               <div style={{ fontWeight: 600 }}>{n.label}</div>
               {n.detail ? (
-                <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>
+                <div style={{ fontSize: 11, opacity: 1, marginTop: 2 }}>
                   {n.detail}
                 </div>
               ) : null}
@@ -70,7 +70,7 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
           padding: 8,
           fontSize: 13,
           minWidth: 120,
-          boxShadow: "0 2px 10px rgba(0,0,0,0.4)",
+          boxShadow: "none",
         },
       })),
     [nodes, pos],
@@ -83,10 +83,10 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
         source: e.from,
         target: e.to,
         label: e.label,
-        animated: true,
+        animated: false,
         style: { stroke: EDGE },
-        labelStyle: { fill: "#8B9BB0", fontSize: 11 },
-        labelBgStyle: { fill: "#121821", fillOpacity: 0.9 },
+        labelStyle: { fill: "#59694f", fontSize: 11 },
+        labelBgStyle: { fill: "#f8faf2", fillOpacity: 0.9 },
         markerEnd: { type: MarkerType.ArrowClosed, color: EDGE },
       })),
     [edges],
@@ -102,19 +102,20 @@ export function FlowGraph({ nodes, edges, height = 400 }: Props) {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-        panOnScroll
-        zoomOnScroll
-        minZoom={0.4}
+        panOnScroll={false}
+        zoomOnScroll={false}
+        minZoom={0.15}
         maxZoom={1.6}
         proOptions={{ hideAttribution: true }}
-        colorMode="dark"
+        colorMode="light"
+        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": "放大图谱", "controls.zoomOut.ariaLabel": "缩小图谱", "controls.fitView.ariaLabel": "适应画布" }}
       >
-        <Background gap={18} size={1} color="#243041" />
+        <Background gap={18} size={1} color="#dce5d1" />
         <Controls showInteractive={false} />
         <MiniMap
           pannable
           zoomable
-          maskColor="rgba(11,15,20,0.75)"
+          maskColor="rgba(247,249,241,0.8)"
           nodeColor={ACCENT}
         />
       </ReactFlow>

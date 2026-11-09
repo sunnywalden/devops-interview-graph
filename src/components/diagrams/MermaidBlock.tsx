@@ -13,36 +13,34 @@ export function MermaidBlock({ source, className }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    setSvg(null);
-    setErr(null);
 
     (async () => {
       try {
         const mermaid = (await import("mermaid")).default;
         mermaid.initialize({
           startOnLoad: false,
-          theme: "dark",
+          theme: "base",
           securityLevel: "loose",
           fontFamily:
             'system-ui, -apple-system, "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif',
           flowchart: { htmlLabels: true, curve: "basis" },
           themeVariables: {
-            darkMode: true,
-            background: "#0B0F14",
-            primaryColor: "#161E29",
-            primaryTextColor: "#E8EEF4",
-            primaryBorderColor: "#E6A23C",
-            secondaryColor: "#121821",
-            tertiaryColor: "#0B0F14",
-            lineColor: "#8B9BB0",
-            textColor: "#E8EEF4",
-            mainBkg: "#161E29",
-            nodeBorder: "#E6A23C",
-            clusterBkg: "#121821",
-            clusterBorder: "rgba(255,255,255,0.12)",
-            titleColor: "#E8EEF4",
-            edgeLabelBackground: "#121821",
-            nodeTextColor: "#E8EEF4",
+            darkMode: false,
+            background: "#f7f9f1",
+            primaryColor: "#edf2e4",
+            primaryTextColor: "#395438",
+            primaryBorderColor: "#8da479",
+            secondaryColor: "#f8faf2",
+            tertiaryColor: "#f7f9f1",
+            lineColor: "#7e926e",
+            textColor: "#395438",
+            mainBkg: "#edf2e4",
+            nodeBorder: "#8da479",
+            clusterBkg: "#f8faf2",
+            clusterBorder: "#cddbc0",
+            titleColor: "#395438",
+            edgeLabelBackground: "#f8faf2",
+            nodeTextColor: "#395438",
           },
         });
         const renderId = `mmd-${reactId}-${Math.random().toString(36).slice(2, 8)}`;
@@ -78,7 +76,7 @@ export function MermaidBlock({ source, className }: Props) {
   if (!svg) {
     return (
       <div style={{ padding: 24, textAlign: "center" }}>
-        <Spin tip="渲染图示…" />
+        <Spin aria-label="渲染图示" />
       </div>
     );
   }

@@ -98,7 +98,7 @@ export function TopicPager({
 
     const onKey = (e: KeyboardEvent) => {
       const panel = panelRef.current;
-      if (!panel) return;
+      if (!panel || e.isComposing) return;
 
       if (e.key === "Escape") {
         e.preventDefault();
@@ -131,8 +131,6 @@ export function TopicPager({
         }
         return;
       }
-
-      if (e.isComposing) return;
 
       const active = document.activeElement;
       const inFilter = active === filterRef.current;
@@ -329,7 +327,7 @@ export function TopicPager({
                 aria-label="关闭目录"
                 onClick={close}
               >
-                <CloseOutlined />
+                <CloseOutlined aria-hidden="true" />
               </button>
             </div>
             <div className="topic-dir__filter-wrap">

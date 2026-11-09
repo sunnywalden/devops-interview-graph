@@ -1,261 +1,147 @@
 import { lazy, Suspense, useMemo } from "react";
-import {
-  Card,
-  Col,
-  List,
-  Row,
-  Segmented,
-  Space,
-  Typography,
-  Spin,
-} from "antd";
-import {
-  CheckSquareOutlined,
-  NodeIndexOutlined,
-  RocketOutlined,
-  StarOutlined,
-} from "@ant-design/icons";
-import {
-  narrative,
-  starStories,
-  sprint5d,
-  sprint3d,
-  sprintTips,
-  checklist,
-} from "../data/overview";
+import { Segmented, Spin, Tabs } from "antd";
+import { ArrowRightOutlined, ArrowUpOutlined, ClockCircleOutlined, FlagOutlined, ReadOutlined } from "@ant-design/icons";
+import { starStories, sprint5d, sprint3d, sprintTips, checklist, narrative } from "../data/overview";
 import { TopicPager } from "../components/TopicPager";
+import { StudyIllustration } from "../components/StudyIllustration";
+import { readStudySnapshot } from "../study";
+import { useBookmarkStore, useUiPrefs } from "../useSavedState";
 
 const OverviewFlow = lazy(() =>
-  import("../components/diagrams/OverviewFlow").then((m) => ({
-    default: m.OverviewFlow,
-  })),
+  import("../components/diagrams/OverviewFlow").then((m) => ({ default: m.OverviewFlow })),
 );
 
-const { Title, Paragraph, Text } = Typography;
-
 export function OverviewPage({
-  star,
-  plan,
-  onStar,
-  onPlan,
+  section, star, plan, onSection, onStar, onPlan,
 }: {
+  section: string;
   star: string;
   plan: "5d" | "3d";
+  onSection: (section: string) => void;
   onStar: (id: string) => void;
   onPlan: (id: "5d" | "3d") => void;
 }) {
-  const story = useMemo(
-    () => starStories.find((s) => s.id === star) ?? starStories[0],
-    [star],
-  );
+  const story = useMemo(() => starStories.find((s) => s.id === star) ?? starStories[0], [star]);
+  const { layers, total, visited, resume } = readStudySnapshot(useBookmarkStore(), useUiPrefs());
+  const percent = total ? Math.round((visited / total) * 100) : 0;
   const days = plan === "5d" ? sprint5d : sprint3d;
-
-  const layerLinks = [
-    {
-      href: "#/lang",
-      num: "①",
-      title: "语言层",
-      site: "Golang / Python",
-    },
-    {
-      href: "#/mid",
-      num: "②",
-      title: "中间件",
-      site: "MySQL · Redis · K8s…",
-    },
-    {
-      href: "#/scene",
-      num: "③",
-      title: "场景层",
-      site: "CI/CD · 监控 · CMDB…",
-    },
-  ];
+  const activeTab = ["home", "star", "plan", "map"].includes(section) ? section : "home";
 
   return (
-    <Space direction="vertical" size={32} style={{ width: "100%" }}>
-      <div>
-        <Title level={2} style={{ marginBottom: 6, fontSize: 22 }}>
-          三层知识图谱 · 总览
-        </Title>
-        <Paragraph type="secondary" style={{ marginBottom: 0, maxWidth: "42rem" }}>
-          {narrative}
-        </Paragraph>
-      </div>
+    <div className="overview-page">
+      <header className="page-heading">
+        <div>
+          <p className="eyebrow">A LITTLE PRACTICE, EVERY DAY</p>
+          <h1>让每一次表达，<span>更有底气。</span></h1>
+          <p className="page-subtitle">从上次停下的地方继续，每次专注一个知识点。</p>
+        </div>
+        <span className="edition-label"><span className="status-dot" /> PERSONAL EDITION</span>
+      </header>
 
-      <nav className="layer-portals" aria-label="三层入口">
-        {layerLinks.map((l) => (
-          <a key={l.href} className="layer-portal" href={l.href}>
-            <span className="layer-portal__num">{l.num}</span>
-            <span>
-              <strong>{l.title}</strong>
-              <span style={{ color: "var(--text-muted)", marginLeft: 6 }}>
-                {l.site}
-              </span>
-            </span>
-          </a>
-        ))}
-      </nav>
-
-      <section className="page-section" aria-labelledby="layers">
-        <Title level={3} id="layers" style={{ marginBottom: 8 }}>
-          <NodeIndexOutlined /> 三层关系
-        </Title>
-        <Paragraph type="secondary" style={{ marginBottom: 16, maxWidth: "46rem" }}>
-          语言 → 中间件/容器 → DevOps 场景。边上是支撑 / 用于构建，不是运行时单向调用链。
-          Golang 与 Python 同层并列。可缩放平移下图。
-        </Paragraph>
-        <div className="overview-flow-wrap">
-          <Suspense
-            fallback={
-              <div style={{ padding: 64, textAlign: "center" }}>
-                <Spin tip="加载交互图谱…" />
+      <div className="dashboard-grid">
+        <div className="dashboard-main">
+          <section className="study-hero" aria-labelledby="continue-title">
+            <div className="study-hero__body">
+              <div className="study-hero__copy">
+                <div className="hero-meta"><span className="hero-badge"><span /> {resume.hasBookmark ? "接着上次学" : "准备好开始"}</span><span className="eyebrow">{resume.group}</span></div>
+                <p className="eyebrow hero-kicker">YOUR NEXT SESSION</p>
+                <h2 id="continue-title">{resume.card.label}</h2>
+                <p className="study-hero__description">{resume.card.oneLiner}</p>
+                <a className="hero-cta" href={resume.href}>{resume.hasBookmark ? "继续上次学习" : "开始第一课"}<ArrowRightOutlined aria-hidden="true" /></a>
               </div>
-            }
-          >
-            <OverviewFlow />
-          </Suspense>
-          <div className="overview-legend" aria-label="图例">
-            <span className="lg-l1">① 语言</span>
-            <span className="lg-l2">② 中间件 / 基础设施</span>
-            <span className="lg-l3">③ DevOps 场景</span>
-            <span className="lg-edge">边 = 支撑 / 构建</span>
-          </div>
-        </div>
-      </section>
+              <StudyIllustration />
+            </div>
+            <div className="study-hero__footer"><span><ClockCircleOutlined aria-hidden="true" /> 60–90 秒口述练习</span><span><ReadOutlined aria-hidden="true" /> {resume.layer} · {resume.group}</span></div>
+          </section>
 
-      <section className="page-section" aria-labelledby="star">
-        <Title level={3} id="star" style={{ marginBottom: 8 }}>
-          <StarOutlined /> 项目 90 秒 STAR
-        </Title>
-        <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          主攻 CMDB、资源效能、运维平台；配置交付与 HPC 备份补强。讲 STAR 时点出落到哪一层。
-        </Paragraph>
-        <div className="star-pager">
-          <TopicPager
-            items={starStories}
-            value={story.id}
-            onChange={onStar}
-            ariaLabel="项目"
-            scopeLabel="STAR"
-          />
-        </div>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} md={10}>
-            <Card title="角色 / 层映射">
-              <Space direction="vertical" size={12}>
-                <div>
-                  <Text type="secondary">角色 · </Text>
-                  <Text>{story.role}</Text>
-                </div>
-                <div>
-                  <Text type="secondary">层映射 · </Text>
-                  <Text>{story.layerMap}</Text>
-                </div>
-              </Space>
-            </Card>
-          </Col>
-          <Col xs={24} md={14}>
-            <Card title="STAR 口播">
-              <List
-                dataSource={[
-                  { k: "S（20s）", v: story.s },
-                  { k: "T（10s）", v: story.t },
-                  { k: "A（40s）", v: story.a },
-                  { k: "R（20s）", v: story.r },
-                ]}
-                renderItem={(it) => (
-                  <List.Item>
-                    <div className="star-oral-block">
-                      <Text strong>{it.k} </Text>
-                      {it.v}
+          <Tabs
+            className="workspace-tabs"
+            activeKey={activeTab}
+            onChange={(key) => key === "star" ? onStar(star) : key === "plan" ? onPlan(plan) : onSection(key)}
+            destroyOnHidden
+            items={[
+              {
+                key: "home", label: "学习路线",
+                children: (
+                  <section className="paper-panel route-panel" aria-labelledby="route-title">
+                    <header className="panel-heading"><div><p className="eyebrow">YOUR LEARNING PATH</p><h2 id="route-title">由浅入深，连成体系。</h2></div><span className="subtle-pill">3 条学习路径</span></header>
+                    <nav className="course-list" aria-label="学习路线">
+                      {layers.map((layer, index) => (
+                        <a className="course-link" href={`#/${layer.id}`} key={layer.id}>
+                          <span className="course-number">0{index + 1}</span>
+                          <span className="course-copy"><strong>{layer.title}<span>{layer.subtitle}</span></strong><span>{layer.description}</span></span>
+                          <span className="course-count">{layer.visited}<span> / {layer.total}</span><small>已浏览</small></span>
+                          <span className="course-arrow"><ArrowRightOutlined aria-hidden="true" /></span>
+                        </a>
+                      ))}
+                    </nav>
+                    <p className="panel-footnote"><ReadOutlined aria-hidden="true" /> 每个知识点都有口述、追问和原理，按自己的节奏推进。</p>
+                  </section>
+                ),
+              },
+              {
+                key: "star", label: "项目表达",
+                children: (
+                  <section className="paper-panel" aria-labelledby="star-title">
+                    <header className="panel-heading"><div><p className="eyebrow">TELL YOUR STORY</p><h2 id="star-title">把项目讲成一个好故事。</h2></div><span className="subtle-pill">90 秒 · STAR</span></header>
+                    <TopicPager items={starStories} value={story.id} onChange={onStar} ariaLabel="项目" scopeLabel="STAR" />
+                    <div className="story-context"><p><span>你的角色</span>{story.role}</p><p><span>知识关联</span>{story.layerMap}</p></div>
+                    <div className="star-steps">
+                      {[{ key: "S", label: "背景", time: "20s", text: story.s }, { key: "T", label: "任务", time: "10s", text: story.t }, { key: "A", label: "行动", time: "40s", text: story.a }, { key: "R", label: "结果", time: "20s", text: story.r }].map((step) => (
+                        <div className="star-step" key={step.key}><span className="star-letter">{step.key}</span><div><h3>{step.label}<small>{step.time}</small></h3><p>{step.text}</p></div></div>
+                      ))}
                     </div>
-                  </List.Item>
-                )}
-              />
-            </Card>
-          </Col>
-          <Col span={24}>
-            <Card title="追问速答">{story.followUp}</Card>
-          </Col>
-        </Row>
-      </section>
-
-      <section className="page-section" aria-labelledby="sprint">
-        <Title level={3} id="sprint" style={{ marginBottom: 8 }}>
-          <RocketOutlined /> 3～5 天冲刺
-        </Title>
-        <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          日程对齐三层子页；GitLab CI 六卡在场景层，列为必背。
-        </Paragraph>
-        <List
-          bordered
-          style={{ marginBottom: 20 }}
-          header={
-            <Space>
-              <CheckSquareOutlined />
-              冲刺清单
-            </Space>
-          }
-          dataSource={checklist}
-          renderItem={(c) => <List.Item>☐ {c}</List.Item>}
-        />
-        <div className="segmented-wrap" style={{ marginBottom: 16 }}>
-          <Segmented
-            value={plan}
-            options={[
-              { value: "5d", label: "5 天版" },
-              { value: "3d", label: "3 天压缩" },
+                    <details key={story.id} className="story-followup"><summary>练习追问 <ArrowRightOutlined aria-hidden="true" /></summary><p>{story.followUp}</p></details>
+                  </section>
+                ),
+              },
+              {
+                key: "plan", label: "冲刺计划",
+                children: (
+                  <section className="paper-panel" aria-labelledby="plan-title">
+                    <header className="panel-heading"><div><p className="eyebrow">MAKE ROOM FOR PRACTICE</p><h2 id="plan-title">给准备，一点节奏。</h2></div><Segmented value={plan} options={[{ value: "5d", label: "5 天" }, { value: "3d", label: "3 天" }]} onChange={(v) => onPlan(v as "5d" | "3d")} aria-label="冲刺计划" /></header>
+                    <div className="sprint-days">{days.map((day, index) => (
+                      <article className="sprint-day" key={day.label}><span className="course-number">0{index + 1}</span><div><h3>{day.label}</h3>{day.items.map((item) => <p key={item.label}><strong>{item.label}</strong>{item.value}</p>)}</div></article>
+                    ))}</div>
+                    <details className="plan-notes"><summary>准备清单与练习建议</summary><ul>{checklist.map((item) => <li key={item}>{item}</li>)}</ul><ul>{sprintTips.map((item) => <li key={item}>{item}</li>)}</ul></details>
+                  </section>
+                ),
+              },
+              {
+                key: "map", label: "知识图谱",
+                children: (
+                  <section className="paper-panel" aria-labelledby="map-title">
+                    <header className="panel-heading"><div><p className="eyebrow">CONNECT THE DOTS</p><h2 id="map-title">看见知识之间的联系。</h2></div></header>
+                    <p className="page-subtitle">{narrative}</p>
+                    <div className="overview-flow-wrap"><Suspense fallback={<div className="diagram-loading"><Spin /><span>加载交互图谱…</span></div>}><OverviewFlow /></Suspense></div>
+                    <p className="panel-footnote">语言 → 中间件与容器 → DevOps 场景。连线表示支撑与构建关系；可拖动平移、使用控件缩放。</p>
+                  </section>
+                ),
+              },
             ]}
-            onChange={(v) => onPlan(v as "5d" | "3d")}
-            aria-label="冲刺计划"
           />
         </div>
-        <Row gutter={[16, 16]}>
-          {days.map((d) => (
-            <Col xs={24} sm={12} md={8} lg={6} key={d.label}>
-              <Card className="sprint-day-card" title={d.label}>
-                <Space direction="vertical" size={8} style={{ width: "100%" }}>
-                  {d.items.map((it) => (
-                    <div key={it.label}>
-                      <span className="sprint-item-label">{it.label}</span>
-                      <Text style={{ fontSize: 13 }}>{it.value}</Text>
-                    </div>
-                  ))}
-                </Space>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-        <List
-          style={{ marginTop: 20 }}
-          header="冲刺提示"
-          dataSource={sprintTips}
-          renderItem={(t, i) => (
-            <List.Item>
-              <Text>
-                {i + 1}. {t}
-              </Text>
-            </List.Item>
-          )}
-        />
-        <nav className="layer-portals" style={{ marginTop: 16 }} aria-label="去开练">
-          {[
-            { href: "#/lang", num: "①", title: "去语言层开练", site: "Day1" },
-            { href: "#/mid", num: "②", title: "去中间件开练", site: "Day2" },
-            { href: "#/scene", num: "③", title: "去场景层开练", site: "Day3–4" },
-          ].map((l) => (
-            <a key={l.href} className="layer-portal" href={l.href}>
-              <span className="layer-portal__num">{l.num}</span>
-              <span>
-                <strong>{l.title}</strong>
-                <span style={{ color: "var(--text-muted)", marginLeft: 6 }}>
-                  {l.site}
-                </span>
-              </span>
-            </a>
-          ))}
-        </nav>
-      </section>
-    </Space>
+
+        <aside className="dashboard-aside" aria-label="学习概况">
+          <section className="paper-panel progress-panel">
+            <div className="panel-topline"><p className="eyebrow">AT YOUR OWN PACE</p><FlagOutlined aria-hidden="true" /></div>
+            <h2>一点一滴，都算数。</h2>
+            <div className="progress-number">{visited}<span> / {total}</span></div>
+            <div className="progress-track" role="progressbar" aria-label="知识点浏览进度" aria-valuenow={visited} aria-valuemin={0} aria-valuemax={total}><span style={{ width: `${percent}%` }} /></div>
+            <div className="progress-caption"><span>已浏览知识点</span><span>{percent}%</span></div>
+            <div className="layer-progress-list">{layers.map((layer) => <div key={layer.id}><span>{layer.title}</span><strong>{layer.visited}<span> / {layer.total}</span></strong></div>)}</div>
+            <p className="progress-note">记录阅读足迹，掌握程度由你判断。</p>
+          </section>
+          <section className="coach-note">
+            <p className="eyebrow"><span /> A NOTE FOR YOU</p>
+            <h2>练习表达，也练习思考。</h2>
+            <p>选一个熟悉的知识点，试着不看答案讲一遍。再用追问，找出还没想透的地方。</p>
+            <blockquote>“先讲结论，再解释取舍。”</blockquote>
+            <a href="#/overview/star/mingfu">练习项目表达 <ArrowUpOutlined aria-hidden="true" rotate={45} /></a>
+          </section>
+          <a className="sprint-shortcut" href="#/overview/plan/5d"><span><span className="eyebrow">A SMALL PLAN</span><strong>面试前，安排一次冲刺。</strong><small>3–5 天，串联知识与项目</small></span><ArrowRightOutlined aria-hidden="true" /></a>
+        </aside>
+      </div>
+    </div>
   );
 }

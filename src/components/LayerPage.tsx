@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Button, Segmented, Typography } from "antd";
 import { ExpandOutlined, CompressOutlined } from "@ant-design/icons";
 import type { PageId, SegmentGroup } from "../types";
@@ -7,12 +7,10 @@ import { TopicPager } from "./TopicPager";
 import {
   isLayerPageId,
   markCardVisited,
-  readVisitedForPage,
-  writeUiPrefs,
-  type LayerPageId,
 } from "../uiPrefs";
+import { useUiPrefs } from "../useSavedState";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export function LayerPage({
   page,
@@ -53,9 +51,12 @@ export function LayerPage({
     [groups],
   );
 
-  const [visitedCount, setVisitedCount] = useState(0);
+  const prefs = useUiPrefs();
+  const visitedIds = new Set(isLayerPageId(page) ? prefs.visitedByPage?.[page] : []);
+  const visitedCount = groups.flatMap((item) => item.cards).filter((item) => visitedIds.has(item.id)).length;
 
   const stageRef = useRef<HTMLElement>(null);
+  const previousLocation = useRef({ page, primary, topic });
   const scrollBehavior = useRef<ScrollBehavior>("smooth");
   const swipeRef = useRef({
     tracking: false,
@@ -65,6 +66,13 @@ export function LayerPage({
   });
 
   useEffect(() => {
+    const previous = previousLocation.current;
+    previousLocation.current = { page, primary, topic };
+    if (previous.page !== page) {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
+    if (previous.primary === primary && previous.topic === topic) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const behavior = reduce ? "auto" : scrollBehavior.current;
     scrollBehavior.current = "smooth";
@@ -90,6 +98,8 @@ export function LayerPage({
       if (!forward && !back && !home && !end) return;
 
       const target = e.target instanceof Element ? e.target : null;
+      // Letter shortcuts and Home/End belong to this focused control, not the whole page.
+      if (target !== stageRef.current && !target?.closest(".topic-pager")) return;
       if (target) {
         const tag = target.tagName;
         if (
@@ -101,7 +111,7 @@ export function LayerPage({
           return;
         }
         // Segmented and the open directory own their keys.
-        if (target.closest(".ant-segmented, [data-topic-directory]")) return;
+        if (target.closest(".ant-segmented, [data-topic-directory], .flow-graph-host, summary")) return;
       }
       if (document.querySelector("[data-topic-directory]")) return;
 
@@ -128,6 +138,7 @@ export function LayerPage({
     const swipe = swipeRef.current;
 
     const onStart = (e: TouchEvent) => {
+      swipe.tracking = false;
       if (e.touches.length !== 1) return;
       if (document.querySelector("[data-topic-directory]")) return;
       const target = e.target instanceof Element ? e.target : null;
@@ -177,14 +188,8 @@ export function LayerPage({
 
   useEffect(() => {
     if (!isLayerPageId(page)) return;
-    const ids = markCardVisited(page as LayerPageId, card.id);
-    setVisitedCount(ids.length);
+    markCardVisited(page, card.id);
   }, [page, card.id]);
-
-  useEffect(() => {
-    if (!isLayerPageId(page)) return;
-    setVisitedCount(readVisitedForPage(page as LayerPageId).length);
-  }, [page]);
 
   const pageLabel =
     page === "lang" ? "语言层" : page === "mid" ? "中间件层" : "场景层";
@@ -194,18 +199,18 @@ export function LayerPage({
 
   const toggleFocus = () => {
     const next = !focusMode;
-    writeUiPrefs({ focusMode: next });
     onFocusMode(next);
   };
 
   return (
     <div className="layer-page">
+      {focusMode && <h1 className="sr-only">{title} · 专注口述</h1>}
       {!focusMode && (
         <div className="layer-page__intro">
-          <Title level={2} style={{ marginBottom: 6, fontSize: 22 }}>
-            {title}
-          </Title>
-          <p className="page-subtitle">{intro}</p>
+          <p className="eyebrow">THE LEARNING ROOM / {page === "lang" ? "01" : page === "mid" ? "02" : "03"}</p>
+          <h1>{title}</h1>
+          <p className="page-subtitle">把原理、取舍与项目经验，连成一段清楚的表达。</p>
+          <details className="layer-intro-note"><summary>本层学习提示</summary><p>{intro}</p></details>
         </div>
       )}
 
@@ -215,7 +220,6 @@ export function LayerPage({
             <div className="segmented-wrap layer-toolbar__seg">
               <Segmented
                 block
-                shape="round"
                 className="train-segmented"
                 value={group.id}
                 options={groups.map((g) => ({ value: g.id, label: g.label }))}
@@ -227,12 +231,12 @@ export function LayerPage({
               type={focusMode ? "primary" : "default"}
               size="middle"
               className="focus-toggle-btn"
-              icon={focusMode ? <CompressOutlined /> : <ExpandOutlined />}
+              icon={focusMode ? <CompressOutlined aria-hidden="true" /> : <ExpandOutlined aria-hidden="true" />}
               onClick={toggleFocus}
               aria-pressed={focusMode}
-              aria-label={focusMode ? "退出今日口播焦点" : "今日口播焦点模式"}
+              aria-label={focusMode ? "退出专注练习" : "进入专注练习"}
             >
-              {focusMode ? "退出焦点" : "今日口播"}
+              {focusMode ? "退出专注" : "专注练习"}
             </Button>
           </div>
           <TopicPager
@@ -257,11 +261,11 @@ export function LayerPage({
                 />
               </div>
               <span key={visitedCount} className="layer-visit-progress__label is-tick">
-                本层 {visitedCount}/{totalCards}
+                已浏览 {visitedCount}/{totalCards}
               </span>
             </div>
             <p className="train-hint" id="card-kbd-hint">
-              本组相邻
+              聚焦卡片或导航后
               <kbd>←</kbd>
               <kbd>→</kbd>
               <span className="train-hint__or">或</span>
@@ -279,6 +283,7 @@ export function LayerPage({
       <section
         ref={stageRef}
         className="card-stage"
+        tabIndex={0}
         aria-label={`${pageLabel}知识点`}
         aria-keyshortcuts="ArrowLeft ArrowRight j k Home End"
         aria-describedby="card-kbd-hint"

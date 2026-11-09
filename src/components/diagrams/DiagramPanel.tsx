@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
 import { Tabs } from "antd";
 import {
   ApartmentOutlined,
@@ -12,7 +12,7 @@ import {
   type DiagramTab,
 } from "../../uiPrefs";
 
-const FLOW_HEIGHT = 520;
+const FLOW_HEIGHT = 360;
 
 const MermaidBlock = lazy(() =>
   import("./MermaidBlock").then((m) => ({ default: m.MermaidBlock })),
@@ -23,7 +23,7 @@ const FlowGraph = lazy(() =>
 
 function Fallback() {
   return (
-    <div style={{ padding: 32, textAlign: "center", color: "var(--text-secondary)" }}>
+    <div style={{ padding: 32, textAlign: "center", color: "var(--muted)" }}>
       加载图示…
     </div>
   );
@@ -33,7 +33,7 @@ function VisualBody({ visual }: { visual: CardVisual }) {
   if (visual.kind === "mermaid") {
     return (
       <Suspense fallback={<Fallback />}>
-        <MermaidBlock source={visual.source} />
+        <MermaidBlock key={visual.source} source={visual.source} />
       </Suspense>
     );
   }
@@ -46,7 +46,7 @@ function VisualBody({ visual }: { visual: CardVisual }) {
 
 function initialExpanded(): boolean {
   const p = readUiPrefs();
-  return p.diagramExpanded ?? true;
+  return p.diagramExpanded ?? false;
 }
 
 function initialTab(keys: string[]): string {
@@ -67,7 +67,7 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           key: "mermaid" as const,
           label: (
             <span>
-              <PartitionOutlined /> 流程
+              <PartitionOutlined aria-hidden="true" /> 流程
               {mermaidItems.length > 1 ? ` (${mermaidItems.length})` : ""}
             </span>
           ),
@@ -88,7 +88,7 @@ export function DiagramPanel({ visuals }: { visuals?: CardVisual[] }) {
           key: "flow" as const,
           label: (
             <span>
-              <ApartmentOutlined /> 可交互
+              <ApartmentOutlined aria-hidden="true" /> 可交互
               {flowItems.length > 1 ? ` (${flowItems.length})` : ""}
             </span>
           ),
@@ -124,18 +124,10 @@ function DiagramPanelInner({
   const [expanded, setExpanded] = useState(initialExpanded);
   const [activeKey, setActiveKey] = useState(() => initialTab(keys));
 
-  useEffect(() => {
-    if (!keys.includes(activeKey as DiagramTab)) {
-      setActiveKey(keys[0]);
-    }
-  }, [keys, activeKey]);
-
   const onToggle = () => {
-    setExpanded((v) => {
-      const next = !v;
-      writeUiPrefs({ diagramExpanded: next });
-      return next;
-    });
+    const next = !expanded;
+    setExpanded(next);
+    writeUiPrefs({ diagramExpanded: next });
   };
 
   const onTab = (key: string) => {
@@ -156,7 +148,7 @@ function DiagramPanelInner({
       <header className="diagram-panel__bar">
         <h3 className="diagram-panel__title">知识图示</h3>
         <div className="diagram-panel__extra">
-          <a className="diagram-skip" href="#card-followups">
+          <a className="diagram-skip" href="#card-followups" onClick={(event) => { event.preventDefault(); document.getElementById("card-followups")?.focus(); }}>
             跳到追问
           </a>
           <button
@@ -165,7 +157,7 @@ function DiagramPanelInner({
             onClick={onToggle}
             aria-expanded={expanded}
           >
-            <RightOutlined className="diagram-panel__chevron" />
+            <RightOutlined aria-hidden="true" className="diagram-panel__chevron" />
             {expanded ? "收起" : "展开"}
           </button>
         </div>
@@ -178,7 +170,7 @@ function DiagramPanelInner({
             activeKey={safeKey}
             onChange={onTab}
             items={tabItems}
-            destroyInactiveTabPane
+            destroyOnHidden
           />
         </div>
       )}

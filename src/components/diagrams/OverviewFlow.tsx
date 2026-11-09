@@ -13,11 +13,11 @@ import { diagramNodes } from "../../data/overview";
 
 const LAYER_Y: Record<number, number> = { 1: 40, 2: 200, 3: 380 };
 
-/** Amber-family restraint — no blue/purple/green rainbow. */
+/** Muted botanical tones distinguish the three knowledge layers. */
 const LAYER_COLOR: Record<number, string> = {
-  1: "#E6A23C",
-  2: "#C4A35A",
-  3: "#A89060",
+  1: "#77966a",
+  2: "#a3a276",
+  3: "#648976",
 };
 
 const SUPPORT_EDGES: { from: string; to: string; label?: string }[] = [
@@ -59,19 +59,19 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
             label: (
               <div style={{ textAlign: "center", lineHeight: 1.3 }}>
                 <div style={{ fontWeight: 600 }}>{n.label}</div>
-                <div style={{ fontSize: 11, opacity: 0.75 }}>{n.detail}</div>
+                <div style={{ fontSize: 11, opacity: 1 }}>{n.detail}</div>
               </div>
             ),
           },
           style: {
-            background: "#161E29",
-            color: "#E8EEF4",
+            background: "#f8faf2",
+            color: "#395438",
             border: `1px solid ${LAYER_COLOR[layer]}`,
             borderRadius: 10,
             padding: 8,
             fontSize: 12,
             minWidth: 110,
-            boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
+            boxShadow: "none",
           },
         });
       });
@@ -91,7 +91,7 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         style: {
           background: "transparent",
           border: "none",
-          color: LAYER_COLOR[layer],
+          color: "#526448",
           fontWeight: 700,
           fontSize: 13,
           width: 90,
@@ -111,14 +111,14 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         target: e.to,
         label: e.label,
         animated: false,
-        style: { stroke: "#6B7788" },
-        labelStyle: { fill: "#8B9BB0", fontSize: 10 },
-        labelBgStyle: { fill: "#121821", fillOpacity: 0.92 },
+        style: { stroke: "#849477" },
+        labelStyle: { fill: "#59694f", fontSize: 10 },
+        labelBgStyle: { fill: "#f8faf2", fillOpacity: 0.92 },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 14,
           height: 14,
-          color: "#6B7788",
+          color: "#849477",
         },
       })),
     [],
@@ -137,22 +137,24 @@ export function OverviewFlow({ height }: { height?: number } = {}) {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-        panOnScroll
-        minZoom={0.35}
+        panOnScroll={false}
+        zoomOnScroll={false}
+        minZoom={0.15}
         maxZoom={1.5}
         proOptions={{ hideAttribution: true }}
-        colorMode="dark"
+        colorMode="light"
+        ariaLabelConfig={{ "controls.zoomIn.ariaLabel": "放大图谱", "controls.zoomOut.ariaLabel": "缩小图谱", "controls.fitView.ariaLabel": "适应画布" }}
       >
-        <Background gap={20} size={1} color="#243041" />
+        <Background gap={20} size={1} color="#dce5d1" />
         <Controls showInteractive={false} />
         <MiniMap
           pannable
           zoomable
-          maskColor="rgba(11,15,20,0.75)"
+          maskColor="rgba(247,249,241,0.8)"
           nodeColor={(n) => {
             if (n.id.startsWith("layer-label")) return "transparent";
             const raw = diagramNodes.find((d) => d.id === n.id);
-            return raw ? LAYER_COLOR[raw.layer] : "#E6A23C";
+            return raw ? LAYER_COLOR[raw.layer] : "#77966a";
           }}
         />
       </ReactFlow>
