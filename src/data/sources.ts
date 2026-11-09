@@ -101,8 +101,20 @@ export const contentSources = {
     "url": "https://docs.python.org/3/library/threading.html"
   },
   "py-free": {
-    "title": "Python：Free-threading HOWTO",
-    "url": "https://docs.python.org/3/howto/free-threading-python.html"
+    "title": "Python 3.14：Free-threading HOWTO",
+    "url": "https://docs.python.org/3.14/howto/free-threading-python.html"
+  },
+  "py314": {
+    "title": "Python 3.14：自由线程正式支持与版本变化",
+    "url": "https://docs.python.org/3.14/whatsnew/3.14.html#free-threaded-python-is-officially-supported"
+  },
+  "py-free-capi": {
+    "title": "Python 3.14：C 扩展的自由线程支持",
+    "url": "https://docs.python.org/3.14/howto/free-threading-extensions.html"
+  },
+  "py-cmdline": {
+    "title": "Python 3.14：GIL 运行参数与环境变量",
+    "url": "https://docs.python.org/3.14/using/cmdline.html#cmdoption-X"
   },
   "py-mp": {
     "title": "Python 3.14：multiprocessing",

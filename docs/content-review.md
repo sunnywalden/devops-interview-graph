@@ -46,3 +46,28 @@
 - 浏览器图示验证：真实 Mermaid + React StrictMode 下，69 张课程图示生成 69 个 SVG，无错误提示、加载残留或正文外临时容器；错误、正常、卸载场景也通过。
 - 页面验证：桌面与 390 px 手机视口下检查核心回答、展开追问、引用和继续学习入口，没有横向溢出；引用链接最小高度 44 px，保留大尺寸翻页按钮及后续内容提示。
 - 内容复核：检查定义、条件、版本差异和图文一致性；自动测试负责结构与行为，不代替语义评审。
+
+## Python free-threading 专题补充
+
+补充日期：2026-11-08（America/Los_Angeles）。上文数量与验证记录对应首次内容重构，本节记录后续新增内容。
+
+在 Python 的 GIL 与 asyncio 之间增加独立卡片 `free-threading`，深链为 `#/lang/python/free-threading`。包含核心回答、5 条原理、3 个易错点、5 个追问及迁移验证流程图。GIL 卡片同步更新版本范围，原有课程 ID 和默认入口保持有效。
+
+内容以 CPython 3.14 为明确基线，区分以下问题：
+
+- 版本与构建：3.13 引入实验性自由线程构建，3.14 正式支持，但仍为可选构建，默认构建继续启用 GIL。
+- 能力与状态：通过 `sysconfig.get_config_var("Py_GIL_DISABLED")` 检查构建支持，通过 `sys._is_gil_enabled()` 检查实际运行状态；普通构建不能仅靠运行参数获得自由线程能力。
+- 扩展兼容性：未声明支持的 C 扩展可能在导入时重新启用 GIL；强制关闭不能解决扩展内部的并发问题。
+- 线程安全：容器内部锁不能保护跨多个操作的业务不变量，应明确同步协议或数据所有权。
+- 选型与迁移：区分自由线程、多进程和 asyncio；先验证依赖与并发正确性，再比较 GIL 基线、自由线程的单线程与多线程性能，保留回退路径。
+
+参考 [Free-threading HOWTO](https://docs.python.org/3.14/howto/free-threading-python.html)、[3.14 正式支持说明](https://docs.python.org/3.14/whatsnew/3.14.html#free-threaded-python-is-officially-supported)、[C 扩展适配指南](https://docs.python.org/3.14/howto/free-threading-extensions.html) 和 [解释器运行参数](https://docs.python.org/3.14/using/cmdline.html#cmdoption-X)，四个页面均返回 HTTP 200，带锚点的链接已核验目标存在。引用固定到 3.14，避免后续文档更新使版本条件含混。迁移步骤是评估方法，本次未执行 Python 性能基准测试，也未声明实际加速收益。
+
+补充后的课程共 101 张卡片、505 条追问，语言层 26 张，其中 Python 12 张；官方来源共 168 个，图示为 70 张 Mermaid 与 14 张交互图。
+
+验证结果：
+
+- 26 项自动测试通过，课程总数断言同步更新；原有 100 条课程深链继续通过兼容性检查。
+- `npm run lint`、`npm run build`、`git diff --check` 通过；保留既有图形引擎分块体积提示。
+- 全量浏览器回归生成 70 个 Mermaid SVG，无错误提示、加载残留或正文外临时容器。
+- 确认 GIL → Free-threading → asyncio 的前后翻页、追问展开、4 个参考链接与 Python 12 节计数；1280 px 桌面及 390 px 手机视口均无横向溢出，参考链接点击区域高度至少 44 px。

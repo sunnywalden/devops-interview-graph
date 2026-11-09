@@ -222,8 +222,8 @@ test("invalid route identifiers normalize to real content before persistence", (
 
 test("progress counts only distinct cards that still exist in the curriculum", () => {
   const snapshot = study.readStudySnapshot(null, { visitedByPage: { lang: ["gmp", "gmp", "removed-card"], mid: [middle.topic] } });
-  assert.deepEqual(snapshot.layers.map(({ total }) => total), [25, 45, 30]);
-  assert.equal(snapshot.total, 100);
+  assert.deepEqual(snapshot.layers.map(({ total }) => total), [26, 45, 30]);
+  assert.equal(snapshot.total, 101);
   assert.equal(snapshot.visited, 2);
 });
 

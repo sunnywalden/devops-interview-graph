@@ -223,6 +223,25 @@ export const languageVisuals: Record<string, CardVisual[]> = {
       ],
     },
   ],
+  "python/free-threading": [
+    {
+      kind: "mermaid",
+      title: "Free-threading：从兼容性到收益验证",
+      source: `flowchart TB
+  Build[选择 free-threaded CPython 构建] --> Import[加载实际依赖及延迟导入模块]
+  Import --> GIL{GIL 当前是否关闭}
+  GIL -->|否| Inspect[检查启动配置与扩展兼容性]
+  Inspect -->|修正后重新检测| Import
+  GIL -->|是| Correct[验证共享状态同步与并发结果]
+  Correct --> Valid{正确性是否通过}
+  Valid -->|否| Fix[修复竞争与生命周期问题后重新验证]
+  Fix --> Correct
+  Valid -->|是| Bench[比较单线程与多线程的吞吐 延迟和内存]
+  Bench --> Benefit{收益与成本是否符合目标}
+  Benefit -->|是| Rollout[逐步迁移并保留回退路径]
+  Benefit -->|否| Retain[保留原方案或评估其他并发方案]`,
+    },
+  ],
   "python/asyncio": [
     {
       kind: "mermaid",
