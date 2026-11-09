@@ -2,6 +2,39 @@ import { card } from "../i18n/contentTypes";
 import { bilingualTopics } from "./bilingualGroup";
 
 export const pythonBackend = bilingualTopics("python", {
+  "py-attribute-model": {
+    sources: ["py-data-model", "py-descriptor", "py-super"],
+    zh: card(
+      "Python 属性查找、描述器与 MRO",
+      "用方法绑定、property 和多继承解释属性如何解析，何时会被实例属性遮蔽。",
+      "以模型字段、装饰器和 mixin 为例，说明属性访问如何触发框架行为。",
+      "在默认的实例属性查找中，先沿类的方法解析顺序（MRO）找到相应类属性。如果它是实现了 __get__ 的数据描述器，先调用其 __get__；否则优先读取实例字典（如果存在），再处理非数据描述器或普通类属性。普通属性访问在查找引发 AttributeError 后，才尝试 __getattr__。\n\n函数是非数据描述器，从实例读取时会绑定实例；property 是数据描述器，可以控制读取和赋值。多继承遵循 C3 方法解析顺序。super() 从指定类之后继续查找：实例方法沿实例类型的 MRO，类方法沿实际传入的类的 MRO。",
+      ["定义 __set__ 或 __delete__ 的描述器属于数据描述器；普通方法和只实现 __get__ 的描述器可以被实例属性遮蔽。", "协作式多继承中，各实现应遵循兼容的参数约定，并用 super() 继续调用链。"],
+      ["把 super() 当作固定调用某一个直接父类。", "在自定义 __getattribute__ 中直接读取 self.attr，引发同一钩子的递归。"],
+      [
+        ["为什么实例属性可以遮蔽普通方法，却不能遮蔽 property？", "普通函数是非数据描述器，实例字典优先于它。property 实现了读取和赋值的描述器协议，因此读取时优先于同名实例属性。"],
+        ["没有 setter 的只读 property 还能阻止实例赋值吗？", "可以。property 仍实现 __set__，未定义 setter 时会抛出 AttributeError，所以它仍是数据描述器。"],
+        ["实例方法、classmethod、staticmethod 分别绑定什么？", "实例方法从实例读取时绑定实例作为首参。classmethod 绑定访问所用的类，包括继承后访问时的子类。staticmethod 返回原函数，不隐式传入实例或类。"],
+        ["菱形继承里 super() 会找谁？", "从定义当前方法的类之后查找：实例方法沿实例类型的 MRO，类方法沿实际传入的类的 MRO。下一个实现不一定来自直接父类。Python 用 C3 线性化生成 MRO；协作式调用应让每一层用兼容的签名并按约定继续调用。"],
+        ["__getattr__ 与 __getattribute__ 有何区别？", "__getattribute__ 处理所有普通实例属性读取；__getattr__ 是查找以 AttributeError 失败时的后备钩子。自定义前者时可用 object.__getattribute__(self, name) 执行基类查找，避免递归。"],
+      ],
+    ),
+    en: card(
+      "Python attribute lookup, descriptors, and MRO",
+      "Use method binding, properties, and multiple inheritance to explain attribute resolution and instance shadowing.",
+      "Use model fields, decorators, and mixins to explain how attribute access can trigger framework behavior.",
+      "Default instance lookup finds the relevant class attribute along the method resolution order (MRO). If it is a data descriptor with __get__, that method takes precedence. Otherwise look in the instance dictionary, if present, before handling a non-data descriptor or a plain class attribute. Ordinary attribute access falls back to __getattr__ only after lookup raises AttributeError.\n\nA function is a non-data descriptor that binds the instance when read from it. A property is a data descriptor that can control reads and assignment. Multiple inheritance follows the C3 method resolution order. super() continues after the specified class, along the instance type's MRO for instance methods or the actual class argument's MRO for class methods.",
+      ["A descriptor that defines __set__ or __delete__ is a data descriptor. Instance attributes can shadow ordinary methods and descriptors that only implement __get__.", "In cooperative multiple inheritance, implementations should use compatible argument conventions and use super() to continue the call chain."],
+      ["Treating super() as a call to one fixed direct parent.", "Reading self.attr directly inside a custom __getattribute__ and recursively invoking the same hook."],
+      [
+        ["Why can an instance attribute shadow an ordinary method but usually not a property?", "A normal function is a non-data descriptor, and the instance dictionary has higher precedence. A property implements the assignment part of the descriptor protocol, so reads take precedence over an instance attribute of the same name."],
+        ["Can a read-only property with no setter still prevent instance assignment?", "Yes. property still implements __set__, which raises AttributeError when no setter is defined. It remains a data descriptor."],
+        ["What do instance methods, classmethod, and staticmethod bind?", "An instance method read from an instance binds the instance as the first argument. classmethod binds the class used for access, including a subclass when inherited. staticmethod returns the wrapped function without passing an instance or class implicitly."],
+        ["What does super() call in diamond inheritance?", "It starts after the class defining the current method, along the instance type's MRO for instance methods or the actual class argument's MRO for class methods. The next implementation need not come from a direct parent. Python constructs the MRO with C3 linearization; cooperative implementations need compatible signatures and must continue the call chain by convention."],
+        ["How do __getattr__ and __getattribute__ differ?", "__getattribute__ handles ordinary instance attribute reads. __getattr__ is the fallback when lookup fails with AttributeError. Inside a custom __getattribute__, use object.__getattribute__(self, name) to perform base lookup without recursion."],
+      ],
+    ),
+  },
   "py-object-model": {
     sources: ["py-data-model", "py-compound", "py-copy"],
     zh: card(
@@ -14,7 +47,7 @@ export const pythonBackend = bilingualTopics("python", {
       [
         ["什么情况下应使用 is？", "比较对象标识，例如 x is None 或检查同一个哨兵。业务值比较使用 ==，其行为取决于类型。"],
         ["为什么多次调用 def f(items=[]) 会看到旧数据？", "默认列表在定义时创建一次。函数修改的是同一列表。改用哨兵并在函数体中初始化，或显式要求调用者传参。"],
-        ["浅拷贝能隔离嵌套字典的修改吗？", "它创建外层容器，嵌套的字典和值仍共享。可复制明确需要独立的层。整个对象图需要独立时再评估 deepcopy。"],
+        ["浅拷贝能隔离嵌套字典的修改吗？", "它创建新的外层字典，内部仍引用原来的键和值。只复制需要独立的层；需要递归复制时，可以用 deepcopy，并检查类型自定义的复制行为和原本应该共享的对象。"],
         ["自定义 __eq__ 时为什么要检查 __hash__？", "等价对象必须同哈希。如果等价关系依赖可变状态，通常应让对象不可哈希。类覆盖 __eq__ 且未定义 __hash__ 时，Python 默认将其设为不可哈希。"],
         ["循环中创建的闭包为何可能都读取最后一个值？", "闭包读取外部变量的绑定，执行时该绑定可能已更新。可在每次迭代通过参数或工厂函数绑定当前值。"],
       ],
@@ -29,7 +62,7 @@ export const pythonBackend = bilingualTopics("python", {
       [
         ["When should you use is?", "Use it to compare object identity, for example x is None or a sentinel check. Use == for business values. Its behavior depends on the type."],
         ["Why does def f(items=[]) see data from earlier calls?", "The default list is created once when the function is defined. Mutations affect that shared list. Use a sentinel and initialize inside the function, or require the caller to supply the argument."],
-        ["Does a shallow copy isolate changes to a nested dictionary?", "It creates the outer container and shares the nested dictionaries and values. Copy the layers that need separate ownership. Consider deepcopy when the entire object graph needs independence."],
+        ["Does a shallow copy isolate changes to a nested dictionary?", "It creates a new outer dictionary with references to the original keys and values. Copy only the layers that need separate ownership. For a recursive copy, consider deepcopy and check type-specific copying behavior and objects meant to remain shared."],
         ["Why check __hash__ when defining __eq__?", "Equivalent objects must hash equally. An object whose equality depends on mutable state should generally be unhashable. When a class overrides __eq__ without defining __hash__, Python makes it unhashable by default."],
         ["Why can closures created in a loop all read the last value?", "The closure reads the outer binding, which may have changed by the time it runs. Use a parameter or factory function to bind the current value on each iteration."],
       ],
@@ -78,11 +111,11 @@ export const pythonBackend = bilingualTopics("python", {
       ["atomic 嵌套通常使用保存点，回调只会在外层事务成功提交后运行，回滚到相应保存点时丢弃其注册的回调。", "迁移需要分别评估 DDL 锁、回填时间和新旧代码兼容性。"],
       ["在 serializer 中逐条访问反向关系，触发 N+1。", "提交前发布后台任务，消费者可能读不到记录。"],
       [
-        ["构造 QuerySet 会立即执行 SQL 吗？", "通常不会。迭代、list()、len() 等求值操作会触发查询。只判断是否存在且无需加载结果时可以使用 exists()。"],
+        ["构造 QuerySet 会立即执行 SQL 吗？", "通常不会。迭代、list()、len() 等操作会对尚未求值的 QuerySet 执行查询；同一个 QuerySet 可复用已有的结果缓存。只判断是否存在且不需要结果时可用 exists()。"],
         ["如何选择 select_related 和 prefetch_related？", "对单值外键或一对一通常选 select_related。对一对多和多对多用 prefetch_related。结合对象数量、查询次数与内存占用验证。"],
         ["为何建议在 atomic 块外捕获 IntegrityError？", "数据库错误可能让当前事务进入待回滚状态。让异常退出 atomic，使上下文回滚相应事务或保存点，再在外部处理。"],
         ["on_commit 能保证提交后一定发出消息吗？", "它在成功提交后调用回调。若进程在提交与发送之间退出，仍可能漏发。可靠事件可随业务数据写入 outbox，再由独立流程投递。"],
-        ["如何上线需要回填的新非空列？", "先加兼容字段，让新旧代码都能工作。分批回填并验证数据，然后收紧约束。按实际数据库版本评估锁和回滚影响。"],
+        ["如何上线需要回填的新非空列？", "先添加允许为空的列，让新旧代码兼容，再让写入路径填充新列。分批回填并验证，确保没有旧写入路径继续产生空值后再加非空约束。按数据库版本评估锁和回滚影响。"],
       ],
     ),
     en: card(
@@ -93,11 +126,11 @@ export const pythonBackend = bilingualTopics("python", {
       ["Nested atomic blocks generally use savepoints. Callbacks run after the outer transaction commits and are discarded if rolled back to the relevant savepoint.", "Evaluate DDL locks, backfill time, and compatibility between old and new code separately."],
       ["Accessing a reverse relation on each object during serialization and triggering N+1 queries.", "Publishing a background task before commit, so the consumer may not find the row."],
       [
-        ["Does constructing a QuerySet execute SQL immediately?", "Generally no. Iteration, list(), and len() are among the operations that evaluate it. Use exists() when you only need an existence check and will not load the results."],
+        ["Does constructing a QuerySet execute SQL immediately?", "Generally no. Iteration, list(), and len() query the database for an unevaluated QuerySet; the same QuerySet can reuse its result cache. Use exists() when you only need an existence check and will not load the results."],
         ["How do you choose between select_related and prefetch_related?", "Use select_related for single-valued foreign keys or one-to-one relations, and prefetch_related for one-to-many and many-to-many relations. Check object counts, query counts, and memory usage."],
         ["Why catch IntegrityError outside an atomic block?", "A database error can leave the transaction pending rollback. Let the error exit atomic so it rolls back the transaction or savepoint, then handle it outside the block."],
         ["Does on_commit guarantee that a committed change produces a message?", "It invokes the callback after a successful commit. A crash between commit and dispatch can still lose the message. Write a reliable event to an outbox in the same transaction and dispatch it separately."],
-        ["How do you deploy a new non-null column that needs a backfill?", "Add a compatible field first so old and new code can run. Backfill in batches, verify the data, then tighten the constraint. Evaluate locks and rollback against the actual database version."],
+        ["How do you deploy a new non-null column that needs a backfill?", "Add a nullable column so old and new code remain compatible, then populate it on write. Backfill in batches and verify the data. Add the non-null constraint once old write paths can no longer introduce nulls. Evaluate locking and rollback for the database version in use."],
       ],
     ),
   },
@@ -112,7 +145,7 @@ export const pythonBackend = bilingualTopics("python", {
       ["在异步路由直接调用同步 HTTP 客户端，阻塞事件循环。", "把内存字典作为所有 worker 共享的锁、限流或缓存。"],
       [
         ["普通 def 路由为何仍能服务其他请求？", "框架把同步路由交给线程池执行，事件循环可以继续处理其他任务。线程容量有限，阻塞操作仍会造成排队。"],
-        ["从 async def 调用普通 helper 时也自动用线程池吗？", "只有框架接管的同步路由或依赖会自动调度。直接调用的普通 helper 在调用方线程执行，需自行选择异步 API 或显式卸载。"],
+        ["从 async def 调用同步辅助函数时也自动用线程池吗？", "框架会把同步路由处理函数和同步依赖交给线程池。直接调用的同步辅助函数仍在调用方线程执行，应改用异步 API，或显式把阻塞工作交给线程池。"],
         ["lifespan 应创建什么？", "创建可在应用实例内复用的资源，如连接池或 HTTP 客户端，在退出时关闭。数据库会话等请求级资源有各自更短的生命周期。"],
         ["Pydantic 模型验证通过后可以直接写数据库吗？", "还要检查认证、对象级权限和业务约束，必要时依赖数据库唯一约束或事务处理并发。模型主要校验输入结构与定义的约束。"],
         ["如何验证接口并发瓶颈？", "用代表性请求负载观察尾延迟、线程池等待、事件循环延迟、下游连接池和 CPU。先定位等待发生在哪一层再调整并发。"],
@@ -145,8 +178,8 @@ export const pythonBackend = bilingualTopics("python", {
       ["在任务里进行不可重复的扣款，却没有稳定的业务幂等键。", "无上限地重试永久性错误，挤占队列和正常任务。"],
       [
         ["acks_late 能保证失败任务一定重投吗？", "不能。子进程终止时 Celery 默认仍可能确认。是否重新入队受 worker 配置、故障类型和 broker 机制影响。用真实 broker 验证。"],
-        ["Celery retry 和 broker 重投是同一件事吗？", "retry 是任务主动安排再次执行的应用行为。broker 重投通常由确认丢失或连接等故障触发。两条路径都需要处理重复执行。"],
-        ["Django 保存记录后怎样避免任务抢先读取？", "在 transaction.on_commit 中发布，或使用适用版本的 delay_on_commit。若提交后发布仍必须可恢复，使用 outbox 记录投递意图。"],
+        ["Celery retry 和 broker 重投有什么区别？", "Task.retry 发布一条使用同一任务 ID 的新消息；broker 重投是再次交付已有消息，例如连接中断时尚未确认的消息。两条路径都可能让业务逻辑再次执行，需要保证幂等。"],
+        ["Django 保存记录后怎样避免任务抢先读取？", "在事务内用 transaction.on_commit 注册投递回调，或使用 Celery 5.4 起提供的 DjangoTask.delay_on_commit。若投递必须可恢复，在同一事务内用 outbox 记录投递意图。"],
         ["任务重复收到时如何做到幂等？", "以稳定业务标识进行去重或条件更新，用唯一约束处理并发。涉及外部副作用时，要借助外部幂等接口或可恢复的状态机。"],
         ["哪些指标能发现消费能力不足？", "观察队列深度、最老任务等待时间、运行时长、重试率和失败率。结合 worker 并发、下游饱和度及任务类型定位。"],
       ],
@@ -160,8 +193,8 @@ export const pythonBackend = bilingualTopics("python", {
       ["Charging in a task without a stable idempotency key for the payment.", "Retrying permanent errors indefinitely and crowding out healthy work."],
       [
         ["Does acks_late guarantee redelivery of a failed task?", "No. Celery may still acknowledge by default when the worker child exits. Requeue behavior depends on the worker configuration, failure type, and broker. Verify it with the real transport."],
-        ["Are Celery retry and broker redelivery the same mechanism?", "retry is an application action that schedules another execution. Broker redelivery typically follows acknowledgment or connection failures. Handle duplicates on both paths."],
-        ["How do you keep a task from reading a Django row before commit?", "Publish from transaction.on_commit or use delay_on_commit on a compatible version. Use an outbox to retain the intent if post-commit dispatch must be recoverable."],
+        ["How does Celery retry differ from broker redelivery?", "Task.retry publishes a new message with the same task ID. Broker redelivery delivers an existing message again, for example after a connection drops with the delivery unacknowledged. Either path can rerun business logic, so make it idempotent."],
+        ["How do you keep a task from reading a Django row before commit?", "Register dispatch with transaction.on_commit inside the transaction, or use DjangoTask.delay_on_commit from Celery 5.4 onward. If dispatch must be recoverable, record the intent in an outbox in the same transaction."],
         ["How do you make duplicate task deliveries safe?", "Deduplicate or update conditionally using a stable business identifier, with a unique constraint for concurrent attempts. For external effects, use a downstream idempotency API or a recoverable state machine."],
         ["Which metrics show insufficient consumer capacity?", "Track depth, oldest queued age, run time, retries, and failures. Correlate them with worker concurrency, downstream saturation, and task types."],
       ],
@@ -179,7 +212,7 @@ export const pythonBackend = bilingualTopics("python", {
       [
         ["flush 之后另一个事务能读到新行吗？", "阻止脏读的隔离级别下，提交前看不到新行。提交后，读事务可能还需要新快照。flush 在当前事务中执行 SQL，可以填充主键，变更仍可回滚。"],
         ["identity map 是查询缓存吗？", "它为当前 Session 中同一数据库标识复用对象。一般查询仍会执行 SQL。按主键的 Session.get 在对象已存在且未过期时可直接返回它。"],
-        ["怎样避免遍历订单时逐条查询明细？", "根据关系规模采用 selectinload 等预加载策略。比较 SQL 次数、返回行数和内存占用，必要时限制分页大小。"],
+        ["怎样避免遍历订单时逐条查询明细？", "可用 selectinload 批量加载订单明细。若用 joinedload 加载集合，连接会扩展结果行，SQLAlchemy 2.x 要求显式调用 Result.unique()。用查询次数、返回行数和内存占用比较策略，并限制单页大小。"],
         ["为什么并发任务要各用一个 AsyncSession？", "Session 包含可变的事务、连接和对象状态。每个并发任务用独立会话。需要同一事务的操作应在一个工作单元中协调。"],
         ["怎样安全地发布结构迁移？", "用 Alembic 等工具版本化迁移并审核生成的 DDL。滚动发布时保持新旧代码兼容，分阶段回填和移除旧字段。"],
       ],
@@ -194,7 +227,7 @@ export const pythonBackend = bilingualTopics("python", {
       [
         ["Can another transaction see a new row immediately after flush?", "At isolation levels that prevent dirty reads, the new row is invisible before commit. After commit, an existing transaction may need a fresh snapshot to see it. Flush executes SQL in the current transaction and can populate primary keys. The changes can still roll back."],
         ["Is the identity map a query cache?", "It reuses objects for the same database identity in the current Session. Ordinary queries still execute SQL. A primary-key Session.get can return an existing nonexpired object directly."],
-        ["How do you avoid querying line items one order at a time?", "Use eager loading such as selectinload based on the relationship size. Compare SQL count, result rows, and memory, and bound page size where needed."],
+        ["How do you avoid querying line items one order at a time?", "Use selectinload to batch-load line items. A joinedload of a collection multiplies result rows, and SQLAlchemy 2.x requires an explicit Result.unique() call. Compare query count, result rows, and memory, and limit page size."],
         ["Why should concurrent tasks use separate AsyncSession instances?", "The Session carries mutable transaction, connection, and object state. Use a session per concurrent task and coordinate operations that must share a transaction within one unit of work."],
         ["How do you deploy a schema migration safely?", "Version migrations with a tool such as Alembic and review generated DDL. Keep old and new code compatible during rolling releases, then stage backfills and removal of old fields."],
       ],

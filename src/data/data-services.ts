@@ -13,7 +13,7 @@ export const postgres = bilingualGroup("postgres", "PostgreSQL", "pg-mvcc", {
       ["认为更新会覆盖唯一行版本，忽略清理压力。", "将 WAL 当成读事务为查询构造快照时直接读取的历史版本库。"],
       [
         ["同一事务内两条 SELECT 为什么可能读到不同数据？", "默认 Read Committed 为每条语句建立快照。其他事务在两条语句之间提交时，后者可能读到新值。"],
-        ["Repeatable Read 与 Serializable 有何区别？", "PostgreSQL 的 Repeatable Read 提供快照隔离，仍可能出现序列化异常。Serializable 会检测冲突依赖，必要时中止事务。应用应处理重试。"],
+        ["Repeatable Read 与 Serializable 有何区别？", "PostgreSQL 的 Repeatable Read 提供快照隔离，仍可能出现序列化异常。Serializable 会检测可能导致序列化异常的依赖并在必要时中止事务。这两种级别遇到 SQLSTATE 40001 时，都应从事务起点重新读取并执行，重试要有预算。"],
         ["普通 VACUUM 为什么不一定让磁盘文件变小？", "它通常回收表内空间供后续写入。能否截断尾部取决于空闲页位置等条件。需要整体压缩时，评估 VACUUM FULL 的重写、锁和额外空间。"],
         ["怎么查 autovacuum 落后？", "结合 pg_stat_user_tables 中的估算死元组和最近清理时间、长事务、清理进度与写入速率，找出受限点。"],
         ["WAL 与 MVCC 的职责各是什么？", "WAL 记录恢复所需的变更并支持重放。MVCC 按快照决定各个行版本对事务是否可见。"],
@@ -28,7 +28,7 @@ export const postgres = bilingualGroup("postgres", "PostgreSQL", "pg-mvcc", {
       ["Assuming an update overwrites the only version of a row and ignoring cleanup pressure.", "Treating WAL as a store that reads consult directly for historical versions when building a snapshot."],
       [
         ["Why can two SELECT statements in one transaction see different data?", "The default Read Committed level gives each statement its own snapshot. If another transaction commits between them, the later statement can see the new value."],
-        ["How do Repeatable Read and Serializable differ?", "PostgreSQL Repeatable Read provides snapshot isolation, where serialization anomalies can still occur. Serializable detects conflicting dependencies and aborts a transaction when needed. The application should handle retries."],
+        ["How do Repeatable Read and Serializable differ?", "PostgreSQL Repeatable Read provides snapshot isolation, where serialization anomalies can still occur. Serializable detects dependencies that could lead to serialization anomalies and aborts a transaction when needed. On SQLSTATE 40001 at either level, retry the entire transaction, including its reads, within a retry budget."],
         ["Why may plain VACUUM leave the file size unchanged?", "It usually reclaims space inside the table for later writes. Truncating the tail depends on where free pages are and other conditions. For compaction, evaluate VACUUM FULL's rewrite, lock, and extra space."],
         ["How do you investigate lagging autovacuum?", "Correlate estimated dead tuples and recent vacuum times in pg_stat_user_tables with old transactions, vacuum progress, and write rate to identify the constraint."],
         ["What are the respective roles of WAL and MVCC?", "WAL records changes for recovery and supports replay. MVCC uses a snapshot to decide which row versions a transaction can see."],
@@ -41,7 +41,7 @@ export const postgres = bilingualGroup("postgres", "PostgreSQL", "pg-mvcc", {
       "PostgreSQL 查询计划与索引选择",
       "从估计行数、执行循环和缓冲读写定位查询瓶颈，再选择合适索引。",
       "用按租户分页和 JSONB 查询比较不同索引策略、扫描范围与写入代价。",
-      "先用 EXPLAIN 查看计划。对代表性参数，在受控环境用 EXPLAIN (ANALYZE, BUFFERS) 看实际行数、循环和缓冲访问，定位估计偏差、重复扫描和 I/O。ANALYZE 会执行语句，写语句尤其要控制副作用。\n\n常见等值、范围与有序读取可考虑 B-tree。对受支持的 JSONB 查询可考虑 GIN，并核对操作符类。索引仅扫描还受可见性映射影响。索引收益要结合真实数据分布、延迟和写入成本验证。",
+      "先用 EXPLAIN 查看计划。对代表性参数，在受控环境用 EXPLAIN (ANALYZE, BUFFERS) 看实际行数、循环次数和缓冲区访问，定位估计偏差、重复扫描和 I/O。节点执行多次时，actual time 和 rows 是每次循环的平均值；上层节点的 BUFFERS 统计包含子节点。ANALYZE 会执行语句，写语句尤其要控制副作用。\n\n常见等值、范围与有序读取可考虑 B-tree。对受支持的 JSONB 查询可考虑 GIN，并核对操作符类。仅索引扫描（Index Only Scan）还受可见性映射影响。索引收益要结合真实数据分布、延迟和写入成本验证。",
       ["估计行数明显偏离实际时检查统计信息、数据倾斜和列相关性。", "部分索引依赖优化器能证明查询谓词蕴含索引谓词，需验证真实参数与计划。"],
       ["看到顺序扫描便认为查询一定有问题。", "看到 Index Only Scan 就断定没有访问表，忽略 Heap Fetches。"],
       [
@@ -56,7 +56,7 @@ export const postgres = bilingualGroup("postgres", "PostgreSQL", "pg-mvcc", {
       "PostgreSQL query plans and index selection",
       "Use estimated rows, execution loops, and buffer activity to find query bottlenecks and choose indexes.",
       "Use tenant-scoped pagination and JSONB queries to compare index strategies, scan ranges, and write costs.",
-      "Start with EXPLAIN. For representative parameters in a controlled environment, use EXPLAIN (ANALYZE, BUFFERS) to inspect actual rows, loops, and buffer activity. Look for estimate errors, repeated scans, and I/O. ANALYZE runs the statement, so control side effects, especially for writes.\n\nConsider B-tree for common equality, range, and ordered access. GIN can suit supported JSONB queries, depending on the operator class. Index-only scans also depend on the visibility map. Validate indexes against real distributions, latency, and write costs.",
+      "Start with EXPLAIN. For representative parameters in a controlled environment, use EXPLAIN (ANALYZE, BUFFERS) to inspect actual rows, loops, and buffer activity. Look for estimate errors, repeated scans, and I/O. For a node executed multiple times, actual time and rows are per-loop averages; a parent node's BUFFERS counts include its children. ANALYZE runs the statement, so control side effects, especially for writes.\n\nConsider B-tree for common equality, range, and ordered access. GIN can suit supported JSONB queries, depending on the operator class. Index-only scans also depend on the visibility map. Validate indexes against real distributions, latency, and write costs.",
       ["When estimated and actual rows differ substantially, check statistics, skew, and column correlation.", "A partial index requires the planner to prove that the query predicate implies the index predicate. Check real parameters and plans."],
       ["Assuming a sequential scan always indicates a problem.", "Assuming Index Only Scan means zero table access and overlooking Heap Fetches."],
       [
@@ -83,7 +83,7 @@ export const redisAtomicity = bilingualTopics("redis", {
       [
         ["pipeline 可以保证整批命令原子执行吗？", "流水线本身只减少往返，其他客户端命令可以穿插。需要隔离时使用事务或脚本，并考虑执行期错误。"],
         ["MULTI 后的命令什么时候真正执行？", "未发生入队错误且 WATCH 未中止事务时，EXEC 触发执行已排队的命令。入队错误（如参数数量错误）会让 EXEC 放弃整批。执行期某命令失败时，其余命令仍会处理，已完成的写入不会回滚。"],
-        ["WATCH 冲突怎么处理？", "重新建立监视，重新读取并计算，再尝试提交。同一次尝试使用同一个连接。限制重试次数，高冲突时可评估短脚本。"],
+        ["WATCH 冲突怎么处理？", "监视期间，客户端修改键，或 Redis 让键过期、将其淘汰，都会使 EXEC 放弃执行。每次重试在同一连接重新 WATCH、读取、计算和提交。限制重试次数，高冲突时可评估短脚本。"],
         ["Lua 脚本运行一半出错会回滚吗？", "Redis 隔离执行脚本，但已完成的写入不会因脚本报错而回滚。先验证输入和必要条件，缩小写入后的失败面。"],
         ["在 Redis Cluster 里操作多个键要注意什么？", "相关事务和脚本通常要求键位于同一哈希槽，可按业务边界使用 hash tag。还要避免过度集中负载形成热点。"],
       ],
@@ -98,7 +98,7 @@ export const redisAtomicity = bilingualTopics("redis", {
       [
         ["Does pipelining make the batch atomic?", "Pipelining itself only saves round trips. Other clients' commands can interleave. Use a transaction or script for isolation and account for execution errors."],
         ["When do commands after MULTI actually run?", "EXEC runs the queued commands if there was no queue-time error or WATCH conflict. A queue-time error such as a wrong number of arguments makes EXEC discard the batch. If a command fails during execution, other commands still run and completed writes remain in place."],
-        ["How do you handle a WATCH conflict?", "Start a new watch, reread the state, recompute, and try to commit. Keep each attempt on one connection. Bound retries and consider a short script under high contention."],
+        ["How do you handle a WATCH conflict?", "EXEC aborts if a client modifies a watched key or Redis expires or evicts it. On each retry, WATCH again, reread, recompute, and submit on the same connection. Bound retries and consider a short script under high contention."],
         ["Does Redis roll back if a Lua script errors midway?", "Redis executes the script in isolation, but writes already completed are not rolled back on error. Validate inputs and preconditions first to reduce failure paths after writing."],
         ["What matters when using multiple keys on Redis Cluster?", "Related transactions and scripts generally require keys in the same hash slot. Use hash tags where they match the business boundary and avoid concentrating traffic into a hotspot."],
       ],
@@ -108,7 +108,7 @@ export const redisAtomicity = bilingualTopics("redis", {
 
 export const kafkaConsumers = bilingualTopics("mq", {
   "kafka-consumers": {
-    sources: ["kafka-design", "kafka-consumer", "rabbitmq-confirms"],
+    sources: ["kafka-design", "kafka-consumer", "kafka-rebalance", "rabbitmq-confirms"],
     zh: card(
       "Kafka 消费组、位点与处理语义",
       "用分区分配、提交时机和重平衡解释顺序、并发和重复处理。",
@@ -118,7 +118,7 @@ export const kafkaConsumers = bilingualTopics("mq", {
       ["处理前提交位点，却期待进程崩溃后仍能重新处理。", "启用 Kafka 事务后，认为外部 HTTP 调用或数据库写入也自动精确一次。"],
       [
         ["提交 offset 记的是哪条记录？", "提交值通常表示下一条要读的记录位置。按分区记录连续完成进度，避免并行处理完成顺序不同时跳过未完成记录。"],
-        ["重平衡会如何影响正在处理的消息？", "分区可能转移到另一成员。按客户端的分配和撤销回调协调在途工作，只提交可确认已完成的进度，并准备处理重复。"],
+        ["重平衡会如何影响正在处理的消息？", "分区可能转移到另一成员。正常撤销时，在客户端允许的范围内排空在途工作，只提交连续处理完成位置之后的偏移量。如果已失去分区所有权（如 Java 客户端收到 onPartitionsLost），停止该分区的工作，不再提交它的偏移量；业务处理仍要容忍重复。"],
         ["同一个订单如何保持事件顺序？", "按稳定的订单键分区，并在同一分区对该键保持处理顺序。分区数变动和消费者内并行可能影响既有的顺序假设。"],
         ["Kafka 的精确一次语义能覆盖外部数据库吗？", "Kafka 事务能将 Kafka 输出和位点放入同一事务，且下游需按已提交读取。外部数据库需自己的原子去重、幂等写入或其他协调方案。"],
         ["Kafka 位点提交和 RabbitMQ 确认怎样比较？", "Kafka 按组维护分区进度。RabbitMQ 的 consumer acknowledgment 告知 broker 消费端处理情况，publisher confirm 是独立的发布端确认。按实际故障路径验证重投。"],
@@ -133,7 +133,7 @@ export const kafkaConsumers = bilingualTopics("mq", {
       ["Committing before processing and expecting to reprocess after a crash.", "Assuming Kafka transactions also make external HTTP calls or database writes exactly once."],
       [
         ["Which record does an offset commit point to?", "The committed value normally represents the next position to read. Track contiguous completion per partition to avoid skipping pending work when concurrent operations finish out of order."],
-        ["How does a rebalance affect in-flight records?", "Partitions can move to another member. Coordinate in-flight work using the client's assignment and revocation callbacks, commit only verified progress, and handle duplicates."],
+        ["How does a rebalance affect in-flight records?", "Partitions can move to another member. On normal revocation, drain work within the client's allowed window and commit only the offset after the contiguous processed prefix. If ownership is already lost (for example, onPartitionsLost in the Java client), stop work and do not commit offsets for those partitions. Business processing must still tolerate duplicates."],
         ["How do you preserve event order for one order?", "Partition by a stable order key and preserve processing order for that key within the partition. Partition count changes and internal consumer concurrency can affect the ordering assumptions."],
         ["Can Kafka exactly-once semantics cover an external database?", "Kafka transactions can put Kafka outputs and offsets in one transaction, with downstream readers using committed data. An external database needs atomic deduplication, idempotent writes, or other coordination."],
         ["How do Kafka offset commits compare with RabbitMQ acknowledgments?", "Kafka tracks per-group partition progress. RabbitMQ consumer acknowledgments report consumer-side handling to the broker. Publisher confirms are a separate publishing-side mechanism. Verify redelivery on the actual failure path."],

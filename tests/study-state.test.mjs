@@ -137,7 +137,7 @@ test("language preference validates input and preserves learning state across sw
     const snapshot = study.readStudySnapshot();
     assert.equal(snapshot.resume.href, "#/lang/go/chan");
     assert.equal(snapshot.visited, 1);
-    assert.equal(snapshot.total, 149);
+    assert.equal(snapshot.total, 152);
     if (locale === "en") assert.doesNotMatch(snapshot.resume.layer + snapshot.resume.card.label, /\p{Script=Han}/u);
   }
 });
@@ -291,8 +291,8 @@ test("role paths localize the same valid topics and preserve old MySQL bookmarks
 
 test("progress counts only distinct cards that still exist in the curriculum", () => {
   const snapshot = study.readStudySnapshot(null, { visitedByPage: { lang: ["gmp", "gmp", "exit-status", "removed-card"], mid: [middle.topic, "gitlab-pipeline"] } });
-  assert.deepEqual(snapshot.layers.map(({ total }) => total), [43, 70, 36]);
-  assert.equal(snapshot.total, 149);
+  assert.deepEqual(snapshot.layers.map(({ total }) => total), [45, 70, 37]);
+  assert.equal(snapshot.total, 152);
   assert.deepEqual(snapshot.layers.map(({ visited }) => visited), [2, 2, 0]);
   assert.equal(snapshot.visited, 4);
 });

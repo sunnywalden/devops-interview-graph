@@ -2,6 +2,39 @@ import { card } from "../i18n/contentTypes";
 import { bilingualTopics } from "./bilingualGroup";
 
 export const goBackend = bilingualTopics("go", {
+  "go-sync-primitives": {
+    sources: ["go-sync", "go-atomic", "go-memory", "go-errgroup"],
+    zh: card(
+      "Go 并发原语：Once、WaitGroup 与原子操作",
+      "区分一次性初始化、任务汇合、共享状态保护和临时对象复用。",
+      "以并发读取配置并等待后台任务退出为例，解释每种原语保证什么。",
+      "用 sync.Once 执行一次初始化，用 sync.WaitGroup 等待一批任务结束。WaitGroup 不传播错误或主动取消任务；需要这些能力时，可用 errgroup.WithContext 并让任务响应取消。Once、WaitGroup 和 Mutex 在首次使用后不可复制。\n\n对单个计数器可使用 sync/atomic；多字段不变量通常用同一把锁，或构造完整的不可变快照并用 atomic.Pointer 一次发布。发布只保护指针的读写，发布后的对象也必须保持不可变。",
+      ["在计数器为零时，先增加计数再调用 Wait；手动启动 goroutine 时，在启动前调用 Add。", "同步原语按共享状态和生命周期选用。原子读取多个字段并不等于读取同一版本的快照。"],
+      ["在新 goroutine 内调用 Add，主 goroutine 可能先从 Wait 返回。", "把 sync.Pool 当作连接池，或归还对象后仍继续使用。"],
+      [
+        ["sync.Once.Do 的函数 panic 了，下次会重试吗？", "不会。Once 把这次调用视为已执行，之后不会再调用该函数。若初始化失败后需要重试，显式设计状态、错误传播和重试策略。"],
+        ["WaitGroup 的 Add、Done、Wait 应怎样排序？", "如果计数为零，正增量的 Add 必须先于 Wait。手动启动任务时先 Add(1)，再启动 goroutine，并在任务中 defer Done()。复用时，要等上一轮的 Wait 全部返回再加入新一轮任务。"],
+        ["Go 1.25 的 WaitGroup.Go 与 errgroup 有何区别？", "WaitGroup.Go 启动并跟踪 goroutine，传入的函数不得 panic，也不返回错误。errgroup.Wait 返回任务的首个非 nil 错误；用 WithContext 时，该错误会触发派生 context 取消，任务仍需配合退出。"],
+        ["原子操作能代替 Mutex 吗？", "单个计数器可用原子 Add，单值的条件更新可用比较并交换（CAS）。分开的 Load 与 Store 仍可能丢失并发更新。多个字段需要一起变化时，可用锁，或发布完整快照并在并发写者之间协调更新。"],
+        ["sync.Pool 适合保存哪些对象？", "适合跨请求复用临时缓冲区等对象以减少分配。池可随时丢弃条目，归还前应清除不应泄露的数据，归还后调用方不再使用该对象。需要显式管理连接数量和关闭时机时，应使用专门的连接池。"],
+      ],
+    ),
+    en: card(
+      "Go synchronization: Once, WaitGroup, and atomics",
+      "Distinguish one-time initialization, task joining, shared-state protection, and temporary object reuse.",
+      "Use concurrent configuration reads and background task shutdown to explain what each primitive guarantees.",
+      "Use sync.Once for one-time initialization and sync.WaitGroup to wait for a set of tasks. WaitGroup does not propagate errors or cancel tasks. For those needs, use errgroup.WithContext and have tasks respond to cancellation. Do not copy Once, WaitGroup, or Mutex after first use.\n\nUse sync/atomic for a single counter. Protect an invariant across several fields with one lock, or build a complete immutable snapshot and publish it with atomic.Pointer. Atomic publication protects access to the pointer; the published object must also stay immutable.",
+      ["When the counter is zero, increment it before calling Wait. When starting a goroutine manually, call Add before starting it.", "Choose synchronization by the shared state and task lifetime. Several atomic reads do not constitute a snapshot of one version."],
+      ["Calling Add inside a new goroutine, allowing the caller's Wait to return first.", "Using sync.Pool as a connection pool, or using an object after returning it."],
+      [
+        ["Will sync.Once.Do retry a function that panicked?", "No. Once treats the call as done and does not invoke the function again. If initialization must be retried after failure, design explicit state, error propagation, and a retry policy."],
+        ["How should Add, Done, and Wait be ordered?", "A positive Add while the counter is zero must precede Wait. When starting a task manually, call Add(1) before launching the goroutine and defer Done() in the task. When reusing the group, wait for all previous Wait calls to return before adding the next set of tasks."],
+        ["How does Go 1.25's WaitGroup.Go differ from errgroup?", "WaitGroup.Go starts and tracks a goroutine. Its function must not panic and does not return an error. errgroup.Wait returns the first non-nil task error; with WithContext, that error cancels the derived context. Tasks must still cooperate with cancellation."],
+        ["Can atomics replace a Mutex?", "Use atomic Add for a counter or compare-and-swap (CAS) for a conditional update of one value. Separate Load and Store calls can still lose concurrent updates. When fields must change together, use a lock or publish a complete snapshot and coordinate concurrent writers."],
+        ["What belongs in a sync.Pool?", "Temporary objects such as buffers can be reused across requests to reduce allocations. The pool can drop entries at any time. Clear data that must not leak before returning an object, and stop using it afterward. Use a dedicated connection pool when you must manage connection counts and closing explicitly."],
+      ],
+    ),
+  },
   "go-collections": {
     sources: ["go-spec", "go-memory", "go-race"],
     zh: card(
@@ -12,7 +45,7 @@ export const goBackend = bilingualTopics("go", {
       ["用 len 表示可访问长度，cap 表示可扩展范围。三索引切片可以限制后续 append 的可用容量。", "map 遍历顺序未规定。输出需要稳定顺序时先收集并排序键。"],
       ["复制切片变量后，假设改元素不会影响另一份切片。", "只在写 map 时加锁，读同一个 map 时绕过同步。"],
       [
-        ["把 slice 传给函数后，函数能改调用者的数据吗？", "可以改共享数组中已有元素。参数本身按值传递，函数更新本地切片的长度或地址不会更新调用者的切片值。要返回 append 的结果。"],
+        ["把 slice 传给函数后，函数能改调用者的数据吗？", "可以修改共享底层数组中的元素。切片参数按值传递，函数内重新切片或给参数重新赋值，不会改变调用者持有的切片值。调用者需要新切片时，返回 append 的结果。"],
         ["如何避免子切片 append 覆盖后面的原数据？", "将子切片的容量限制为长度，追加至少一个元素时会分配新数组，也可以先复制元素。只限制容量仍会共享已有元素。"],
         ["nil slice 和 nil map 能直接使用吗？", "nil slice 可读长度、遍历和 append。nil map 可查询、遍历或 delete。给 nil map 写键会 panic。写入前先初始化。"],
         ["如何区分 map 中不存在的键与零值？", "使用 v, ok := m[k]。不存在时 v 是值类型的零值且 ok 为 false。存在时即使值为零，ok 也为 true。"],
@@ -27,7 +60,7 @@ export const goBackend = bilingualTopics("go", {
       ["Length is the accessible size and capacity is the range available for growth. A full slice expression can limit the capacity available to a later append.", "Map iteration order is unspecified. Collect and sort keys when output needs a stable order."],
       ["Copying a slice variable and assuming element changes cannot affect the other slice.", "Locking map writes while reading the same map without synchronization."],
       [
-        ["Can a function change the caller's data through a slice parameter?", "It can change existing elements of the shared array. Parameters are passed by value, so changing the local slice's length or address does not update the caller's slice value. Return the result of append."],
+        ["Can a function change the caller's data through a slice parameter?", "It can modify elements in the shared underlying array. The slice parameter is passed by value, so reslicing or reassigning the parameter does not change the caller's slice value. Return the result of append if the caller needs the new slice."],
         ["How can you prevent append on a subslice from overwriting later data?", "Cap the subslice at its length so appending one or more elements allocates a new array, or copy the elements first. Limiting capacity still shares existing elements."],
         ["Can you use a nil slice or a nil map directly?", "You can take the length of a nil slice, range over it, and append. You can look up, range over, and delete from a nil map. Assigning a key in a nil map panics, so initialize it before writing."],
         ["How do you distinguish a missing map key from a zero value?", "Use v, ok := m[k]. For a missing key, v is the element type's zero value and ok is false. For a present key, ok is true even when its value is zero."],
@@ -47,7 +80,7 @@ export const goBackend = bilingualTopics("go", {
       [
         ["defer f(x) 和 defer func(){ f(x) }() 的区别是什么？", "前者注册时求出 x 的值并保存给调用。后者在闭包执行时读取捕获的 x。若 x 之后被重新赋值，结果可能不同。"],
         ["多个 defer 的执行顺序是什么？", "后注册先执行。正常返回先计算并赋值返回值，再执行 defer。panic 展开也会执行该 goroutine 当前各函数的 defer。"],
-        ["为什么封装一层 recover 有时无效？", "recover 必须在处理 panic 的延迟函数中直接调用。若延迟函数再调用普通助手函数，助手里的 recover 无法捕获这次 panic。"],
+        ["为什么封装一层 recover 有时无效？", "同一 goroutine 发生 panic 时，recover 必须由延迟执行的函数直接调用。若它再调用普通辅助函数，辅助函数里的 recover 无法停止这次 panic。"],
         ["defer 能保证进程退出时清理吗？", "函数返回或 panic 展开时会执行相应的 defer。os.Exit 会直接结束进程并跳过 defer，进程也可能被强制终止，所以持久状态要有可恢复设计。"],
         ["延迟关闭资源的错误何时需要处理？", "如果关闭或刷新会影响写入结果，应检查其错误，并保留已有业务错误，例如在命名返回值上合并错误。纯清理失败则按资源与故障影响记录或处理。"],
       ],
@@ -79,7 +112,7 @@ export const goBackend = bilingualTopics("go", {
       ["先为所有任务创建 goroutine，再在内部限流，仍可能积压大量等待的 goroutine。", "只传递 context，但使用不接收 context 的阻塞 I/O。"],
       [
         ["WaitGroup 和 errgroup 如何选？", "WaitGroup 等待任务结束，错误与取消由调用者自行组织。errgroup.WithContext 汇总首个返回错误并取消派生 context，适合希望其他子任务尽早退出的一组工作。"],
-        ["SetLimit 满了以后会发生什么？", "Group.Go 会阻塞到有可用容量。TryGo 在有空位时启动任务，否则返回 false。过载时应显式选择等待或拒绝。不要在还有活跃任务时更改限制。"],
+        ["达到 SetLimit 上限后会发生什么？", "Group.Go 等待可用名额，等待本身不会因 context 取消而中断。TryGo 有名额才启动任务，否则返回 false。若任务提交必须能响应取消，应在提交侧使用可取消的准入控制。活跃任务尚未结束时不能更改上限。"],
         ["errgroup 派生的 context 何时取消？", "第一个任务返回非 nil 错误，或 Wait 首次返回时取消，取两者中先发生的情况。不要把这个 context 交给 Wait 结束后还要运行的工作。"],
         ["谁应该关闭任务 channel？", "负责发送的一侧或统筹所有发送者的协调者，在确认后续不会再发送后关闭。消费者通过关闭、取消或业务信号退出，避免与发送方竞态关闭。"],
         ["部分任务失败后怎样重试？", "明确成功记录的持久化边界，保存任务标识与结果，只重试可重试的失败项。下游写入采用幂等键或条件更新，并限制总次数和截止时间。"],
@@ -94,7 +127,7 @@ export const goBackend = bilingualTopics("go", {
       ["Starting a goroutine for every job and limiting only inside it, allowing many goroutines to wait.", "Passing context while calling blocking I/O that does not accept it."],
       [
         ["When do you choose WaitGroup or errgroup?", "WaitGroup waits for tasks. The caller handles errors and cancellation. errgroup.WithContext reports the first returned error and cancels the derived context so sibling tasks can stop promptly."],
-        ["What happens when the SetLimit bound is reached?", "Group.Go blocks until there is capacity. TryGo starts a task if capacity exists and otherwise returns false. Choose waiting or rejection explicitly, and do not change the limit while tasks are active."],
+        ["What happens when the SetLimit bound is reached?", "Group.Go waits for a slot, and canceling the context does not interrupt that wait. TryGo starts a task only if a slot is available and otherwise returns false. Use cancellable admission on the submission side if it must respond to cancellation. Do not change the limit while tasks are active."],
         ["When is the derived errgroup context canceled?", "On the first non-nil task error or the first return from Wait, whichever comes first. Do not use that context for work that needs to run after Wait."],
         ["Who should close the jobs channel?", "The sending side or its coordinator closes the channel once no further sends are possible. Consumers exit on closure, cancellation, or another explicit signal without racing senders to close."],
         ["How do you retry partial failures?", "Define durable success, persist task IDs and outcomes, and retry only eligible failures. Use idempotency keys or conditional writes downstream, with bounded attempts and a deadline."],
@@ -113,7 +146,7 @@ export const goBackend = bilingualTopics("go", {
       [
         ["ReadHeaderTimeout 与 ReadTimeout 有什么区别？", "ReadHeaderTimeout 限制读取请求头的时间。ReadTimeout 限制读取整个请求，包括 body。对上传等场景，要根据实际大小和速度预算配置，不要把读超时当作处理器的业务截止时间。"],
         ["客户端断开后，业务代码会自动结束吗？", "入站请求的 context 会在客户端连接关闭、HTTP/2 请求取消或 ServeHTTP 返回等条件下取消。代码仍需向 I/O 传递它并主动响应取消。"],
-        ["如何正确使用响应 Body？", "成功拿到响应后关闭 Body，非 2xx 也一样。希望复用 HTTP/1.x 连接时，可在安全的大小和时间边界内读到 EOF 再关闭。对不可信或超大的响应避免无界排空。"],
+        ["如何正确使用响应 Body？", "Client.Do 返回 nil 错误时，由调用方关闭 Body，非 2xx 响应也一样。希望复用 HTTP/1.x 连接时，可在大小和时间限制内读到 EOF 再关闭。避免无界读取不可信或超大的响应。"],
         ["Gin 鉴权中间件失败后怎样结束请求？", "用 Abort 或 AbortWithStatusJSON 阻止后续处理器，再从当前函数返回。测试未授权请求没有产生下游调用或数据写入。"],
         ["httptest 的两种常用方式怎么选？", "用 NewRecorder 和构造的请求直接检查处理器的状态、头和响应体。用 NewServer 发真实 HTTP 请求，覆盖客户端、连接或协议相关行为。"],
       ],
@@ -128,7 +161,7 @@ export const goBackend = bilingualTopics("go", {
       [
         ["How do ReadHeaderTimeout and ReadTimeout differ?", "ReadHeaderTimeout limits reading request headers. ReadTimeout limits reading the whole request, including the body. Size and rate requirements matter for uploads. A read timeout does not set an application deadline for the handler."],
         ["Does handler work automatically stop when a client disconnects?", "An incoming request context is canceled when the client connection closes, an HTTP/2 request is canceled, or ServeHTTP returns. Code must still pass the context to I/O and respond to cancellation."],
-        ["How should you handle the response Body?", "Close the Body whenever you successfully receive a response, including non-2xx statuses. For HTTP/1.x connection reuse, you can read to EOF and close within safe size and time limits. Avoid draining untrusted or oversized responses without bounds."],
+        ["How should you handle the response Body?", "When Client.Do returns a nil error, the caller must close the Body, including for non-2xx responses. For HTTP/1.x connection reuse, read to EOF and close when size and time limits allow. Avoid draining untrusted or oversized responses without bounds."],
         ["How should a Gin authentication middleware end a rejected request?", "Use Abort or AbortWithStatusJSON to stop later handlers, then return from the current function. Test that an unauthorized request produces no downstream call or write."],
         ["When do you choose each common httptest approach?", "Use NewRecorder with a constructed request to check handler status, headers, and body directly. Use NewServer with real HTTP requests to exercise the client, connections, or protocol behavior."],
       ],
@@ -141,11 +174,11 @@ export const goBackend = bilingualTopics("go", {
       "sql.DB 管理连接池，sql.Tx 持有单个连接上的事务，业务边界应显式传递。",
       "以更新订单和库存为例，检验连接等待、事务回滚和未知提交结果的处理。",
       "sql.DB 可在 goroutine 间共享，是连接池句柄。按数据库容量和应用副本数设置池上限，观察 DB.Stats 的 InUse、WaitCount、WaitDuration 及数据库等待。查询使用参数绑定和 Context 版本的 API。迭代时关闭 Rows 并检查 Rows.Err。\n\n用 BeginTx 建立事务，在同一个 sql.Tx 上执行全部相关操作，错误路径回滚，并检查 Commit 的返回结果。事务期间直接调用 DB 可能走另一连接，造成一致性错误，连接池耗尽时还可能卡住。",
-      ["用短事务保护业务不变量。把不受数据库回滚保护的副作用放在可靠的提交后流程中。", "区分明确回滚的可重试错误与网络故障后的未知提交结果。"],
+      ["用短事务保护业务不变量。把不受数据库回滚保护的副作用放在可靠的提交后流程中。", "区分明确回滚的可重试错误与网络故障后的未知提交结果。", "不支持取消的驱动可能等到查询完成才返回。用实际驱动验证取消行为。"],
       ["把 sql.Open 成功当作已经验证数据库连接。", "循环查询时忘记关闭 Rows，占住池连接。"],
       [
         ["sql.DB 是单个连接吗？", "它是并发安全的数据库句柄，内部管理空闲与在用连接。sql.Open 可能没有立即建立连接，可用带超时的 PingContext 验证可达性。"],
-        ["怎样识别连接池耗尽？", "观察 InUse 是否接近 MaxOpenConnections，WaitCount 和 WaitDuration 是否增加，再对照事务时长、未关闭的 Rows、数据库慢查询和应用副本数。"],
+        ["怎样识别连接池耗尽？", "设置了连接上限时，检查 InUse 是否逼近 MaxOpenConnections，并观察 WaitCount、WaitDuration 在采样窗口内的增量。MaxOpenConnections 为 0 表示不限制。再对照事务时长、未关闭的 Rows、慢查询和应用副本数。"],
         ["为什么事务里不能混用 db 和 tx？", "tx 的操作在同一事务连接上执行。db 可能使用另一连接并在事务外读写。只剩事务占用的那条连接时，额外的 db 操作还会等待可用连接。"],
         ["占位符能保护动态列名吗？", "参数绑定用于值，不能把用户提供的列名或排序方向当作值绑定。动态标识符应映射到受控白名单，值继续使用驱动支持的占位符。"],
         ["Commit 返回网络错误后直接重试吗？", "网络中断时客户端可能无法判定提交是否成功。先按驱动和数据库错误判断，无法确定时以业务幂等键或结果记录查询状态，避免重复扣减等副作用。"],
@@ -156,11 +189,11 @@ export const goBackend = bilingualTopics("go", {
       "sql.DB manages a pool and sql.Tx holds a transaction on one connection. Pass the business transaction boundary explicitly.",
       "Use an order and inventory update to verify connection waits, rollbacks, and ambiguous commit outcomes.",
       "sql.DB is a pool handle that can be shared across goroutines. Size it for database capacity and application replica count. Observe DB.Stats fields such as InUse, WaitCount, and WaitDuration alongside database waits. Bind query parameters and use Context APIs. Close Rows and check Rows.Err when iterating.\n\nUse BeginTx, perform all related operations on the same sql.Tx, roll back on error paths, and check Commit. Calling DB during the transaction can use another connection and break consistency or block when the pool is exhausted.",
-      ["Keep transactions short while protecting business invariants. Use a reliable post-commit workflow for side effects outside database rollback.", "Distinguish known rollbacks that can be retried from ambiguous commits after a network failure."],
+      ["Keep transactions short while protecting business invariants. Use a reliable post-commit workflow for side effects outside database rollback.", "Distinguish known rollbacks that can be retried from ambiguous commits after a network failure.", "A driver without cancellation support may wait until the query finishes. Test cancellation with the driver in use."],
       ["Treating successful sql.Open as verification of database connectivity.", "Keeping pool connections busy by failing to close Rows in a query loop."],
       [
         ["Is sql.DB a single connection?", "It is a concurrency-safe database handle managing idle and active connections. sql.Open may establish no connection immediately. Use PingContext with a deadline to verify reachability."],
-        ["How do you identify pool exhaustion?", "Check whether InUse approaches MaxOpenConnections and whether WaitCount and WaitDuration increase. Correlate with long transactions, unclosed Rows, slow database queries, and replica count."],
+        ["How do you identify pool exhaustion?", "When a connection cap is configured, check whether InUse approaches MaxOpenConnections and look at changes in WaitCount and WaitDuration over a sampling window. MaxOpenConnections of 0 means unlimited. Correlate with long transactions, unclosed Rows, slow queries, and replica count."],
         ["Why should code inside a transaction avoid mixing db and tx calls?", "tx uses one transaction connection. db can use another connection and operate outside that transaction. If the transaction holds the only available connection, an extra db operation will also wait for one."],
         ["Can query placeholders protect dynamic column names?", "Parameter binding is for values. Map dynamic column names and sort directions to a controlled allowlist, and bind values using driver-supported placeholders."],
         ["Should you retry immediately when Commit returns a network error?", "A disconnect can leave the client unsure whether commit succeeded. Interpret driver and database errors first. If the outcome remains unknown, check the business idempotency key or recorded result to avoid repeating effects such as debits."],
@@ -173,13 +206,13 @@ export const goBackend = bilingualTopics("go", {
       "gRPC、Protobuf 与接口演进",
       "在请求链路中传播截止时间，用稳定的字段编号演进消息，并按业务语义选择重试。",
       "以 Go 服务之间的查询和写入接口为例，验证跨版本消息、超时和断线后的行为。",
-      "gRPC 在接口契约中定义方法与消息，支持一元和流式调用。客户端应设置符合端到端预算的 deadline，Go 服务端把收到的 context 继续传给下游，自己的工作也需响应取消。区分状态码所描述的失败范围与调用是否已经产生副作用。\n\nProtobuf 二进制消息按字段编号识别字段。添加新字段时验证新旧读写方的默认值和语义。删除字段后保留其编号，涉及 JSON 或 TextFormat 时也考虑保留字段名。",
+      "gRPC 在接口契约中定义方法与消息，支持一元和流式调用。客户端应设置符合端到端预算的截止时间，Go 服务端把收到的 context 继续传给下游，自己的工作也需响应取消。区分状态码所描述的失败范围与调用是否已经产生副作用。\n\nProtobuf 二进制消息按字段编号识别字段。添加新字段时验证新旧读写方的默认值和语义。用 reserved 声明已删除字段的编号，使用 JSON 或 TextFormat 时也应避免重用字段名。",
       ["拦截器适合认证、追踪和指标。业务层仍需校验权限与幂等性。", "流式调用要处理取消、慢消费者和有限缓冲，断线恢复需要定义应用层边界。"],
       ["重用已删除字段的编号，使旧客户端把新字段解释成旧含义。", "对有副作用的方法按状态码盲目重试。"],
       [
         ["没有设置 deadline 会怎样？", "gRPC 默认不设置 deadline，客户端可能长时间等待。调用方应根据服务目标设置预算，并把剩余时间传给下游。服务端要用 context 终止仍在运行的工作。"],
         ["DEADLINE_EXCEEDED 能证明服务端没有写入吗？", "不能据此确认。操作可能已经提交，只是响应未在截止前返回。写请求需要幂等键或查询结果的机制，恢复时先检查已产生的效果。"],
-        ["Protobuf 新旧版本怎样兼容？", "不要改变现有字段编号，删除后 reserve。新增字段通常可在二进制线格式上向后兼容，仍需检查默认值、必需的业务语义，以及 JSON 或网关行为。"],
+        ["Protobuf 新旧版本怎样兼容？", "保持现有字段编号不变，用 reserved 声明已删除字段的编号，避免重用。新增字段通常兼容二进制编码，仍需验证默认值、必需的业务语义，以及 JSON 或网关的行为。"],
         ["UNAVAILABLE 和 INVALID_ARGUMENT 如何处理？", "UNAVAILABLE 可能是暂时故障，只在可安全重试且剩余预算充足时按策略重试。INVALID_ARGUMENT 表示参数本身无效，需修正请求后再调用。"],
         ["如何设计断线后续传的服务端流？", "在应用协议中提供稳定的序号或游标，并定义可重放范围和重复去重。客户端使用最后一个已持久处理的位置继续，服务端监听取消并限制缓冲。"],
       ],
@@ -188,13 +221,13 @@ export const goBackend = bilingualTopics("go", {
       "gRPC, Protobuf, and API evolution",
       "Propagate deadlines, evolve messages with stable field numbers, and make retry decisions from business semantics.",
       "Use Go service-to-service read and write methods to test cross-version messages, deadlines, and disconnections.",
-      "gRPC defines methods and messages in a contract and supports unary and streaming calls. Clients set a deadline from the end-to-end budget. Go servers pass the incoming context downstream and make their work respond to cancellation. Distinguish the failure described by a status from any effects already produced.\n\nThe Protobuf binary format identifies fields by number. For additions, verify defaults and semantics across old and new readers and writers. Reserve deleted field numbers and consider reserving their names when using JSON or TextFormat.",
+      "gRPC defines methods and messages in a contract and supports unary and streaming calls. Clients set a deadline from the end-to-end budget. Go servers pass the incoming context downstream and make their work respond to cancellation. Distinguish the failure described by a status from any effects already produced.\n\nThe Protobuf binary format identifies fields by number. For additions, verify defaults and semantics across old and new readers and writers. Declare deleted field numbers as reserved and avoid reusing their names when using JSON or TextFormat.",
       ["Use interceptors for authentication, tracing, and metrics. Enforce business authorization and idempotency in the appropriate application layer.", "Streaming requires cancellation, slow-consumer handling, and bounded buffering. Define application-level recovery boundaries."],
       ["Reusing a deleted field number so old clients interpret a new field with its old meaning.", "Blindly retrying methods with side effects based on a status code."],
       [
         ["What happens without a deadline?", "gRPC does not set a deadline by default, so clients may wait a long time. Set a budget from the service objective and propagate the remaining time downstream. Servers should use the context to stop outstanding work."],
         ["Does DEADLINE_EXCEEDED prove the server did not write?", "The operation may have committed while the response missed the deadline. Use an idempotency key or a way to query write results, then check existing effects during recovery."],
-        ["How can old and new Protobuf versions stay compatible?", "Keep existing field numbers and reserve deleted ones. Adding fields is generally compatible on the binary wire, but defaults, required business semantics, and JSON or gateway behavior still need testing."],
+        ["How can old and new Protobuf versions stay compatible?", "Keep existing field numbers and declare deleted ones as reserved to prevent reuse. Adding fields is generally compatible on the binary wire, but defaults, required business semantics, and JSON or gateway behavior still need testing."],
         ["How do you handle UNAVAILABLE and INVALID_ARGUMENT?", "UNAVAILABLE can indicate a transient failure. Retry only when safe and within the remaining budget. INVALID_ARGUMENT indicates invalid input and requires correcting the request."],
         ["How do you design resumable server streams?", "Include a stable sequence number or cursor in the application protocol and define replay and deduplication. Resume from the last durably processed position. On the server, observe cancellation and bound buffering."],
       ],

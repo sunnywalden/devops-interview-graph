@@ -800,6 +800,14 @@ export const contentSources = {
     "title": "MySQL 8.4 — InnoDB locking",
     "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-locking.html"
   },
+  "innodb-mvcc": {
+    "title": "MySQL 8.4 — InnoDB multi-versioning",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-multi-versioning.html"
+  },
+  "mysql-gipk": {
+    "title": "MySQL 8.4 — Generated invisible primary keys",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/create-table-gipks.html"
+  },
   "innodb-redo": {
     "title": "MySQL 8.4 — InnoDB redo log",
     "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/innodb-redo-log.html"
@@ -823,6 +831,14 @@ export const contentSources = {
   "mysql-binlog-options": {
     "title": "MySQL 8.4 — Binary log options",
     "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/replication-options-binary-log.html#sysvar_sync_binlog"
+  },
+  "mysql-binary-log": {
+    "title": "MySQL 8.4 — Binary log and crash recovery",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/binary-log.html"
+  },
+  "mysql-pitr": {
+    "title": "MySQL 8.4 — Point-in-time recovery using the binary log",
+    "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/point-in-time-recovery-binlog.html"
   },
   "mysql-composite-indexes": {
     "title": "MySQL 8.4 — Multiple-column indexes",
@@ -1223,6 +1239,62 @@ export const contentSources = {
   "aws-retry-jitter": {
     "title": "Amazon Builders' Library — Timeouts, retries, and backoff with jitter",
     "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+  },
+  "innodb-locks-set": {
+    "title": "MySQL 8.4 — Locks set by different SQL statements in InnoDB",
+    "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-locks-set.html"
+  },
+  "mysql-data-lock-waits": {
+    "title": "MySQL 8.4 — Performance Schema data_lock_waits table",
+    "url": "https://dev.mysql.com/doc/refman/8.4/en/performance-schema-data-lock-waits-table.html"
+  },
+  "mysql-innodb-trx": {
+    "title": "MySQL 8.4 — INNODB_TRX table",
+    "url": "https://dev.mysql.com/doc/refman/8.4/en/information-schema-innodb-trx-table.html"
+  },
+  "mysql-deadlock-example": {
+    "title": "MySQL 8.4 — An InnoDB deadlock example",
+    "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-deadlock-example.html"
+  },
+  "py-descriptor": {
+    "title": "Python — Descriptor Guide",
+    "url": "https://docs.python.org/3/howto/descriptor.html"
+  },
+  "py-super": {
+    "title": "Python — Built-in function super",
+    "url": "https://docs.python.org/3/library/functions.html#super"
+  },
+  "systemd-unit": {
+    "title": "systemd.unit — Unit configuration",
+    "url": "https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html"
+  },
+  "systemctl": {
+    "title": "systemctl — Control the systemd system and service manager",
+    "url": "https://www.freedesktop.org/software/systemd/man/latest/systemctl.html"
+  },
+  "kafka-rebalance": {
+    "title": "Apache Kafka — ConsumerRebalanceListener",
+    "url": "https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/ConsumerRebalanceListener.html"
+  },
+  "ansible-error-handling": {
+    "title": "Ansible — Error handling in playbooks",
+    "url": "https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html"
+  },
+  "gitlab-id-tokens": {
+    "title": "GitLab CI/CD — OpenID Connect ID token authentication",
+    "url": "https://docs.gitlab.com/ci/secrets/id_token_authentication/"
+  },
+  "gitlab-aws-oidc": {
+    "title": "GitLab — Configure OpenID Connect in AWS to retrieve temporary credentials",
+    "url": "https://docs.gitlab.com/ci/cloud_services/aws/"
+  },
+  "aws-sts-web-identity": {
+    "title": "AWS STS — AssumeRoleWithWebIdentity",
+    "url": "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html"
+  },
+  "aws-cloudtrail-sts": {
+    "title": "AWS IAM — Logging IAM and AWS STS API calls with AWS CloudTrail",
+    "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html"
   }
 } as const;
 

@@ -14,8 +14,8 @@ export const api = bilingualGroup("api", "后端 API", "api-http", {
       [
         ["第一次 DELETE 返回 204，第二次返回 404，还算幂等吗？", "可以。如果两次调用的预期效果都是资源处于已删除状态，响应状态码不同并不破坏幂等性。"],
         ["两个相同幂等键的请求同时到达，如何处理？", "按调用方和操作给键加唯一约束或用原子写入认领。拒绝同键不同请求内容。对同一请求，按契约返回已有结果，或告知客户端仍在处理。"],
-        ["什么时候用 409、422 或 429？", "409 表示请求与资源当前状态冲突，422 表示内容可解析但无法处理其中的指令，429 表示请求过多。限流响应可带 Retry-After。客户端重试还要受总预算约束。"],
-        ["如何防止两个管理员覆盖彼此的更新？", "读取时返回强 ETag。写入时使用 If-Match，并在持久化操作中以对应版本作为更新条件。冲突时返回 412，客户端刷新后再决定如何合并。"],
+        ["什么时候用 409、422 或 429？", "409 表示请求与资源当前状态冲突，422 表示服务端理解内容类型且内容语法正确，但无法处理其中的指令，429 表示请求过多。限流响应可带 Retry-After。客户端重试还要受总预算约束。"],
+        ["如何防止两个管理员覆盖彼此的更新？", "读取时返回强 ETag。写入时使用 If-Match，并在持久化操作中以对应版本作为更新条件。If-Match 不匹配时返回 412，客户端刷新后再决定如何合并。"],
         ["大列表如何设计游标分页？", "使用稳定排序和唯一的最终排序键，游标保存上一页边界。把游标绑定到查询范围与排序，并明确并发插入、更新或删除时的可见性规则。"],
       ],
     ),
@@ -29,8 +29,8 @@ export const api = bilingualGroup("api", "后端 API", "api-http", {
       [
         ["Is DELETE still idempotent if it returns 204 first and 404 later?", "It can be. If the intended effect of both calls is that the resource is absent, different status codes do not break idempotency."],
         ["How do you handle two simultaneous requests with the same idempotency key?", "Claim the key atomically, for example with a uniqueness constraint scoped to the caller and operation. Reject mismatched content. For a matching request, replay the existing result or report that it is still in progress according to the contract."],
-        ["When do you use 409, 422, or 429?", "409 signals a conflict with the resource's current state. 422 signals that the content is understood but its instructions cannot be processed. 429 signals too many requests. A rate limit response can include Retry-After, and client retries still need an overall budget."],
-        ["How do you keep two administrators from overwriting each other's changes?", "Return a strong ETag on read. Send If-Match on write and include the corresponding version in the persistent update condition. Return 412 on a mismatch so the client can reload and decide how to merge."],
+        ["When do you use 409, 422, or 429?", "409 signals a conflict with the resource's current state. 422 signals that the server understands the content type and the content is syntactically valid, but it cannot process the instructions. 429 signals too many requests. A rate limit response can include Retry-After, and client retries still need an overall budget."],
+        ["How do you keep two administrators from overwriting each other's changes?", "Return a strong ETag on read. Send If-Match on write and include the corresponding version in the persistent update condition. Return 412 when If-Match fails so the client can reload and decide how to merge."],
         ["How do you design cursor pagination for a large collection?", "Use a stable sort with a unique final sort key. The cursor stores the previous page's boundary. Bind it to the query scope and sort, and define visibility when rows are inserted, updated, or deleted between pages."],
       ],
     ),
@@ -80,7 +80,7 @@ export const api = bilingualGroup("api", "后端 API", "api-http", {
       [
         ["上游还剩 150 ms，下游该配置多大的超时？", "从剩余时间中扣除本地收尾和返回所需时间，给下游分配更短的有界超时。若预算不足，立即失败或走已定义的降级路径。"],
         ["客户端超时后可以重试创建接口吗？", "先判断操作是否有可验证的幂等契约，或能否通过稳定业务标识查询结果。超时无法证明首次请求未生效。"],
-        ["每层最多尝试三次，为什么仍可能压垮服务？", "下游调用次数会沿链路相乘。三层独立重试的最坏情况是 27 次底层尝试。集中控制重试并同时限制次数、时间与重试流量。"],
+        ["每层最多尝试三次，为什么仍可能压垮服务？", "如果三个调用层各最多尝试三次（含首次），且每次尝试都会触发下一层调用，最底层最多被调用 3³ = 27 次。集中控制重试并同时限制次数、时间与重试流量。"],
         ["限流、熔断和隔离各解决什么问题？", "限流限制进入的速率。熔断在依赖故障时减少继续调用。隔离为不同流量或依赖配置独立容量，减少故障传播。"],
         ["如何证明韧性设计有效？", "注入延迟、错误和部分不可用，验证请求预算、底层请求放大比例和隔离效果。观察成功率、p95/p99、排队时间和恢复过程。"],
       ],
@@ -95,7 +95,7 @@ export const api = bilingualGroup("api", "后端 API", "api-http", {
       [
         ["If the upstream has 150 ms left, how long should the downstream timeout be?", "Reserve time for local work and the response, then allocate a shorter bounded timeout. Fail promptly or use a defined fallback when the remaining budget is too small."],
         ["Can a client retry a creation request after it times out?", "Check for a verifiable idempotency contract or a way to look up the result using a stable business identifier. A timeout does not establish that the first request had no effect."],
-        ["Why can three attempts per layer still overwhelm a service?", "Attempts multiply down the call chain. Three layers retrying independently can produce up to 27 bottom-layer attempts. Centralize retries and cap attempts, elapsed time, and retry traffic."],
+        ["Why can three attempts per layer still overwhelm a service?", "If each of three calling layers makes up to three attempts, including the initial call, and each attempt invokes the next layer, the deepest service can see up to 3³ = 27 calls. Centralize retries and cap attempts, elapsed time, and retry traffic."],
         ["What problems do rate limiting, circuit breaking, and isolation solve?", "Rate limiting caps admission rate. Circuit breaking reduces calls to a failing dependency. Isolation gives separate capacity to different traffic classes or dependencies to contain failures."],
         ["How do you verify that resilience measures work?", "Inject latency, errors, and partial unavailability to verify budgets, downstream amplification, and isolation. Observe success rate, p95/p99, queue delay, and recovery."],
       ],

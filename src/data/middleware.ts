@@ -125,7 +125,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "RR 与 RC 的核心区别是什么？",
-            "a": "在 InnoDB 中，读已提交（RC）为每次一致性读建立新快照。可重复读（RR）通常复用首次一致性读建立的快照，也可在事务开始时显式建立。RR 锁定读与更新则要看访问路径：完整唯一键等值命中通常只锁索引记录，范围扫描通常使用 next-key lock。"
+            "a": "在 InnoDB 中，读已提交（RC）为每次一致性读建立新快照。可重复读（RR）通常复用首次一致性读建立的快照，也可在事务开始时显式建立。RR 的锁定读与更新取决于实际访问路径。按完整唯一键等值找到记录时，搜索通常只锁该索引记录；范围扫描通常使用临键锁（next-key lock），唯一键等值查找未命中时也可能锁住对应间隙。RC 的普通搜索与扫描不使用间隙锁，但外键检查与重复键检查仍可能加间隙锁。"
           },
           {
             "q": "MVCC 如何提供快照？",
@@ -141,11 +141,14 @@ const rawMiddlewareGroups: SegmentGroup[] = [
           },
           {
             "q": "怎样观察隔离相关问题？",
-            "a": "构造两个受控会话，记录事务开始、读写、提交及等待顺序，再结合锁视图和事务状态验证。生产排查应优先只读观察，避免用临时会话制造高影响锁等待。"
+            "a": "用两个受控会话验证 RR 与 RC 的读写和提交顺序。线上先查 performance_schema.data_lock_waits，将 REQUESTING_ENGINE_LOCK_ID 和 BLOCKING_ENGINE_LOCK_ID 对应到 data_locks，查看索引及锁模式，再从 information_schema.INNODB_TRX 查阻塞事务和持续时间。"
           }
         ],
         "sources": [
           "mysql-isolation",
+          "innodb-locks-set",
+          "mysql-data-lock-waits",
+          "mysql-innodb-trx",
           "mongo-transactions"
         ],
         "scope": "本卡按 MySQL 8.4 / InnoDB 文档；其他引擎和版本需分别确认。"
@@ -170,7 +173,7 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "如何阅读死锁日志？",
-            "a": "对照每个事务已持有及正在等待的锁，识别冲突索引、记录范围和访问顺序。结合 SQL 参数与事务上下文判断原因，不能仅看被回滚的一方。"
+            "a": "用 SHOW ENGINE INNODB STATUS 查看最近一次检测到的死锁，对照参与事务持有和等待的锁、冲突索引及访问顺序。需要记录每次死锁时，可评估启用 innodb_print_all_deadlocks 将详情写入错误日志。当前阻塞则查 performance_schema.data_lock_waits。"
           },
           {
             "q": "重试次数如何确定？",
@@ -191,7 +194,9 @@ const rawMiddlewareGroups: SegmentGroup[] = [
         ],
         "sources": [
           "mysql-deadlock",
-          "mysql-isolation"
+          "mysql-isolation",
+          "mysql-deadlock-example",
+          "mysql-data-lock-waits"
         ]
       },
       {

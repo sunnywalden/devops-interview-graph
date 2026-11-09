@@ -2,6 +2,39 @@ import { card } from "../i18n/contentTypes";
 import { bilingualTopics } from "./bilingualGroup";
 
 export const platformPractice = bilingualTopics("ops", {
+  "ci-workload-identity": {
+    sources: ["gitlab-id-tokens", "gitlab-aws-oidc", "aws-iam-roles", "aws-sts-web-identity", "aws-cloudtrail-sts"],
+    zh: card(
+      "CI 工作负载身份与短期云凭证",
+      "用 OIDC 将受信任的流水线任务绑定到最小权限的云角色，避免在 CI 保存长期密钥。",
+      "以 GitLab CI 部署到 AWS 为例，说明令牌签发、角色信任、会话权限和审计。",
+      "为部署 job 配置 OIDC ID token 及其受众（aud），让 job 调用 AWS STS 的 AssumeRoleWithWebIdentity 换取带过期时间的角色会话凭证。AWS 根据已配置的身份提供方验证令牌，包括签发者、签名、受众和有效期，再按角色信任策略检查该身份能否承担角色。\n\n将生产角色限定在预期的项目和受保护分支或标签，CI 侧也要控制部署环境、runner 及审批权限。角色的权限策略只授予该环境所需的操作和资源。令牌和临时凭证仍须作为秘密处理，审计时使用会话标识关联流水线。",
+      ["用角色信任策略约束谁可取得会话，用权限策略约束取得会话后能做什么。", "只有云端可用于策略判断的声明才可写入信任条件；先核对签发方、aud 与 sub 的实际取值。"],
+      ["信任同一签发者下的任意项目或分支，让不受信任的流水线有机会取得生产权限。", "把短期令牌写入日志、构建缓存或可下载的制品。"],
+      [
+        ["流水线如何在没有 AWS 长期访问密钥的情况下获得会话？", "GitLab 给部署 job 签发 ID token，job 用它向 STS 调用 AssumeRoleWithWebIdentity。通过令牌和信任策略检查后，STS 返回临时访问密钥、会话令牌和过期时间，后续请求用这组凭证签名。"],
+        ["如何避免 fork 或未受信任的分支取得生产角色？", "AWS 信任策略匹配预期 aud，以及具体项目、引用类型和引用名组成的 sub，例如项目的 main 分支。CI 侧也要保护该引用，并限制生产部署 job、环境和 runner。GitLab.com 还支持在 AWS 信任条件中匹配 namespace_id 和 project_id；Self-Managed 和 Dedicated 不支持这些额外的 GitLab 声明。"],
+        ["角色信任策略与权限策略分别控制什么？", "信任策略决定哪个身份可承担角色。取得会话后，角色的权限策略决定允许哪些动作和资源，会话策略、权限边界及组织策略还可能进一步限制。"],
+        ["怎样排查 AssumeRoleWithWebIdentity 或部署调用失败？", "先区分失败的是 STS 换证还是使用会话调用资源。对 InvalidIdentityToken，检查 issuer、aud、有效期及签名密钥配置；STS 返回 AccessDenied 时核对身份与信任条件。若换证成功而业务 API 被拒，检查实际会话身份及资源侧的有效权限。"],
+        ["怎样审计部署又不泄露凭证？", "选用可追溯到流水线的会话名称，在 CloudTrail 中关联承担角色与后续受审计的 API 调用。保留 job 与部署记录，不打印或持久化原始 ID token、临时密钥或会话令牌。"],
+      ],
+    ),
+    en: card(
+      "CI workload identity and short-lived cloud credentials",
+      "Bind trusted pipeline jobs to least-privilege cloud roles through OIDC and avoid storing long-lived keys in CI.",
+      "Use GitLab CI deployment to AWS to explain token issuance, role trust, session permissions, and auditing.",
+      "Configure the deployment job with an OIDC ID token and its audience (aud). The job calls AWS STS AssumeRoleWithWebIdentity to obtain role session credentials with an expiration. AWS validates the token against the configured identity provider, including issuer, signature, audience, and expiration, then checks whether the role's trust policy permits the identity to assume it.\n\nRestrict the production role to the expected project and protected branches or tags. Also control deployment environments, runners, and approvals in CI. Grant only the actions and resources the environment needs. Tokens and temporary credentials are still secrets; correlate pipeline records by session identifier for audit.",
+      ["Use the role trust policy to control who can get a session and permissions policies to control what that session can do.", "Only claims available as cloud policy conditions can constrain trust. Check the actual issuer, aud, and sub values first."],
+      ["Trusting every project or branch from the same issuer, letting an untrusted pipeline obtain production access.", "Putting short-lived tokens in logs, build caches, or downloadable artifacts."],
+      [
+        ["How does a pipeline get a session without long-lived AWS access keys?", "GitLab issues an ID token to the deployment job, which calls STS AssumeRoleWithWebIdentity. If token validation and the trust policy checks pass, STS returns temporary access keys, a session token, and an expiration. Use those credentials to sign subsequent requests."],
+        ["How do you stop a fork or an untrusted branch from assuming the production role?", "Match the expected aud and the sub for the exact project, ref type, and ref name in the AWS trust policy, for example the project's main branch. Also protect that ref and restrict production jobs, environments, and runners in CI. GitLab.com supports namespace_id and project_id as additional AWS trust conditions; Self-Managed and Dedicated do not support those extra GitLab claims."],
+        ["What do role trust policies and permissions policies control?", "The trust policy determines which identity can assume the role. Once a session exists, the role's permissions policies determine allowed actions and resources. Session policies, permissions boundaries, and organization policies can impose additional limits."],
+        ["How do you diagnose an AssumeRoleWithWebIdentity or deployment call failure?", "Identify whether the failure is at the STS exchange or the resource call. For InvalidIdentityToken, check the issuer, aud, expiration, and signing key configuration. For an STS AccessDenied, check the identity and trust conditions. If the exchange succeeds but the resource API denies access, verify the session identity and its effective permissions on the resource."],
+        ["How do you audit a deployment without exposing credentials?", "Use a session name traceable to the pipeline, then correlate role assumption and subsequent audited API calls in CloudTrail. Keep job and deployment records without logging or persisting the raw ID token, temporary keys, or session token."],
+      ],
+    ),
+  },
   "git-workflow": {
     sources: ["git-rebase", "git-revert", "git-bisect", "git-merge"],
     zh: card(
@@ -9,7 +42,7 @@ export const platformPractice = bilingualTopics("ops", {
       "区分合并、变基、反向提交和二分查找，按历史是否共享选择操作。",
       "以主干回归和发布回退为例，保留可追踪的变更记录并验证部署结果。",
       "merge 整合分支历史，可能快进或创建合并提交。rebase 将提交重放到新基底，通常会产生新的提交标识。对其他人正在依赖的提交，改写历史要协调。已共享的错误变更一般用 revert 产生反向提交。\n\n用 git bisect 标记已知好坏提交，通过可重复的测试定位首次出现问题的提交。代码回退只是一步，还要核对部署产物、数据库兼容性和实际服务状态。",
-      ["同一个 commit 可用于追踪构建产物。线上回退应校验实际产物和环境。", "回退 merge 时要明确选用哪个父提交作为主线。"],
+      ["commit 标识源代码版本。同一提交可能产生不同制品，线上回退要核对制品摘要、构建记录和目标环境。", "回退 merge 时要明确选用哪个父提交作为主线。"],
       ["把 reset --hard 当作共享主干的常规回退方法。", "用不稳定测试运行 bisect，将偶发失败误标为坏提交。"],
       [
         ["merge 和 rebase 在提交图上有什么区别？", "merge 保留被整合的提交图，必要时加合并提交。rebase 将变更重放到新的基底，通常产生新提交标识。"],
@@ -24,7 +57,7 @@ export const platformPractice = bilingualTopics("ops", {
       "Separate merging, rebasing, reverting, and bisection. Choose operations based on whether history is shared.",
       "Use a mainline regression and release rollback to keep changes traceable and verify deployment results.",
       "A merge integrates branch history, either by fast-forwarding or by creating a merge commit as appropriate. A rebase replays commits onto a new base and usually gives them new identities. Coordinate rewrites of commits other people depend on. For a faulty shared change, revert normally records an inverse commit.\n\nUse git bisect with known good and bad commits and a repeatable test to find where the issue first appears. A code revert is one step. Check the deployed artifact, schema compatibility, and live service state.",
-      ["A commit can identify a build artifact. Verify the actual artifact and environment during rollback.", "When reverting a merge, identify which parent is the mainline."],
+      ["A commit identifies a source revision. Builds from the same commit can produce different artifacts; verify the artifact digest, build record, and target environment when rolling back.", "When reverting a merge, identify which parent is the mainline."],
       ["Using reset --hard as a routine rollback for a shared main branch.", "Running bisect with a flaky test and marking intermittent failures as bad commits."],
       [
         ["How do merge and rebase affect the commit graph?", "A merge preserves the integrated graph and adds a merge commit when needed. A rebase replays changes onto a new base and normally produces new commit identities."],
@@ -36,7 +69,7 @@ export const platformPractice = bilingualTopics("ops", {
     ),
   },
   ansible: {
-    sources: ["ansible-playbooks", "ansible-check", "ansible-strategies", "ansible-logging"],
+    sources: ["ansible-playbooks", "ansible-check", "ansible-strategies", "ansible-error-handling", "ansible-logging"],
     zh: card(
       "Ansible 幂等配置与滚动变更",
       "用 inventory、模块、handlers 和串行批次解释可重复、可验证的运维。",
@@ -47,7 +80,7 @@ export const platformPractice = bilingualTopics("ops", {
       [
         ["用 command 执行脚本如何避免重复副作用？", "优先使用具备期望状态语义的模块。确需脚本时，设置可验证的前置条件或 creates/removes，明确 changed_when 与 failed_when，并让操作可重入。"],
         ["handler 什么时候触发？", "任务报告 changed 并发出 notify 后，handler 会在约定阶段执行，通常合并同一批通知。若需更早生效，可按顺序使用 flush_handlers。"],
-        ["serial 与 forks 有什么区别？", "serial 限制每个 play 批次中的主机范围，forks 限制 Ansible 的并行执行进程数。滚动发布还需健康检查及失败策略。"],
+        ["serial 与 forks 有什么区别？", "serial 控制一个 play 每批处理的主机数；forks 限制 Ansible 的并行工作进程数。使用 serial 时，max_fail_percentage 按批次计算，失败比例超过阈值才中止；滚动发布仍要设计健康检查和回滚。"],
         ["check 和 diff 能保证什么？", "它们预览支持这些模式的任务。依赖前一步实际结果的任务可能无法准确预演。diff 还可能显示敏感内容，要按任务关闭。"],
         ["如何验证配置真正收敛？", "先在目标节点核对文件、进程和服务健康，再以相同输入重跑并确认状态没有意外变化。结合实际服务指标。"],
       ],
@@ -62,7 +95,7 @@ export const platformPractice = bilingualTopics("ops", {
       [
         ["How do you avoid duplicate side effects when using command for a script?", "Prefer a module with desired-state semantics. For a script, use verifiable preconditions or creates/removes, define changed_when and failed_when, and make it safe to rerun."],
         ["When does a handler run?", "A task reports changed and sends notify. The handler runs at the defined phase and normally coalesces duplicate notifications in that batch. Use flush_handlers in sequence if it must run earlier."],
-        ["How do serial and forks differ?", "serial limits the hosts in each play batch. forks limits Ansible's parallel worker processes. Rolling changes still require health checks and failure policy."],
+        ["How do serial and forks differ?", "serial controls the number of hosts per play batch; forks limits Ansible's parallel worker processes. With serial, max_fail_percentage applies per batch and aborts only when the failure rate exceeds the threshold. Rolling changes still need health checks and a rollback plan."],
         ["What do check and diff guarantee?", "They preview tasks that support those modes. Tasks depending on actual earlier results may not simulate accurately. Disable diff on tasks that could reveal secrets."],
         ["How do you verify convergence?", "Check files, processes, and service health on target hosts, then rerun with the same inputs and confirm there are no unexpected changes. Correlate with real service metrics."],
       ],
