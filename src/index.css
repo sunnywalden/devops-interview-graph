@@ -206,6 +206,25 @@ button, a, summary, input, [tabindex] { scroll-margin-block: 12px; }
 .layer-toolbar__seg .ant-segmented-item { color: #59694f; border-radius: 6px; }
 .layer-toolbar__seg .ant-segmented-item-selected { background: #e7eddf; box-shadow: none; color: var(--green); font-weight: 500; }
 .layer-toolbar__seg .ant-segmented-item-label { padding: 0 13px; min-height: 34px; line-height: 34px; font-size: 12px; }
+.layer-toolbar__seg--wrap .ant-segmented-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+}
+.layer-toolbar__seg--wrap .ant-segmented-thumb { display: none; }
+.layer-toolbar__seg--wrap .ant-segmented-item:has(input:checked) {
+  background: #e7eddf;
+  color: var(--green);
+  font-weight: 500;
+}
+.layer-toolbar__seg--wrap .ant-segmented-item .ant-segmented-item-label {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 6px 8px;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .focus-toggle-btn { flex: none; font-size: 11px; height: 32px; color: #59694f; background: #f9faf4; border-color: #dae1d1; }
 .focus-toggle-btn.ant-btn-primary { color: var(--paper); background: var(--green); }
 .topic-pager__row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; margin-bottom: 14px; }
@@ -517,6 +536,7 @@ summary::-webkit-details-marker { display: none; }
   .layer-toolbar__row { gap: 10px; margin-bottom: 13px; flex-direction: column; align-items: stretch; }
   .layer-toolbar__seg { width: 100%; }
   .layer-toolbar__seg .ant-segmented-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); gap: 4px; }
+  .layer-toolbar__seg.layer-toolbar__seg--wrap .ant-segmented-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .layer-toolbar__seg .ant-segmented-item-label { min-height: 36px; line-height: 36px; padding: 0 9px; font-size: 11px; }
   .focus-toggle-btn { align-self: flex-end; font-size: 11px; height: 32px; padding: 0 10px; }
   .topic-pager__row { gap: 10px; }

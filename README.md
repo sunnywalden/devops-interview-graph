@@ -52,15 +52,17 @@ npm run preview
 
 | 内容 | 文件 | 数量 |
 | --- | --- | --- |
-| 语言基础 | `src/data/language.ts` | 26 张 |
-| 中间件与容器 | `src/data/middleware.ts` | 45 张 |
+| 语言基础 | `src/data/language.ts`、`src/data/shell.ts` | 29 张 |
+| 中间件与容器 | `src/data/middleware.ts`、`src/data/observability.ts`、`src/data/delivery.ts` | 57 张 |
 | 场景实战 | `src/data/scenarios.ts` | 30 张 |
 | 项目与冲刺 | `src/data/overview.ts` | 5 个 STAR 经验草稿、3/5 天计划 |
-| 官方参考资料 | `src/data/sources.ts` | 168 个来源 |
-| 英文课程与总览 | `src/i18n/*.en.ts` | 对应全部 101 张卡片、505 条追问、项目与计划 |
+| 官方参考资料 | `src/data/sources.ts` | 194 个来源 |
+| 英文课程与总览 | `src/i18n/*.en.ts` 及上表中的双语主题文件 | 对应全部 116 张卡片、580 条追问、项目与计划 |
 | 界面与图示翻译 | `src/i18n/ui.ts`、`src/i18n/visuals.ts` | 界面、引用标题与全部 84 张课程图示 |
 
-课程合计 101 张卡片、505 条追问回答，按定义、机制、适用条件、工程取舍与验证方法组织。图示定义位于 `src/data/visuals-*.ts`，包括 70 张 Mermaid 图示与 14 张交互图，经 `attachVisuals` 挂载。内容重构范围、关键修正及验证记录见 [内容评审记录](docs/content-review.md)。
+课程合计 116 张卡片、580 条追问回答，按定义、机制、适用条件、工程取舍与验证方法组织。图示定义位于 `src/data/visuals-*.ts`，包括 70 张 Mermaid 图示与 14 张交互图，经 `attachVisuals` 挂载。内容重构范围、关键修正及验证记录见 [内容评审记录](docs/content-review.md)。
+
+Shell 覆盖参数展开、退出状态与运维脚本。中间件与容器包括 ELK 日志链路、Prometheus 抓取与告警、GitLab CI/CD 和 Jenkins Pipeline，每个新增分组提供 3 张双语卡片。
 
 Python 共 12 个知识点，在 GIL 后增加独立的 Free-threading 专题（`#/lang/python/free-threading`）。以 CPython 3.14 为基线，区分 3.13 的实验性阶段与 3.14 正式支持的可选构建，覆盖启用与检测、C 扩展兼容性、共享状态同步、并发方案取舍和迁移验证。
 

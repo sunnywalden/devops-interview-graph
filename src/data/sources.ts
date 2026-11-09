@@ -671,6 +671,110 @@ export const contentSources = {
   "vault-docs": {
     "title": "Vault：Secrets engines",
     "url": "https://developer.hashicorp.com/vault/docs/secrets"
+  },
+  "posix-shell": {
+    "title": "POSIX — Shell Command Language",
+    "url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html"
+  },
+  "bash-manual": {
+    "title": "GNU Bash Reference Manual",
+    "url": "https://www.gnu.org/software/bash/manual/html_node/index.html"
+  },
+  "posix-grep": {
+    "title": "POSIX — grep",
+    "url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/grep.html"
+  },
+  "posix-rename": {
+    "title": "POSIX — rename",
+    "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/rename.html"
+  },
+  "bsd-mktemp": {
+    "title": "OpenBSD — mktemp",
+    "url": "https://man.openbsd.org/mktemp.1"
+  },
+  "elastic-stack": {
+    "title": "Elastic — The Elastic Stack",
+    "url": "https://www.elastic.co/docs/get-started/the-stack"
+  },
+  "filebeat-multiline": {
+    "title": "Filebeat — Manage multiline messages",
+    "url": "https://www.elastic.co/docs/reference/beats/filebeat/multiline-examples"
+  },
+  "elastic-streams": {
+    "title": "Elasticsearch — Data streams",
+    "url": "https://www.elastic.co/docs/manage-data/data-store/data-streams"
+  },
+  "logstash-pq": {
+    "title": "Logstash — Persistent queues",
+    "url": "https://www.elastic.co/docs/reference/logstash/persistent-queues"
+  },
+  "logstash-dlq": {
+    "title": "Logstash — Dead letter queues",
+    "url": "https://www.elastic.co/docs/reference/logstash/dead-letter-queues"
+  },
+  "logstash-tuning": {
+    "title": "Logstash — Tuning and profiling pipeline performance",
+    "url": "https://www.elastic.co/docs/reference/logstash/tuning-logstash"
+  },
+  "prom-config": {
+    "title": "Prometheus — Configuration",
+    "url": "https://prometheus.io/docs/prometheus/latest/configuration/configuration/"
+  },
+  "prom-functions": {
+    "title": "Prometheus — PromQL functions",
+    "url": "https://prometheus.io/docs/prometheus/latest/querying/functions/"
+  },
+  "prom-rules": {
+    "title": "Prometheus — Recording rules",
+    "url": "https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/"
+  },
+  "prom-alerting-rules": {
+    "title": "Prometheus — Alerting rules",
+    "url": "https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/"
+  },
+  "gitlab-variables": {
+    "title": "GitLab — CI/CD variables",
+    "url": "https://docs.gitlab.com/ci/variables/"
+  },
+  "gitlab-protected-environments": {
+    "title": "GitLab — Protected environments",
+    "url": "https://docs.gitlab.com/ci/environments/protected_environments/"
+  },
+  "jenkins-pipeline": {
+    "title": "Jenkins — Pipeline",
+    "url": "https://www.jenkins.io/doc/book/pipeline/"
+  },
+  "jenkins-syntax": {
+    "title": "Jenkins — Pipeline syntax",
+    "url": "https://www.jenkins.io/doc/book/pipeline/syntax/"
+  },
+  "jenkins-jenkinsfile": {
+    "title": "Jenkins — Using a Jenkinsfile",
+    "url": "https://www.jenkins.io/doc/book/pipeline/jenkinsfile/"
+  },
+  "jenkins-multibranch": {
+    "title": "Jenkins — Multibranch Pipeline",
+    "url": "https://www.jenkins.io/doc/book/pipeline/multibranch/"
+  },
+  "jenkins-agents": {
+    "title": "Jenkins — Using agents",
+    "url": "https://www.jenkins.io/doc/book/using/using-agents/"
+  },
+  "jenkins-steps": {
+    "title": "Jenkins — Pipeline basic steps",
+    "url": "https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/"
+  },
+  "jenkins-credentials": {
+    "title": "Jenkins — Credentials Binding Plugin",
+    "url": "https://www.jenkins.io/doc/pipeline/steps/credentials-binding/"
+  },
+  "jenkins-security": {
+    "title": "Jenkins — Securing builds",
+    "url": "https://www.jenkins.io/doc/book/security/securing-builds/"
+  },
+  "jenkins-libraries": {
+    "title": "Jenkins — Shared Libraries",
+    "url": "https://www.jenkins.io/doc/book/pipeline/shared-libraries/"
   }
 } as const;
 

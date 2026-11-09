@@ -1,5 +1,6 @@
 import type { SegmentGroup } from "../types";
 import { attachVisuals } from "./attachVisuals";
+import { shell } from "./shell";
 import { languageVisuals } from "./visuals-language";
 
 const rawLanguageGroups: SegmentGroup[] = [
@@ -1177,6 +1178,6 @@ const rawLanguageGroups: SegmentGroup[] = [
   }
 ];
 
-export const languageGroups = attachVisuals(rawLanguageGroups, languageVisuals);
+export const languageGroups = [...attachVisuals(rawLanguageGroups, languageVisuals), shell.group];
 
-export const languageIntro = "Go 与 Python 是并列的学习路径。先理解语言和运行时语义，再讨论服务开发、并发、平台权限与自动化；对涉及版本的行为，结合卡片提示查阅官方文档。参考答案用于理解和组织表达，项目关联需要以本人实际实现为依据。";
+export const languageIntro = "Go、Python 与 Shell 是并列的学习路径。先理解语言和运行时语义，再讨论服务开发、并发、平台权限与脚本自动化。涉及版本或可移植性的行为，请结合卡片提示查阅官方文档。参考答案用于理解和组织表达，项目关联需要以本人实际实现为依据。";

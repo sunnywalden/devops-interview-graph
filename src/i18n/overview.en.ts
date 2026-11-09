@@ -1,6 +1,6 @@
 import type { StarStory, SprintDay } from '../types';
 
-export const narrative = 'The map connects three layers of knowledge: languages, infrastructure and engineering scenarios. It is a capability map, not a runtime call graph. Go and Python provide parallel development paths; databases, messaging and Kubernetes provide data and execution foundations. Delivery, observability and asset management combine these capabilities into verifiable engineering solutions.';
+export const narrative = 'This capability map connects languages, infrastructure and engineering scenarios. Go and Python support service development, and Shell supports operations automation. Databases, messaging and Kubernetes provide data and execution foundations. Delivery, observability and asset management combine these capabilities into verifiable engineering solutions.';
 const evidence = 'Experience outline · Verify against your own work. Complete this draft with code, design records, operational data and your actual responsibilities. Do not present a reference design as a personal achievement.';
 export const starStories: StarStory[] = [
   { id: 'mingfu', label: 'CMDB / Fixed assets', role: 'Go platform · CMDB and fixed assets', layerMap: 'Go / go-zero → MongoDB / messaging → CMDB / reporting',
@@ -55,7 +55,7 @@ export const sprintTips = [
   'Progress records opened topics only. Assess understanding through questions, examples and practical validation.',
 ];
 export const checklist = [
-  'Languages: explain execution, concurrency, cancellation, errors and types in Go and Python.',
+  'Languages: explain execution, concurrency, cancellation, errors and types in Go and Python, along with Shell expansion, exit status and script portability.',
   'Data: distinguish transaction, replication, cache and messaging guarantees, including cross-system boundaries.',
   'Runtime: explain Kubernetes networking, storage, probes, permissions and diagnosis.',
   'Delivery: explain artifact provenance, testing, deployment, rollback and infrastructure state.',

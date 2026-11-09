@@ -249,7 +249,7 @@ export function LayerPage({
       <div className="layer-toolbar" ref={toolbarRef}>
         <div className="train-bar" role="group" aria-label={t("{name}导航", { name: pageLabel })}>
           <div className="layer-toolbar__row">
-            <div className="segmented-wrap layer-toolbar__seg">
+            <div className={`segmented-wrap layer-toolbar__seg${groups.length > 7 ? " layer-toolbar__seg--wrap" : ""}`}>
               <Segmented
                 block
                 className="train-segmented"

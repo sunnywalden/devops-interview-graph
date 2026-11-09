@@ -7,8 +7,8 @@ import { scenarioGroups } from "./data/scenarios";
 import { readUiPrefs, type LayerPageId } from "./uiPrefs";
 
 export const studyLayers = [
-  { id: "lang" as LayerPageId, title: "语言基础", subtitle: "Golang / Python", description: "从语言机制出发，把底层原理讲清楚。", groups: languageGroups },
-  { id: "mid" as LayerPageId, title: "中间件与容器", subtitle: "MySQL · Redis · Docker · Kubernetes", description: "串联存储、消息与基础设施，理解系统的取舍。", groups: middlewareGroups },
+  { id: "lang" as LayerPageId, title: "语言基础", subtitle: "Golang / Python / Shell", description: "从语言机制出发，把底层原理讲清楚。", groups: languageGroups },
+  { id: "mid" as LayerPageId, title: "中间件与容器", subtitle: "数据服务 · 容器 · 可观测性 · CI/CD", description: "串联存储、消息与基础设施，理解系统的取舍。", groups: middlewareGroups },
   { id: "scene" as LayerPageId, title: "场景实战", subtitle: "CI/CD · 可观测性 · CMDB", description: "回到真实项目，练习有依据、有边界的技术表达。", groups: scenarioGroups },
 ];
 

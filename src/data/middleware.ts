@@ -1,5 +1,7 @@
 import type { SegmentGroup } from "../types";
 import { attachVisuals } from "./attachVisuals";
+import { gitlab, jenkins } from "./delivery";
+import { elk, prometheus } from "./observability";
 import { middlewareVisuals } from "./visuals-middleware";
 
 const rawMiddlewareGroups: SegmentGroup[] = [
@@ -2006,6 +2008,9 @@ const rawMiddlewareGroups: SegmentGroup[] = [
   }
 ];
 
-export const middlewareGroups = attachVisuals(rawMiddlewareGroups, middlewareVisuals);
+export const middlewareGroups = [
+  ...attachVisuals(rawMiddlewareGroups, middlewareVisuals),
+  elk.group, prometheus.group, gitlab.group, jenkins.group,
+];
 
-export const middlewareIntro = "从数据与运行环境理解系统约束：索引和事务、复制与一致性、缓存、消息传递、容器编排以及 DNS/TLS。回答时先说明机制，再补充故障条件、工程取舍和验证方法。具体保证取决于产品版本、配置与部署方式。";
+export const middlewareIntro = "从数据与运行环境理解系统约束，涵盖存储与一致性、缓存、消息传递、容器编排、DNS/TLS、日志与监控，以及持续集成和交付。回答时先说明机制，再补充故障条件、工程取舍和验证方法。具体保证取决于产品版本、配置与部署方式。";

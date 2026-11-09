@@ -137,7 +137,7 @@ test("language preference validates input and preserves learning state across sw
     const snapshot = study.readStudySnapshot();
     assert.equal(snapshot.resume.href, "#/lang/go/chan");
     assert.equal(snapshot.visited, 1);
-    assert.equal(snapshot.total, 101);
+    assert.equal(snapshot.total, 116);
     if (locale === "en") assert.doesNotMatch(snapshot.resume.layer + snapshot.resume.card.label, /\p{Script=Han}/u);
   }
 });
@@ -249,11 +249,27 @@ test("invalid route identifiers normalize to real content before persistence", (
   assert.equal(routing.resolveRoute("#/overview/plan/ghost", null, { overviewPlan: "3d" }).topic, "3d");
 });
 
+test("new course groups resolve to their own defaults and support direct topic links", () => {
+  const saved = storeWith(language, middle);
+  const courses = [
+    ["lang", "shell", "expansion", "exit-status"],
+    ["mid", "elk", "ingestion", "indexing"],
+    ["mid", "prometheus", "scrape", "promql"],
+    ["mid", "gitlab-ci", "gitlab-pipeline", "runners"],
+    ["mid", "jenkins-ci", "jenkins-pipeline", "agents"],
+  ];
+  for (const [page, primary, first, second] of courses) {
+    assert.deepEqual(routing.resolveRoute(`#/${page}/${primary}`, saved, {}), { page, primary, topic: first });
+    assert.deepEqual(routing.resolveRoute(`#/${page}/${primary}/${second}`, saved, {}), { page, primary, topic: second });
+  }
+});
+
 test("progress counts only distinct cards that still exist in the curriculum", () => {
-  const snapshot = study.readStudySnapshot(null, { visitedByPage: { lang: ["gmp", "gmp", "removed-card"], mid: [middle.topic] } });
-  assert.deepEqual(snapshot.layers.map(({ total }) => total), [26, 45, 30]);
-  assert.equal(snapshot.total, 101);
-  assert.equal(snapshot.visited, 2);
+  const snapshot = study.readStudySnapshot(null, { visitedByPage: { lang: ["gmp", "gmp", "exit-status", "removed-card"], mid: [middle.topic, "gitlab-pipeline"] } });
+  assert.deepEqual(snapshot.layers.map(({ total }) => total), [29, 57, 30]);
+  assert.equal(snapshot.total, 116);
+  assert.deepEqual(snapshot.layers.map(({ visited }) => visited), [2, 2, 0]);
+  assert.equal(snapshot.visited, 4);
 });
 
 test("overview resumes the latest valid layer rather than itself or a stale card", () => {

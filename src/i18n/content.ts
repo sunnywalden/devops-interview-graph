@@ -1,6 +1,9 @@
 import { languageGroups, languageIntro } from '../data/language';
 import { middlewareGroups, middlewareIntro } from '../data/middleware';
 import { scenarioGroups, scenarioIntro } from '../data/scenarios';
+import { shell } from '../data/shell';
+import { elk, prometheus } from '../data/observability';
+import { gitlab, jenkins } from '../data/delivery';
 import * as overviewZh from '../data/overview';
 import * as overviewEn from './overview.en';
 import { languageEnglish } from './language.en';
@@ -12,10 +15,14 @@ import type { SegmentGroup } from '../types';
 import type { LayerPageId } from '../uiPrefs';
 import type { Locale } from './ui';
 
-export const englishCards = { ...languageEnglish, ...pythonEnglish, ...middlewareEnglish, ...scenarioEnglish };
+export const englishCards = {
+  ...languageEnglish, ...pythonEnglish, ...shell.english, ...middlewareEnglish,
+  ...elk.english, ...prometheus.english, ...gitlab.english, ...jenkins.english, ...scenarioEnglish,
+};
 const groupLabels: Record<string, string> = {
-  go: 'Golang', python: 'Python', mysql: 'MySQL', mongo: 'MongoDB', redis: 'Redis', mq: 'Messaging',
-  container: 'Containers / Kubernetes', net: 'DNS / TLS', cicd: 'CI/CD', monitor: 'Monitoring',
+  go: 'Golang', python: 'Python', shell: 'Shell', mysql: 'MySQL', mongo: 'MongoDB', redis: 'Redis', mq: 'Messaging',
+  container: 'Containers / Kubernetes', net: 'DNS / TLS', elk: 'ELK', prometheus: 'Prometheus',
+  'gitlab-ci': 'GitLab CI/CD', 'jenkins-ci': 'Jenkins CI', cicd: 'CI/CD', monitor: 'Monitoring',
   log: 'Logs / Tracing', ops: 'Platform engineering', cmdb: 'CMDB / Consistency', report: 'Reporting', other: 'Operations',
 };
 const chineseGroups: Record<LayerPageId, SegmentGroup[]> = { lang: languageGroups, mid: middlewareGroups, scene: scenarioGroups };
@@ -38,8 +45,8 @@ export function localizedGroups(page: LayerPageId, locale: Locale): SegmentGroup
 const intros = {
   zh: { lang: languageIntro, mid: middlewareIntro, scene: scenarioIntro },
   en: {
-    lang: 'Go and Python are parallel learning paths. Understand language and runtime semantics before discussing services, concurrency, platform authorization and automation. Check the official documentation for version-dependent behavior. These answers support understanding and explanation; project experience must reflect your actual implementation.',
-    mid: 'Understand constraints in data and runtime systems: indexes, transactions, replication, consistency, caching, messaging, container orchestration and DNS/TLS. Explain the mechanism, failure conditions, trade-offs and verification. Specific guarantees depend on versions, configuration and deployment.',
+    lang: 'Go, Python and Shell are parallel learning paths. Understand language and runtime semantics before discussing services, concurrency, platform authorization and script automation. Check the official documentation for version-specific behavior and portability limits. Use these answers to organize your explanation and base any project claims on your actual implementation.',
+    mid: 'Understand infrastructure constraints across storage and consistency, caching, messaging, container orchestration, DNS/TLS, logging and monitoring, and continuous integration and delivery. Explain the mechanism, failure conditions, trade-offs and verification. Specific guarantees depend on versions, configuration and deployment.',
     scene: 'Apply language and infrastructure knowledge to delivery, observability, platforms and consistency. Explain objectives, constraints, recovery and verification. Technical guidance does not establish personal project experience; claimed results require verifiable records.',
   },
 };

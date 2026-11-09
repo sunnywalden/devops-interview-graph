@@ -57,6 +57,7 @@ export const uiEnglish: Record<string, string> = {
   '可观测': 'Observability', '资产': 'Assets', '预计算': 'Precomputation', '证书/解析': 'Certificates / DNS', '① 语言': '① Languages', '② 中间件': '② Infrastructure', '③ 场景': '③ Scenarios',
   '从语言机制出发，把底层原理讲清楚。': 'Start with language semantics and explain the mechanisms.',
   '串联存储、消息与基础设施，理解系统的取舍。': 'Connect storage, messaging and infrastructure to understand system trade-offs.',
+  '数据服务 · 容器 · 可观测性 · CI/CD': 'Data services · Containers · Observability · CI/CD',
   '回到真实项目，练习有依据、有边界的技术表达。': 'Use real projects to practice precise, evidence-based explanations.', 'CI/CD · 可观测性 · CMDB': 'CI/CD · Observability · CMDB',
   '初始': 'Initial', '迁移': 'Migrated', '刚刚': 'Just now', '继续': 'Continue', '尚未记录进度 · 换卡后自动保存': 'No reading history yet · Saved automatically as you navigate',
   "界面与课程语言": "Interface and course language",

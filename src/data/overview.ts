@@ -1,6 +1,6 @@
 import type { StarStory, SprintDay } from "../types";
 
-export const narrative = "知识分为语言、基础设施和工程场景三层，这是一张能力关联图，并非系统运行时调用链。Go 与 Python 并列提供开发能力，数据库、消息与 Kubernetes 提供数据和运行基础，交付、监控及资产管理等场景将这些能力组合为可验证的工程方案。";
+export const narrative = "这张能力关联图连接语言、基础设施和工程场景三层知识。Go 与 Python 支撑服务开发，Shell 支撑运维自动化，数据库、消息与 Kubernetes 提供数据和运行基础。交付、监控及资产管理等场景将这些能力组合为可验证的工程方案。";
 
 export const layerSteps = [
   {
@@ -306,7 +306,7 @@ export const sprintTips = [
 ];
 
 export const checklist = [
-  "语言：能解释 Go 与 Python 的执行、并发、取消、错误与类型语义。",
+  "语言：能解释 Go 与 Python 的执行、并发、取消、错误与类型语义，以及 Shell 的参数展开、退出状态和脚本可移植性。",
   "数据：能区分事务、复制、缓存和消息各自保证及跨系统边界。",
   "运行：能解释 Kubernetes 网络、存储、探针、权限和故障定位。",
   "交付：能说明制品来源、测试、部署、回退与基础设施状态管理。",
