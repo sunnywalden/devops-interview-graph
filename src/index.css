@@ -414,14 +414,11 @@ summary::-webkit-details-marker { display: none; }
 .diagram-caption { font-size: 11px; color: var(--muted); line-height: 1.8; }
 .ant-tabs-content-holder, .ant-tabs-tabpane { min-width: 0; }
 
-/* Focus keeps the reading task in view; Escape returns to the room. */
+/* Focus adjusts the reading layout while keeping the full lesson available. */
 .app-shell--focus .app-workspace { margin-left: 0; }
 .app-shell--focus .app-header { max-width: 1050px; margin: auto; border-bottom: 0; padding-top: 8px; }
 .app-shell--focus .page-content { max-width: 1050px; padding-top: 5px; }
-.app-shell--focus .card-head__resume,
-.app-shell--focus .diagram-panel,
-.app-shell--focus .followups,
-.app-shell--focus .disclosure { display: none; }
+.app-shell--focus .layer-page__intro { padding-bottom: 0; }
 .app-shell--focus .oral-block { font-size: 19px; line-height: 2.2; }
 .app-shell--focus .oral-hero { padding: 30px 36px; }
 .app-shell--focus .card-head { padding-top: 12px; }

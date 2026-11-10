@@ -236,15 +236,16 @@ export function LayerPage({
 
   return (
     <div className="layer-page">
-      {focusMode && <h1 className="sr-only">{title}{t("· 专注口述")}</h1>}
-      {!focusMode && (
-        <div className="layer-page__intro">
-          <p className="eyebrow">THE LEARNING ROOM / {page === "lang" ? "01" : page === "mid" ? "02" : "03"}</p>
-          <h1>{title}</h1>
-          <p className="page-subtitle">{t("把原理、取舍与项目经验，连成一段清楚的表达。")}</p>
-          <details className="layer-intro-note"><summary>{t("本层学习提示")}</summary><p>{intro}</p></details>
-        </div>
-      )}
+      <div className="layer-page__intro">
+        {focusMode ? <h1 className="sr-only">{title}{t("· 专注口述")}</h1> : (
+          <>
+            <p className="eyebrow">THE LEARNING ROOM / {page === "lang" ? "01" : page === "mid" ? "02" : "03"}</p>
+            <h1>{title}</h1>
+            <p className="page-subtitle">{t("把原理、取舍与项目经验，连成一段清楚的表达。")}</p>
+          </>
+        )}
+        <details className="layer-intro-note"><summary>{t("本层学习提示")}</summary><p>{intro}</p></details>
+      </div>
 
       <div className="layer-toolbar" ref={toolbarRef}>
         <div className="train-bar" role="group" aria-label={t("{name}导航", { name: pageLabel })}>
