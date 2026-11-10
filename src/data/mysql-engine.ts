@@ -16,7 +16,7 @@ export const mysqlEngine = bilingualTopics("mysql", {
         ["什么是回表和覆盖索引？", "回表是通过二级索引中的聚簇键读取行。覆盖索引包含查询需要的列，通常可省去这一步。一致性读中，若二级索引记录被标记删除，或其所在页被较新的事务修改过，InnoDB 仍需回表判断版本可见性。"],
         ["为什么通常选短而稳定的主键？", "聚簇键要保存在二级索引记录中，键越宽，二级索引通常越大。随机插入可能增加页分裂。递增键也可能让并发插入集中在右端页。选型应结合写入分布、空间和业务约束。"],
         ["InnoDB 与 MyISAM 最重要的区别是什么？", "InnoDB 支持事务回滚、崩溃恢复、外键和索引记录锁。MyISAM 采用表级锁且不支持事务。先按一致性和并发要求选引擎，再用实际负载验证。"],
-        ["缓冲池变大就能解决慢查询吗？", "先区分磁盘读、锁等待、扫描量和日志刷盘。如果热点工作集超过缓冲池且随机页读成为瓶颈，适当增大可能有帮助。全表扫描或阻塞事务仍需从执行路径和事务入手。"],
+        ["缓冲池变大就能解决慢查询吗？", "先用 EXPLAIN ANALYZE 核对实际扫描量，再查锁等待和 I/O。按同一时间窗口比较 Innodb_buffer_pool_reads（从磁盘读页）与 Innodb_buffer_pool_read_requests（逻辑读请求）的增量。如果热点页反复被淘汰且物理读限制了吞吐，在避免系统换页的前提下增大缓冲池。扫描量过大、锁等待或日志刷盘慢时，分别调整访问路径、事务或存储。"],
       ],
       { scope: "按 MySQL 8.4 / InnoDB 说明。物理页与内存行为受实例配置和工作负载影响。" },
     ),
@@ -32,7 +32,7 @@ export const mysqlEngine = bilingualTopics("mysql", {
         ["What are clustered index lookups and covering indexes?", "A clustered index lookup fetches a row using the clustered key stored in a secondary index. A covering index contains all the columns the query needs and can usually avoid this lookup. During a consistent read, InnoDB still checks the clustered row for version visibility if the secondary index record is marked for deletion or a newer transaction updated its page."],
         ["Why prefer a short, stable primary key?", "Secondary index records store the clustered key, so a wider key generally increases their size. Random insertion can increase page splits, while increasing keys can concentrate concurrent inserts on the rightmost page. Consider write distribution, storage, and business constraints."],
         ["What are the main differences between InnoDB and MyISAM?", "InnoDB supports transaction rollback, crash recovery, foreign keys, and index record locks. MyISAM uses table-level locks and has no transactions. Choose based on consistency and concurrency requirements, then validate with a representative workload."],
-        ["Will increasing the buffer pool fix a slow query?", "Distinguish disk reads, lock waits, rows scanned, and log flushes. Increasing the pool may help if the hot working set exceeds it and random page reads are the bottleneck. Full scans and blocking transactions still require plan and transaction analysis."],
+        ["Will increasing the buffer pool fix a slow query?", "Check actual rows scanned with EXPLAIN ANALYZE, then inspect lock waits and I/O. Over the same window, compare the deltas of Innodb_buffer_pool_reads (physical page reads) and Innodb_buffer_pool_read_requests (logical read requests). If frequent hot-page eviction makes physical reads a bottleneck, enlarge the buffer pool within a memory budget that avoids swapping. Excessive scans, lock waits and slow log flushes call for changes to access paths, transactions or storage, respectively."],
       ],
       { scope: "Based on MySQL 8.4 / InnoDB. Physical page and memory behavior depend on instance settings and workload." },
     ),
@@ -47,7 +47,7 @@ export const mysqlEngine = bilingualTopics("mysql", {
       ["提交时无需同步写回事务涉及的全部数据页。检查点推进也不等同于某个事务提交。", "数据库崩溃恢复、备份恢复和跨节点故障转移有不同的故障范围与验证方法。"],
       ["把 undo 当成用于复制的变更流，或把 binlog 当成 InnoDB 的页恢复日志。", "只改变刷盘参数来提高吞吐，未说明断电条件下的恢复点目标。"],
       [
-        ["写入已经提交但数据页仍是脏页，重启后怎么恢复？", "在持久性配置与存储有效的前提下，重启时 InnoDB 利用已经持久化的 redo 恢复页修改，再用 undo 回滚未提交事务。这个过程不要求每次提交都同步刷所有数据页。"],
+        ["写入已经提交但数据页仍是脏页，重启后怎么恢复？", "只要提交所需的 redo 已经持久化，数据页尚未刷盘也能恢复。InnoDB 重启时从检查点重放 redo，将落后的页推进到日志记录的位置，再用 undo 撤销仍未提交的事务。能否找回刚提交的数据取决于刷盘策略和存储是否兑现持久化承诺。"],
         ["Redo、undo、binlog 各负责什么？", "Redo 记录可重放的 InnoDB 修改。undo 支持撤销修改和访问旧行版本。binlog 记录用于复制和恢复的变更事件。时间点恢复先还原基准备份，再用完整的 binlog 链，从该备份对应的日志位置重放到目标时间或事件位置。"],
         ["两个常见刷盘参数怎么解释？", "innodb_flush_log_at_trx_commit=1 在提交时写入并刷盘，=2 在提交时写入操作系统缓存、周期性刷盘，=0 周期性写入并刷盘。断电或系统崩溃可能丢失尚未刷盘的日志，=0 连进程崩溃也可能丢失尚未写出的日志。启用 binlog 时，sync_binlog=1 让每个提交组在引擎提交前同步 binlog。对启用 binlog 的 InnoDB，两个参数都设为 1 可获得最强的持久性配置，前提是存储正确执行刷盘。"],
         ["为什么有 redo 还需要 doublewrite？", "部分页写入可能留下无法可靠重放的页。innodb_doublewrite=ON 或 DETECT_AND_RECOVER 先保存完整的页副本，恢复时可先修复页，再应用 redo。DETECT_ONLY 只写元数据，可检测部分写入，但没有用于修复的页副本。"],
@@ -63,7 +63,7 @@ export const mysqlEngine = bilingualTopics("mysql", {
       ["A commit does not have to flush all affected data pages. Checkpoint advancement and individual transaction commits are separate events.", "Crash recovery, backup recovery, and failover between nodes address different failure scopes and require different validation."],
       ["Treating undo as a replication stream or the binary log as the InnoDB page recovery log.", "Changing flush settings for throughput without defining a recovery point objective for a power loss."],
       [
-        ["How are committed changes recovered if their data pages were still dirty?", "With effective durability settings and storage, InnoDB recovers page changes from durable redo and rolls back uncommitted transactions using undo. Committing each transaction does not require flushing all affected data pages."],
+        ["How are committed changes recovered if their data pages were still dirty?", "Committed changes can survive even if their data pages have not been flushed, provided the required redo is durable. On restart, InnoDB replays redo from the checkpoint to bring stale pages up to date, then uses undo to roll back transactions that remain uncommitted. Recovery of recent commits depends on the flush policy and the storage system honoring durability requests."],
         ["What do redo, undo, and the binary log do?", "Redo records replayable InnoDB changes. Undo reverses changes and provides older row versions. The binary log records change events for replication and recovery. For point-in-time recovery, restore a base backup and use a complete chain of binary logs to replay from the backup's log position to the target time or event position."],
         ["How do the two common flush settings work?", "innodb_flush_log_at_trx_commit=1 writes and flushes at commit, =2 writes to the OS cache at commit and flushes periodically, and =0 writes and flushes periodically. Power loss or an OS crash can lose unflushed log records. With =0, a process crash can also lose records that have yet to be written. With binary logging enabled, sync_binlog=1 syncs each commit group's binary log before engine commit. Set both to 1 for the strongest InnoDB durability configuration with binary logging, assuming the storage honors flush requests."],
         ["Why is doublewrite needed when redo exists?", "A partial write can leave a page unsuitable for reliable redo replay. innodb_doublewrite=ON or DETECT_AND_RECOVER stores a full page copy. Recovery can repair the page before applying redo. DETECT_ONLY writes metadata to detect a partial write, with no page copy for repair."],
@@ -83,7 +83,7 @@ export const mysqlEngine = bilingualTopics("mysql", {
       ["把 Using filesort 理解成一定写临时文件，或把存在联合索引理解成任意后缀都能高效定位。", "把 EXPLAIN ANALYZE 当成只读估算。它会执行语句，包括支持的多表 UPDATE、DELETE；先在隔离环境验证。"],
       [
         ["(tenant_id, created_at, id) 能支持哪些查询？", "tenant_id 等值时，可用 ORDER BY created_at DESC, id DESC 做有稳定顺序的分页，前提是 id 能打破时间戳并列。只有 created_at 条件时，没有普通的左前缀查找。MySQL 在受限条件下可选择 Skip Scan，仍应看实际计划。"],
-        ["范围列之后的索引列还有用吗？", "要区分查找区间与读取后的过滤。后续列通常不能继续缩窄已按范围构造的键区间，但可能参与索引条件下推、覆盖，或在满足顺序条件时用于排序。"],
+        ["范围列之后的索引列还有用吗？", "索引 (tenant_id, created_at, status) 遇到 tenant_id 等值和 created_at 范围条件时，通常由前两列确定扫描区间。如果还要求 status = 'open'，InnoDB 可在符合条件时用索引条件下推检查 status，减少回表。若索引已覆盖查询所需字段，还可能直接从索引返回。是否能利用索引排序，要看 ORDER BY 是否匹配扫描顺序。"],
         ["如何定位 JOIN 的慢点？", "沿执行树比较估算和实际输出行数，找出行数或循环数突增的节点，再检查连接键索引与数据倾斜。多次循环时耗时为每次循环的平均值，并包含子迭代器的时间。结合 loops 判断总量，避免把父子节点耗时重复相加。"],
         ["Using filesort 一定表示磁盘排序吗？", "它表示需要额外排序步骤，不代表一定写磁盘。排序可在内存完成，也可能用到临时文件。先看参与排序的数据规模、耗时和查询的排序需求。"],
         ["如何验证新增索引的收益？", "用相同数据、参数分布和并发条件比较计划、扫描量和尾延迟。还要量化新增空间、更新成本和 DDL 对线上负载的影响，避免只看单次查询。"],
@@ -99,7 +99,7 @@ export const mysqlEngine = bilingualTopics("mysql", {
       ["Assuming Using filesort always writes a temporary file or that every suffix of a composite index supports an efficient lookup.", "Treating EXPLAIN ANALYZE as a read-only estimate. It executes the statement, including supported multi-table UPDATE and DELETE statements. Validate in an isolated environment first."],
       [
         ["Which queries does (tenant_id, created_at, id) support?", "With equality on tenant_id, ORDER BY created_at DESC, id DESC supports stable pagination if id breaks timestamp ties. A predicate on created_at alone does not provide a conventional leftmost-prefix lookup. MySQL can choose Skip Scan under restricted conditions, so inspect the actual plan."],
-        ["Are index columns after a range column useful?", "Distinguish the lookup interval from filtering after reading keys. Later columns generally cannot narrow an interval already constructed using a range, but may help with index condition pushdown, covering, or sorting when the ordering requirements are met."],
+        ["Are index columns after a range column useful?", "With an index on (tenant_id, created_at, status), an equality predicate on tenant_id and a range on created_at usually define the scan interval. If the query also requires status = 'open', InnoDB can use index condition pushdown when applicable to check status and avoid some table lookups. A covering index may satisfy the query directly. Index ordering helps only if ORDER BY matches the scan order."],
         ["How do you diagnose a slow JOIN?", "Compare estimated and actual output rows across the plan tree. Look for a jump in rows or loops, then check join-key indexes and skew. With multiple loops, the reported time is an average per loop and includes child iterators. Use loops to gauge total work and avoid adding parent and child times together."],
         ["Does Using filesort always mean a disk sort?", "It indicates an extra sort step. Sorting can complete in memory or use temporary files. Check the volume sorted, time spent, and the query's ordering requirements."],
         ["How do you validate the benefit of a new index?", "Compare plans, scanned rows, and tail latency with the same data, parameter distribution, and concurrency. Measure added storage, update cost, and DDL impact on the live workload, beyond a single query execution."],

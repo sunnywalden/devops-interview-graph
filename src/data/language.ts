@@ -43,11 +43,11 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "工作窃取转移的是什么？",
-            "a": "转移的是其他 P 本地运行队列中等待执行的 goroutine，通常会批量转移其中一部分；不是迁移正在执行的任务。它有助于均衡调度负载，但不会增加 CPU 容量，也不能替代业务队列的容量限制。"
+            "a": "当一个 P 的本地队列没有可运行的 G 时，调度器可以从其他 P 的本地运行队列批量窃取一部分等待执行的 G。运行中的 G 不会被直接窃取。全局队列和网络轮询也可能提供可运行任务。工作窃取改善负载分布，业务仍需要独立限制并发和排队。"
           },
           {
             "q": "goroutine 执行阻塞系统调用时会发生什么？",
-            "a": "执行调用的 M 可能被阻塞，运行时可以将其 P 交给其他 M，使其他可运行的 G 继续执行；不意味着每次阻塞都会新建线程。由网络轮询器支持的 I/O 通常通过挂起 G 等待就绪。若阻塞期间持有业务锁，等待该锁的任务仍会受到影响。"
+            "a": "阻塞系统调用可能占住执行它的 M。运行时可将该 P 交给其他 M，继续执行可运行的 G。系统调用返回时，原 M 要重新取得 P 才能继续运行该 G，若无法取得，运行时可将 G 放回运行队列。网络轮询器支持的 I/O 通常只挂起 G。持有业务锁时，即使 P 已移交，其他任务仍可能等待该锁。"
           }
         ],
         "sources": [
@@ -94,7 +94,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何防止中间层丢失 context？",
-            "a": "在 handler、业务逻辑及客户端接口中显式传递 context，并检查新建根 context 的使用理由。测试可取消上游请求，验证下游调用和后台任务按预期退出。异步持久任务可以拥有独立 context，但必须明确移交、追踪与关闭协议。"
+            "a": "从 HTTP handler 的 r.Context() 开始，在业务层继续传参，下游使用 QueryContext 或 NewRequestWithContext 等支持取消的 API。测试中取消上游请求，验证下游等待和当前请求的 goroutine 能退出。若任务已持久化移交给后台 worker，由 worker 管理独立的超时、追踪和退出。"
           }
         ],
         "sources": [
@@ -130,7 +130,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "select 能否保证取消分支优先？",
-            "a": "不能。多个 case 同时就绪时会进行选择，并不保证 context 分支先执行。预检查可以减少取消后的工作，但不能消除检查与执行之间的竞态；关键副作用还需在提交边界检查状态并保证幂等。"
+            "a": "多个通信分支同时就绪时，select 会从就绪分支中均匀伪随机地选一个，取消分支没有优先级。循环入口可先检查 ctx.Err() 来减少取消后的工作，但取消仍可能发生在检查与执行之间。对关键写入，要在提交路径传递截止时间，并用幂等键或条件更新处理结果不确定的情况。"
           },
           {
             "q": "缓冲队列满时应如何处理？",
@@ -138,7 +138,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "channel 与 Mutex 的同步语义有什么区别？",
-            "a": "两者都可建立内存模型规定的先行发生关系。Mutex 围绕共享状态的临界区组织访问，channel 更适合数据交接和事件通知。发送可变对象的指针并不会自动禁止后续修改，仍需约定所有权。"
+            "a": "channel 的发送先行发生于对应接收完成，可用它发布发送前写入的数据。对同一把 Mutex，前一次 Unlock 先行发生于后续 Lock 返回，适合保护共享状态和复合更新。通过 channel 传递可变对象的指针后，要移交所有权或继续同步访问。"
           }
         ],
         "sources": [
@@ -169,7 +169,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "atomic 与 Mutex 应如何选择？",
-            "a": "atomic 适合单个原子状态或经过严格设计的发布协议；多个字段必须保持一致时通常使用 Mutex。使用 atomic 不会自动保证整个业务操作原子性，复杂无锁方案应有明确不变量和并发验证。"
+            "a": "独立计数器可用原子 Add，单个状态值的条件更新可用 CAS。分开的 Load 与 Store 无法组成原子自增。若一次操作要同时校验余额并扣减余额和额度，用同一把锁保护整段检查与更新。"
           },
           {
             "q": "如何证明一次性能优化有效？",
@@ -264,7 +264,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何验证 N+1 问题已经解决？",
-            "a": "在典型列表和嵌套查询下记录数据库或 RPC 调用次数，并随列表规模增加进行对比。批量加载后调用数应按批次增长，而不是每个对象一次。还需验证批量查询的索引、请求内缓存与权限隔离。"
+            "a": "把逐条查询改成按请求批量加载，例如将多个 resolver 请求的 ID 合并为一次 WHERE id IN 查询。DataLoader 按输入顺序返回结果并标记缺失项。按请求隔离缓存，在批量查询中保留租户和权限过滤，并比较改造前后的查询次数。"
           },
           {
             "q": "字段级权限应在哪里实现？",
@@ -300,7 +300,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "为什么装有 nil 指针的 error 接口不等于 nil？",
-            "a": "将类型为 *T 的 nil 指针赋给 error 时，接口的动态类型仍是 *T，因此接口值非 nil。没有错误时应直接返回 nil。如果直接调用 nil 接收者的 Error 方法，能否成功取决于方法如何处理该接收者。"
+            "a": "例如 var e *MyError 的值为 nil，但将 e 赋给 error 后，接口仍有动态类型 *MyError，因此 err == nil 为 false。没有错误时直接返回 nil。若接口方法会在 nil 接收者上调用，需要按该方法的契约处理，避免解引用 nil。"
           },
           {
             "q": "什么时候值得定义接口？",
@@ -352,7 +352,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何将 Go error 映射为 gRPC status？",
-            "a": "在服务边界按业务含义映射为明确的 gRPC code，必要时增加约定的结构化 details。客户端接收的是协议状态，不能依赖服务端 errors.Is 的指针或类型身份。内部诊断信息保留在服务端日志中。"
+            "a": "在传输边界用 errors.Is 或 errors.As 识别领域错误，映射为稳定的 HTTP 或 gRPC 状态。例如资源不存在可映射为 404 或 NotFound，输入无效可映射为 400 或 InvalidArgument。对调用方返回可采取行动的信息，底层错误链和敏感上下文留在受控日志中。"
           },
           {
             "q": "怎样避免错误信息泄露？",
@@ -396,7 +396,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "singleflight 能防止哪些重复请求？",
-            "a": "singleflight 将同一 Group 中同一键的重叠调用合并，等待方共享一次调用的结果。调用完成后，新请求仍会重新执行。它也不会自动跨进程合并。缓存、等待方取消和失败重试需要单独设计。"
+            "a": "singleflight 按 key 合并同时发生的调用。例如缓存未命中时，同一个 key 只有一个回源函数执行，其余调用共享结果和错误。它本身不保存结果，也不限制不同 key 的并发。要避免后续请求再次回源，仍需独立的缓存和过期策略。"
           },
           {
             "q": "RWMutex 一定比 Mutex 性能更好吗？",
@@ -433,7 +433,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "探针应如何配合退出？",
-            "a": "终止时让服务停止接收新任务，并协调 readiness、入口摘除和连接排空。端点更新与代理传播存在延迟，实际流程需用在途请求测试验证。liveness 不应因正常排空而反复触发重启。"
+            "a": "进入终止流程时先让实例停止接收新工作。Kubernetes 会把终止端点标为非就绪，但 EndpointSlice 更新和代理摘流需要传播时间，在途请求也可能仍在运行。将可能的 preStop、流量摘除和连接排空纳入 terminationGracePeriodSeconds 的总预算，用持续发请求的滚动替换测试验证。正常排空期间让 liveness 继续反映进程是否健康。"
           },
           {
             "q": "Shutdown 超时后怎么办？",
@@ -490,7 +490,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何处理不稳定测试？",
-            "a": "先重复运行并保存随机种子、日志和时序，检查共享资源、未等待的 goroutine、端口冲突和外部依赖。用事件同步代替猜测性的 sleep。若临时隔离，应记录责任和修复条件，不能当作测试通过。"
+            "a": "用 go test -race -count=20 -shuffle=on 重复运行相关用例，保存失败的 shuffle seed、日志和输入，区分数据竞争、顺序依赖与环境问题。并发测试用 channel 等显式信号等待状态变化，避免用固定 Sleep 猜执行顺序。race detector 只能发现实际执行路径上的竞争。"
           },
           {
             "q": "Example 测试有什么价值？",
@@ -530,7 +530,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何调整 GOGC？",
-            "a": "先确认 GC CPU 或内存确为瓶颈，再在可用内存预算内小幅调整，并比较分配速率、回收频率、吞吐与尾延迟。降低值通常节省堆空间但增加回收工作，提高值则相反；没有通用最优值。"
+            "a": "GOGC 控制允许的堆增长量，近似堆目标是存活堆加上（存活堆与 GC roots 大小之和）乘以 GOGC/100。调低 GOGC 通常会增加回收频率。GOMEMLIMIT 为 Go 运行时管理的内存设定软限制，外部 C 分配等不计入。结合容器上限预留余量，观察 GC CPU、存活堆和进程 RSS 再调参。"
           },
           {
             "q": "Go GC 与 Java GC 应如何比较？",
@@ -676,7 +676,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "如何与 Go 的并发模型比较？",
-            "a": "Go 运行时调度 goroutine，CPython 线程、asyncio Task 和进程分别有不同执行与隔离边界。应比较具体工作负载、取消机制和资源开销；两种语言都需要控制下游并发，不能只比较协程创建数量。"
+            "a": "Go 把大量 goroutine 调度到操作系统线程上，等待受运行时轮询的网络 I/O 时通常只挂起当前 goroutine。启用 GIL 的 CPython 中，多个线程可以重叠支持释放 GIL 的 I/O 等待，但纯 Python 字节码通常无法在同一解释器的多个线程中并行执行。asyncio 用 await 协作切换任务。CPU 密集工作可评估进程池、释放 GIL 的扩展或兼容的自由线程构建，I/O 服务则应测连接池等待和尾延迟。"
           },
           {
             "q": "使用 multiprocessing 有哪些前提？",
@@ -766,7 +766,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "asyncio Task 与 goroutine 能直接等同吗？",
-            "a": "不能。Task 依赖事件循环与 await 协作，goroutine 由 Go 运行时调度并具有不同的阻塞和抢占机制。两者都需要退出协议，但同步阻塞调用对整体调度的影响不同。"
+            "a": "asyncio Task 在事件循环线程上协作运行，只有操作确实挂起时，其他任务才有机会执行。例如在 async def 中直接执行 requests.get 会阻塞同一循环里的其他任务。Go 的 net 包在受运行时轮询的套接字等待 I/O 时会挂起当前 goroutine，其他 goroutine 可以继续。Python 可改用异步客户端，或把同步 I/O 交给受限的线程执行，并给底层请求设置超时。"
           },
           {
             "q": "捕获 CancelledError 后应怎么做？",
@@ -774,7 +774,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "怎样观察异步服务是否过载？",
-            "a": "记录事件循环延迟、在途任务、队列等待、连接池等待和超时比例，并区分租户。结合任务堆栈与慢回调诊断，判断是事件循环被阻塞、下游变慢还是入口超过处理能力。"
+            "a": "同时看事件循环延迟、队列等待、连接池等待和超时率。可用周期任务比较预定执行时间与实际唤醒时间，偏差增大时查慢回调或同步阻塞调用。如果循环延迟正常但获取数据库连接越来越慢，优先检查连接池饱和、慢查询和下游容量，再按租户定位流量来源。"
           },
           {
             "q": "如何识别“假异步”？",
@@ -805,7 +805,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "如何实现行级数据权限？",
-            "a": "在查询层按可信租户及业务范围限制 QuerySet，并在写入和对象操作时再次校验。复杂场景可结合数据库层隔离策略。需要覆盖原生 SQL、批量操作和关联对象，不能只修改一个列表接口。"
+            "a": "先由认证与授权确定可信租户和访问范围，再让列表、按 ID 查询及写入都从受限 QuerySet 出发。例如更新订单时按 tenant_id 和主键一起查询，写入时也校验关联对象属于同一租户。原生 SQL、批量操作和后台任务要应用同一规则。跨租户关联必须禁止时，可在数据库中用包含租户键的复合外键保障该约束。"
           },
           {
             "q": "管理员如何跨租户操作？",
@@ -853,7 +853,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "什么时候使用 Pushgateway？",
-            "a": "Prometheus 通常拉取长期运行服务。Pushgateway 主要适合有限的短生命周期批任务，不是解决所有网络连接问题的通用推送总线；必须管理残留指标和任务生命周期，避免把过期结果视为当前状态。"
+            "a": "长期运行的服务通常由 Prometheus 拉取。Pushgateway 适合在两次抓取之间就可能结束、且结果属于整个服务的批处理，例如每日全站清理。可推送最后成功时间并对长期未更新告警。用稳定的任务分组键，任务退役时显式删除对应分组，因为 Pushgateway 会保留已推送的序列。"
           },
           {
             "q": "Exporter 如何与业务服务解耦？",
@@ -869,6 +869,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           }
         ],
         "sources": [
+          "prom-pushgateway",
           "prom-instrument",
           "prom-exporters"
         ]
@@ -893,7 +894,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "iterable 与 iterator 有什么区别？",
-            "a": "iterable 可以通过 iter() 获取迭代器；iterator 保存遍历状态，并通过 next() 逐步产生元素。列表可多次创建迭代器，而某个生成器对象通常只能顺序消费一次。"
+            "a": "iterable 能由 iter() 取得迭代器。iterator 保存当前遍历位置，iter(it) 返回它自身，next(it) 在耗尽时抛出 StopIteration。列表每次 iter() 都可得到新的迭代器，而生成器对象本身就是迭代器，读到一半再遍历会从当前位置继续。"
           },
           {
             "q": "*args 与 **kwargs 适合哪些场景？",
@@ -905,7 +906,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "提前停止遍历生成器时如何清理资源？",
-            "a": "不要假设 break 会立即关闭任意生成器。资源应由外层 with 管理，或在明确拥有生命周期时调用 close；异步生成器可使用 aclose。生成器内部用 finally 配合关闭协议。"
+            "a": "break 只结束循环，生成器可能仍被引用。若生成器拥有文件等资源，让它在 finally 中清理，并由调用方在提前退出时调用 close()，或用 contextlib.closing 管理。异步生成器对应 await aclose()，也可用 async with contextlib.aclosing(...) 确保提前退出时执行清理。"
           },
           {
             "q": "异步生成器与普通生成器有什么区别？",
@@ -985,7 +986,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "迁移到 Pydantic v2 应关注什么？",
-            "a": "核对 model_validate、model_dump、验证器和配置方式的变化，并检查类型转换与序列化兼容性。用真实输入和边界数据回归验证，不能只修复导入或方法名称后就认为迁移完成。"
+            "a": "用 model_validate 解析输入、model_dump 导出模型。若原先用 from_orm，从对象属性读取需要启用 from_attributes。将旧的字段验证器迁到 field_validator，并核对执行顺序和类型转换。例如 v2 的 name: str | None 允许显式传 None，但省略字段仍会报错，除非定义默认值。用真实请求和响应样本回归校验与序列化。"
           },
           {
             "q": "如何安全地热更新配置？",
@@ -1037,7 +1038,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "多进程能否共享普通字典缓存？",
-            "a": "普通对象通常属于各自地址空间，修改不会自动同步。共享需求可通过外部缓存、Manager 或共享内存实现，但各有序列化和同步成本；读取时看似相同的初始内容不代表共享状态。"
+            "a": "普通字典在各进程中独立。fork 的子进程最初可看到父进程内存的快照，后续写入因写时复制而各自可见；spawn 启动新解释器。可用 Manager().dict() 共享代理或用外部缓存。用 shared_memory 共享的是字节缓冲区，需要自行定义布局。像先读再加一这样的复合操作还需锁或服务端原子命令。"
           },
           {
             "q": "如何验证多进程方案优于线程？",
@@ -1087,7 +1088,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "Docker 中怎样利用依赖缓存？",
-            "a": "先复制依赖描述和锁文件并安装，再复制频繁变化的应用代码，以提高缓存命中。固定基础镜像，使用构建密钥机制传递凭据，并在最终镜像中仅保留运行所需内容。"
+            "a": "先复制 pyproject.toml 和 poetry.lock，用固定版本的 Poetry 执行 poetry install --no-root 安装依赖层。再复制源码，若项目本身需要作为包安装，再单独安装项目。把 Python 版本和依赖组固定在构建配置中，私有包源凭据通过 BuildKit secret 提供，避免留在镜像层。"
           }
         ],
         "sources": [
@@ -1119,7 +1120,7 @@ const rawLanguageGroups: SegmentGroup[] = [
           },
           {
             "q": "Gunicorn 与 ASGI 服务器是什么关系？",
-            "a": "Gunicorn 管理工作进程，具体协议能力取决于 worker；Uvicorn 等实现 ASGI 服务。部署应选择当前受支持的组合，核对 worker 的维护状态、超时和信号行为，而不是只替换启动命令。"
+            "a": "Gunicorn 的主进程负责启动、监控和重启 worker，实际处理 ASGI 的是支持该协议的 worker。可按安装版本选择 Gunicorn 的原生 ASGI worker，或用独立的 Uvicorn。若采用 Gunicorn 配 Uvicorn worker，使用独立 uvicorn-worker 包，因为 uvicorn.workers 已弃用。用在途请求验证超时和优雅退出。"
           },
           {
             "q": "ASGI 与 Go HTTP 服务如何比较？",
@@ -1135,6 +1136,8 @@ const rawLanguageGroups: SegmentGroup[] = [
           }
         ],
         "sources": [
+          "gunicorn-asgi",
+          "uvicorn-deploy",
           "django-async",
           "django-async-6",
           "asgi-spec"
@@ -1161,7 +1164,7 @@ const rawLanguageGroups: SegmentGroup[] = [
         "followUps": [
           {
             "q": "subprocess 的基本使用原则是什么？",
-            "a": "优先传入参数列表并明确 timeout、check 及输出处理。需要 shell 功能时严格限制输入和命令来源。对子进程树、流式大输出和信号处理也要单独设计，timeout 不自动解决所有后代进程清理问题。"
+            "a": "对一次性命令，可用 subprocess.run([program, arg], check=True, timeout=5)。参数列表在常规的直接执行中保留参数边界，check=True 将非零退出转成 CalledProcessError，超时抛出 TimeoutExpired。按输出量选择捕获、写文件或流式读取。若命令还会启动后代进程，需要额外管理进程组及清理。"
           },
           {
             "q": "什么时候引入 Click 或 Typer？",

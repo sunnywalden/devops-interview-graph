@@ -45,7 +45,7 @@ export const shell = bilingualGroup("shell", "Shell", "expansion", {
       ["重定向按从左到右处理；>log 2>&1 与 2>&1 >log 的结果可能不同。", "面向既有 /bin/sh 环境时，先核实 pipefail 支持情况；PIPESTATUS 是 Bash 接口。"],
       ["只检查 tee 的退出状态，可能把失败构建当作成功。", "命令执行后先打印日志，再读取 $? 或 PIPESTATUS，会丢失原来的状态。"],
       [
-        ["如何同时保留构建输出与失败状态？", "明确使用 Bash，在启用 pipefail 后执行管道并判断其状态。若要区分构建失败和 tee 写入失败，在管道执行后立即保存 PIPESTATUS。"],
+        ["如何同时保留构建输出与失败状态？", "在 Bash 启用 pipefail，把 build | tee build.log 放在 if 的条件里，可让日志保留且任一阶段失败时进入错误分支。若需要区分哪一段失败，在所进分支的第一条命令中用 statuses=(\"${PIPESTATUS[@]}\") 保存每段状态，后续执行其他命令会覆盖它。"],
         ["grep 返回 1 时应该失败吗？", "按业务语义决定。0 表示有匹配，1 表示无匹配，大于 1 表示执行错误。无匹配如果是预期分支，应显式处理。"],
         ["set -e 为什么没让 if 条件中的失败退出？", "条件位置会消费退出状态，用于选择控制流；Bash 对这些位置有明确的 errexit 例外。用显式检查传递关键错误。"],
         ["cmd >log 2>&1 如何处理 stderr？", "先把 stdout 指向 log，再把 stderr 复制到当前 stdout。反过来写会先复制原来的 stdout，随后只把 stdout 改到文件。"],
@@ -60,7 +60,7 @@ export const shell = bilingualGroup("shell", "Shell", "expansion", {
       ["Redirections apply from left to right. >log 2>&1 and 2>&1 >log can produce different results.", "Check pipefail support when targeting a deployed /bin/sh. PIPESTATUS is a Bash interface."],
       ["Checking only tee's exit status can let a failed build appear successful.", "Logging before reading $? or PIPESTATUS replaces the original status information."],
       [
-        ["How can you retain build output and detect failure?", "Use Bash explicitly, enable pipefail, and check the pipeline's status. To distinguish a build failure from a tee write failure, save PIPESTATUS immediately after the pipeline."],
+        ["How can you retain build output and detect failure?", "In Bash, enable pipefail and put build | tee build.log in an if condition. The log is preserved and failure at either stage takes the error branch. To identify the failing stage, save the per-command statuses with statuses=(\"${PIPESTATUS[@]}\") as the first command in the branch you enter. Running another command overwrites PIPESTATUS."],
         ["Should grep returning 1 fail the script?", "It depends on what the script is doing. Zero means a match, 1 means no match, and a status greater than 1 indicates an execution error. Handle no match explicitly when it is an expected outcome."],
         ["Why did set -e fail to exit on a failing if condition?", "A condition consumes the exit status to select control flow. Bash defines errexit exceptions for such positions. Propagate critical errors through explicit checks."],
         ["What happens to stderr in cmd >log 2>&1?", "The shell redirects stdout to log, then duplicates the current stdout descriptor onto stderr. Reversing the order duplicates the original stdout first, then redirects only stdout to the file."],
@@ -82,7 +82,7 @@ export const shell = bilingualGroup("shell", "Shell", "expansion", {
         ["如何设计可重试的配置更新？", "先比较目标版本或摘要，已达到期望状态时跳过写入，再确认服务实际采用的版本。若上次在写入与重载之间退出，重试应能继续重载或按策略回退。"],
         ["EXIT trap 能否保证任何退出都清理？", "不能。SIGKILL 无法捕获，掉电也不会执行 trap。只清理本次创建的资源，保留失败状态，并用受控的定期清理处理残留。"],
         ["两次执行都通过预检查时，如何避免覆盖？", "让写入方在共享锁内重新读取当前状态并提交，或由目标系统执行带版本条件的更新。原子 rename 不能替代并发写入协调。"],
-        ["怎样验证 dry-run 和真实发布？", "dry-run 校验输入并展示拟变更版本，不执行提交。真实发布还需要校验配置、核对运行版本并执行健康检查；失败时按预案恢复已知可用版本。"],
+        ["怎样验证 dry-run 和真实发布？", "dry-run 走同一套参数检查、候选配置生成和校验，只展示目标版本或差异，不替换配置、不重载服务。真实发布在校验后提交，核对服务实际加载的版本并做健康检查。可模拟重载失败验证旧版本恢复，也可在成功后重跑确认不会重复提交。"],
       ],
     ),
     en: card(
@@ -97,7 +97,7 @@ export const shell = bilingualGroup("shell", "Shell", "expansion", {
         ["How do you make a configuration update retryable?", "Compare the target version or digest first, skip the write if it already matches, then check the version actually used by the service. A retry after a failure between writing and reloading should be able to resume the reload or roll back according to policy."],
         ["Does an EXIT trap guarantee cleanup after every termination?", "No. A process cannot catch SIGKILL, and a power loss cannot run a trap. Clean up only resources created by the current run, preserve the failure status, and use controlled periodic cleanup for leftovers."],
         ["How do you prevent overwrites when two runs pass preflight?", "Have writers re-read current state and commit under a shared lock, or use a version-conditional update in the target system. Atomic rename alone does not coordinate writers."],
-        ["How do you validate dry runs and live releases?", "A dry run validates input and shows the proposed version without committing it. A live release also validates the configuration, checks the running version, and runs health checks. Restore a known good version under the rollback procedure if verification fails."],
+        ["How do you validate dry runs and live releases?", "A dry run uses the same input checks, candidate generation, and validation. It shows the target version or diff without replacing configuration or reloading services. A real release commits after validation, checks the version the service actually loaded, and verifies health. Simulate a reload failure to verify restoration of the previous version, and rerun a successful release to confirm it does not commit again."],
       ],
     ),
   },

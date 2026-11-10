@@ -14,7 +14,7 @@ export const kubernetesAdvanced = bilingualTopics("container", {
       [
         ["HPA 的 70% CPU 目标以什么为分母？", "对基于资源利用率的 CPU 指标，以对应资源请求为基准。CPU 限额和节点核数都不是该目标的分母。"],
         ["HPA 已增加副本，为什么服务仍超时？", "核对新增 Pod 能否调度、镜像拉取、启动和就绪情况，以及流量是否分配给它们。再检查下游、连接池或单分区热点。"],
-        ["为什么刚降载却没立刻缩容？", "HPA 的缩容稳定窗口、策略和缺失指标等都可能使缩容更保守。查看 behavior、事件和指标历史。"],
+        ["为什么刚降载却没立刻缩容？", "缩容稳定窗口内，HPA 会保留窗口中最高的副本建议，低负载刚出现时可能继续维持较高副本数。缩容速率策略、最小副本数和缺失指标也可能限制缩容。检查 scaleDown 配置、HPA 条件和指标时间线，区分正常等待与指标故障。"],
         ["节点扩容和 HPA 如何配合？", "HPA 调整副本目标。容量不足时，支持的节点自动伸缩器可依据未能调度的 Pod 供应节点，是否成功还取决于配额、约束和容量。"],
         ["什么时候适合用队列指标？", "消费压力能由积压量或最老任务等待反映，且增加消费者确实能提高吞吐时。结合分区数、依赖容量、指标滞后和压测确定目标。"],
       ],
@@ -29,7 +29,7 @@ export const kubernetesAdvanced = bilingualTopics("container", {
       [
         ["What is the denominator in a 70% CPU utilization target?", "For a CPU resource utilization metric, the baseline is the corresponding CPU request. CPU limits and node CPU count do not define that target."],
         ["Why can requests still time out after the HPA adds replicas?", "Check scheduling, image pulls, startup, readiness, and whether traffic reaches new Pods. Then inspect downstream capacity, connection pools, and partition hotspots."],
-        ["Why doesn't the workload immediately scale down when demand falls?", "The downscale stabilization window, policies, and missing metrics can make downscaling conservative. Check behavior, events, and metric history."],
+        ["Why doesn't the workload immediately scale down when demand falls?", "Within the downscale stabilization window, HPA uses the highest replica recommendation from the window, so a recent load drop can leave replicas high. Scale-down rate policies, the minimum replica count, and missing metrics can also restrict scale-down. Check scaleDown settings, HPA conditions, and the metric timeline to distinguish a deliberate wait from a metric failure."],
         ["How do node autoscaling and the HPA work together?", "The HPA adjusts the replica target. When capacity is insufficient, a supported node autoscaler can provision nodes in response to unschedulable Pods, subject to quotas, constraints, and available capacity."],
         ["When is a queue metric a good target?", "Use it when backlog or oldest age represents pressure and adding consumers increases throughput. Check partition count, downstream limits, metric lag, and load-test results."],
       ],

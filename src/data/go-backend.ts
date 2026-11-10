@@ -46,7 +46,7 @@ export const goBackend = bilingualTopics("go", {
       ["复制切片变量后，假设改元素不会影响另一份切片。", "只在写 map 时加锁，读同一个 map 时绕过同步。"],
       [
         ["把 slice 传给函数后，函数能改调用者的数据吗？", "可以修改共享底层数组中的元素。切片参数按值传递，函数内重新切片或给参数重新赋值，不会改变调用者持有的切片值。调用者需要新切片时，返回 append 的结果。"],
-        ["如何避免子切片 append 覆盖后面的原数据？", "将子切片的容量限制为长度，追加至少一个元素时会分配新数组，也可以先复制元素。只限制容量仍会共享已有元素。"],
+        ["如何避免子切片 append 覆盖后面的原数据？", "切片共享底层数组时，append 在容量足够的情况下可能覆盖其他切片可见的元素。可用 s[lo:hi:hi] 将容量限制为长度，使追加元素时分配新数组，但追加前对已有元素的写入仍会共享。需要独立修改时先复制，元素若含 map、slice 或指针，还要明确是否需要深复制。"],
         ["nil slice 和 nil map 能直接使用吗？", "nil slice 可读长度、遍历和 append。nil map 可查询、遍历或 delete。给 nil map 写键会 panic。写入前先初始化。"],
         ["如何区分 map 中不存在的键与零值？", "使用 v, ok := m[k]。不存在时 v 是值类型的零值且 ok 为 false。存在时即使值为零，ok 也为 true。"],
         ["怎么验证共享切片和 map 的并发安全？", "明确写入归属，使用互斥、不可变快照或消息传递，再用 go test -race 执行真实并发路径。竞态检测只覆盖实际执行的路径。"],
@@ -61,7 +61,7 @@ export const goBackend = bilingualTopics("go", {
       ["Copying a slice variable and assuming element changes cannot affect the other slice.", "Locking map writes while reading the same map without synchronization."],
       [
         ["Can a function change the caller's data through a slice parameter?", "It can modify elements in the shared underlying array. The slice parameter is passed by value, so reslicing or reassigning the parameter does not change the caller's slice value. Return the result of append if the caller needs the new slice."],
-        ["How can you prevent append on a subslice from overwriting later data?", "Cap the subslice at its length so appending one or more elements allocates a new array, or copy the elements first. Limiting capacity still shares existing elements."],
+        ["How can you prevent append on a subslice from overwriting later data?", "When slices share a backing array, append can overwrite elements visible through another slice if capacity remains. Use s[lo:hi:hi] to cap capacity at length and force an append of one or more elements to allocate, but writes to existing elements still share storage. Copy first if you need independent mutation, and decide whether elements containing maps, slices, or pointers also need a deep copy."],
         ["Can you use a nil slice or a nil map directly?", "You can take the length of a nil slice, range over it, and append. You can look up, range over, and delete from a nil map. Assigning a key in a nil map panics, so initialize it before writing."],
         ["How do you distinguish a missing map key from a zero value?", "Use v, ok := m[k]. For a missing key, v is the element type's zero value and ok is false. For a present key, ok is true even when its value is zero."],
         ["How do you verify concurrency safety for shared slices and maps?", "Define write ownership and use a lock, immutable snapshots, or message passing. Then exercise real concurrent paths with go test -race. The race detector covers paths that actually run."],
@@ -115,7 +115,7 @@ export const goBackend = bilingualTopics("go", {
         ["达到 SetLimit 上限后会发生什么？", "Group.Go 等待可用名额，等待本身不会因 context 取消而中断。TryGo 有名额才启动任务，否则返回 false。若任务提交必须能响应取消，应在提交侧使用可取消的准入控制。活跃任务尚未结束时不能更改上限。"],
         ["errgroup 派生的 context 何时取消？", "第一个任务返回非 nil 错误，或 Wait 首次返回时取消，取两者中先发生的情况。不要把这个 context 交给 Wait 结束后还要运行的工作。"],
         ["谁应该关闭任务 channel？", "负责发送的一侧或统筹所有发送者的协调者，在确认后续不会再发送后关闭。消费者通过关闭、取消或业务信号退出，避免与发送方竞态关闭。"],
-        ["部分任务失败后怎样重试？", "明确成功记录的持久化边界，保存任务标识与结果，只重试可重试的失败项。下游写入采用幂等键或条件更新，并限制总次数和截止时间。"],
+        ["部分任务失败后怎样重试？", "按任务记录成功、失败和未知结果。确认结果后只重试满足策略的失败任务，例如退避重试暂时性错误，校验失败则记录并交由调用方修正。用稳定任务 ID 或幂等键去重。若结果因超时未知，先查执行记录，再决定是否重投。"],
       ],
     ),
     en: card(
@@ -130,7 +130,7 @@ export const goBackend = bilingualTopics("go", {
         ["What happens when the SetLimit bound is reached?", "Group.Go waits for a slot, and canceling the context does not interrupt that wait. TryGo starts a task only if a slot is available and otherwise returns false. Use cancellable admission on the submission side if it must respond to cancellation. Do not change the limit while tasks are active."],
         ["When is the derived errgroup context canceled?", "On the first non-nil task error or the first return from Wait, whichever comes first. Do not use that context for work that needs to run after Wait."],
         ["Who should close the jobs channel?", "The sending side or its coordinator closes the channel once no further sends are possible. Consumers exit on closure, cancellation, or another explicit signal without racing senders to close."],
-        ["How do you retry partial failures?", "Define durable success, persist task IDs and outcomes, and retry only eligible failures. Use idempotency keys or conditional writes downstream, with bounded attempts and a deadline."],
+        ["How do you retry partial failures?", "Record successful, failed, and unknown outcomes per item. Once outcomes are known, retry only failures that meet policy, such as transient errors with backoff. Record validation failures for the caller to correct. Deduplicate with a stable task ID or idempotency key. If a timeout leaves the outcome unknown, check the execution record before deciding to resubmit."],
       ],
     ),
   },

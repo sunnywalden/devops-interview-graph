@@ -176,6 +176,14 @@ export const contentSources = {
     "title": "Django REST framework：Permissions",
     "url": "https://www.django-rest-framework.org/api-guide/permissions/"
   },
+  "gunicorn-asgi": {
+    "title": "Gunicorn：ASGI Worker",
+    "url": "https://gunicorn.org/asgi/"
+  },
+  "uvicorn-deploy": {
+    "title": "Uvicorn：Deployment",
+    "url": "https://uvicorn.dev/deployment/"
+  },
   "asgi-spec": {
     "title": "ASGI Specification",
     "url": "https://asgi.readthedocs.io/en/latest/specs/main.html"
@@ -199,6 +207,10 @@ export const contentSources = {
   "prom-practices": {
     "title": "Prometheus：Metric and label naming",
     "url": "https://prometheus.io/docs/practices/naming/"
+  },
+  "prom-federation": {
+    "title": "Prometheus：Federation",
+    "url": "https://prometheus.io/docs/prometheus/latest/federation/"
   },
   "prom-pushgateway": {
     "title": "Prometheus：When to use the Pushgateway",
@@ -304,6 +316,10 @@ export const contentSources = {
     "title": "Redis：Persistence",
     "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/"
   },
+  "redis-sentinel": {
+    "title": "Redis：Sentinel",
+    "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/"
+  },
   "redis-cluster": {
     "title": "Redis Cluster specification",
     "url": "https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/"
@@ -331,6 +347,10 @@ export const contentSources = {
   "rocket-transaction": {
     "title": "Apache RocketMQ：Transaction Message",
     "url": "https://rocketmq.apache.org/docs/featureBehavior/04transactionmessage/"
+  },
+  "rocket-topic": {
+    "title": "Apache RocketMQ：Topic",
+    "url": "https://rocketmq.apache.org/docs/domainModel/02topic/"
   },
   "rocket-order": {
     "title": "Apache RocketMQ：FIFO Message",
@@ -488,6 +508,10 @@ export const contentSources = {
     "title": "cert-manager：Certificate lifecycle",
     "url": "https://cert-manager.io/docs/usage/certificate/"
   },
+  "gitlab-inputs": {
+    "title": "GitLab：CI/CD inputs",
+    "url": "https://docs.gitlab.com/ci/inputs/"
+  },
   "gitlab-yaml": {
     "title": "GitLab：CI/CD YAML reference",
     "url": "https://docs.gitlab.com/ci/yaml/"
@@ -599,6 +623,10 @@ export const contentSources = {
   "otel-context": {
     "title": "OpenTelemetry：Context propagation",
     "url": "https://opentelemetry.io/docs/concepts/context-propagation/"
+  },
+  "otel-scaling": {
+    "title": "OpenTelemetry：Scaling the Collector",
+    "url": "https://opentelemetry.io/docs/collector/scaling/"
   },
   "otel-sampling": {
     "title": "OpenTelemetry：Sampling",

@@ -47,7 +47,7 @@ export const platformPractice = bilingualTopics("ops", {
       [
         ["merge 和 rebase 在提交图上有什么区别？", "merge 保留被整合的提交图，必要时加合并提交。rebase 将变更重放到新的基底，通常产生新提交标识。"],
         ["已推送的错误提交如何回退？", "通常用 git revert 提交相反变更，保留共享历史。先检查后续依赖该变更的提交和部署兼容性。"],
-        ["为什么 revert 合并提交要指定 -m？", "合并有多个父提交，Git 需要知道以哪个父作为主线来计算应反转的差异。这也会影响后续重新合并的结果。"],
+        ["为什么 revert 合并提交要指定 -m？", "合并提交有多个父提交，-m 指定作为主线的父提交，Git 据此反转合并引入的差异。先检查父提交顺序，确认第一个父提交是要保留的分支历史，再用 git revert -m 1 <merge>。原合并仍在历史中，后续再次合并同一分支时，原有祖先提交的改动不会自动恢复。"],
         ["怎样定位间歇性回归的引入提交？", "先让复现足够稳定，再标记已知好坏边界并运行 bisect。无法测试的提交可标记 skip，最终结合变更证据验证。"],
         ["代码已回退，为什么服务仍可能异常？", "运行的镜像可能未切换，配置或数据库迁移可能不兼容，也可能有不可逆数据变更。检查实际部署版本、依赖和健康指标。"],
       ],
@@ -62,7 +62,7 @@ export const platformPractice = bilingualTopics("ops", {
       [
         ["How do merge and rebase affect the commit graph?", "A merge preserves the integrated graph and adds a merge commit when needed. A rebase replays changes onto a new base and normally produces new commit identities."],
         ["How do you undo a faulty commit that was pushed?", "Use git revert to create an inverse change and preserve shared history. Check later commits that depend on the change and compatibility with the deployed environment."],
-        ["Why does reverting a merge require -m?", "A merge has multiple parents. Git needs the mainline parent to compute the difference to reverse. That choice also affects what a later merge will reintroduce."],
+        ["Why does reverting a merge require -m?", "A merge commit has multiple parents. The -m option selects the mainline parent Git uses to determine which changes to reverse. Inspect parent order and confirm that the first parent is the branch history to keep before running git revert -m 1 <merge>. The original merge remains in history, so merging the branch again does not automatically restore changes from those ancestor commits."],
         ["How do you isolate the commit that introduced an intermittent regression?", "First make reproduction sufficiently reliable, then mark known good and bad endpoints and run bisect. Mark untestable commits as skip and verify the result with change evidence."],
         ["Why might the service still fail after the code is reverted?", "The running image may not have changed, config or migrations may be incompatible, or data changes may be irreversible. Check the deployed version, dependencies, and health metrics."],
       ],
@@ -79,9 +79,9 @@ export const platformPractice = bilingualTopics("ops", {
       ["每次执行都重启服务，导致无变更运行也产生中断。", "认为 --check 的结果能预测所有任务及后续依赖。"],
       [
         ["用 command 执行脚本如何避免重复副作用？", "优先使用具备期望状态语义的模块。确需脚本时，设置可验证的前置条件或 creates/removes，明确 changed_when 与 failed_when，并让操作可重入。"],
-        ["handler 什么时候触发？", "任务报告 changed 并发出 notify 后，handler 会在约定阶段执行，通常合并同一批通知。若需更早生效，可按顺序使用 flush_handlers。"],
+        ["handler 什么时候触发？", "任务报告 changed 时，通过 notify 通知 handler。同一台主机在每个 handler 执行阶段内多次通知同一个 handler，通常只运行一次。可用 meta: flush_handlers 提前执行，例如先重载服务再做健康检查。后续任务失败可能让该主机跳过已通知的 handler，需按变更风险决定是否启用 force_handlers。"],
         ["serial 与 forks 有什么区别？", "serial 控制一个 play 每批处理的主机数；forks 限制 Ansible 的并行工作进程数。使用 serial 时，max_fail_percentage 按批次计算，失败比例超过阈值才中止；滚动发布仍要设计健康检查和回滚。"],
-        ["check 和 diff 能保证什么？", "它们预览支持这些模式的任务。依赖前一步实际结果的任务可能无法准确预演。diff 还可能显示敏感内容，要按任务关闭。"],
+        ["check 和 diff 能保证什么？", "--check 让支持检查模式的模块预演变更，--diff 让支持差异模式的模块显示前后差异。依赖前序任务结果的逻辑、外部脚本和不支持检查模式的模块可能无法准确预演。对敏感文件禁用差异输出，再用小批次真实执行、健康检查和第二次运行的变更结果验证。"],
         ["如何验证配置真正收敛？", "先在目标节点核对文件、进程和服务健康，再以相同输入重跑并确认状态没有意外变化。结合实际服务指标。"],
       ],
     ),
@@ -94,9 +94,9 @@ export const platformPractice = bilingualTopics("ops", {
       ["Restarting services on every run, including runs with no change.", "Assuming --check predicts all tasks and their downstream dependencies."],
       [
         ["How do you avoid duplicate side effects when using command for a script?", "Prefer a module with desired-state semantics. For a script, use verifiable preconditions or creates/removes, define changed_when and failed_when, and make it safe to rerun."],
-        ["When does a handler run?", "A task reports changed and sends notify. The handler runs at the defined phase and normally coalesces duplicate notifications in that batch. Use flush_handlers in sequence if it must run earlier."],
+        ["When does a handler run?", "A task that reports changed can notify a handler with notify. Multiple notifications for the same handler on a host normally produce one execution per handler flush. Use meta: flush_handlers to run it earlier, such as reloading a service before a health check. A later task failure can skip a notified handler on that host, so decide whether to enable force_handlers based on the change risk."],
         ["How do serial and forks differ?", "serial controls the number of hosts per play batch; forks limits Ansible's parallel worker processes. With serial, max_fail_percentage applies per batch and aborts only when the failure rate exceeds the threshold. Rolling changes still need health checks and a rollback plan."],
-        ["What do check and diff guarantee?", "They preview tasks that support those modes. Tasks depending on actual earlier results may not simulate accurately. Disable diff on tasks that could reveal secrets."],
+        ["What do check and diff guarantee?", "--check previews changes for modules that support check mode, and --diff shows before-and-after differences for modules that support diff mode. Logic depending on earlier task results, external scripts and unsupported modules may not preview accurately. Disable diff output for sensitive files, then verify with a small real rollout, health checks and change results from a second run."],
         ["How do you verify convergence?", "Check files, processes, and service health on target hosts, then rerun with the same inputs and confirm there are no unexpected changes. Correlate with real service metrics."],
       ],
     ),
@@ -112,7 +112,7 @@ export const platformPractice = bilingualTopics("ops", {
       ["公网访问失败时直接开放应用实例到所有来源，跳过负载均衡和目标健康检查。", "把成功建立 TCP 连接视为 IAM 授权已经成功。"],
       [
         ["Security Group 与网络 ACL 有什么区别？", "Security Group 是有状态的，允许连接的返回流量会自动放行。网络 ACL 在子网层按有序规则无状态评估，双向都要允许。"],
-        ["私有子网的实例如何访问互联网？", "一种常见路径是私有子网默认路由指向公网 NAT Gateway，后者所在子网有到互联网网关的路由。只访问支持的云服务时也可评估 VPC endpoint。"],
+        ["私有子网的实例如何访问互联网？", "以 AWS IPv4 公网出网为例，私有子网的默认路由指向公有 NAT Gateway。该网关绑定 Elastic IP，所在公有子网有到 Internet Gateway 的默认路由。安全组和网络 ACL 还要允许相应流量及回包。公网无法通过该 NAT Gateway 主动向私有实例发起连接。"],
         ["公网负载均衡为什么能转发给私有实例？", "负载均衡器提供公网入口，再用 VPC 内的可达路径连接私有目标。检查目标组、监听规则、健康检查和目标侧网络过滤。"],
         ["IAM role 能解决连接超时吗？", "IAM role 提供身份和权限，连接超时先查 DNS、路由、过滤和目标监听。连接成功后若返回授权错误，再检查角色及策略。"],
         ["怎样诊断只在一个可用区发生的出网故障？", "按可用区比较子网路由、NAT 路径、网络 ACL、可达性和依赖健康。用流日志及请求时间线验证受影响范围。"],
@@ -127,7 +127,7 @@ export const platformPractice = bilingualTopics("ops", {
       ["Opening an application instance to all sources when public access fails, before checking the load balancer or target health.", "Treating successful TCP establishment as proof of IAM authorization."],
       [
         ["How do security groups and network ACLs differ?", "A security group is stateful and allows return traffic for an allowed connection automatically. A network ACL evaluates ordered stateless rules at the subnet and must allow both directions."],
-        ["How can an instance in a private subnet reach the internet?", "One common path is a private-subnet default route to a public NAT gateway whose subnet has a route to an internet gateway. Consider VPC endpoints when only supported cloud services are needed."],
+        ["How can an instance in a private subnet reach the internet?", "For public IPv4 egress on AWS, point the private subnet's default route to a public NAT Gateway. The gateway has an Elastic IP, and its public subnet has a default route to the Internet Gateway. Security groups and network ACLs must allow the relevant traffic and replies. Internet hosts cannot initiate a connection to the private instance through that gateway."],
         ["How can a public load balancer forward to a private instance?", "It supplies a public entry point and uses a reachable VPC path to the private target. Check target groups, listener rules, health checks, and target-side network filtering."],
         ["Can an IAM role fix a connect timeout?", "An IAM role supplies identity and permissions. For a connect timeout, check DNS, routes, filtering, and the listener. Inspect roles and policies if a reachable service returns an authorization error."],
         ["How do you diagnose egress failure in one availability zone?", "Compare subnet routes, NAT paths, network ACLs, reachability, and dependency health by zone. Use flow logs and request timelines to verify the affected scope."],

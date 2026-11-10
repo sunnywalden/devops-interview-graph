@@ -12,9 +12,9 @@ export const elk = bilingualGroup("elk", "ELK", "ingestion", {
       ["优先采集结构化日志；区分事件发生时间和采集时间，统一时区。", "统一日志字段命名和类型，保留 request ID 或 trace ID，并在采集或入库前处理敏感字段。"],
       ["多个来源混合后再合并多行堆栈，可能把不同事件拼接起来。", "Kibana 查不到日志时，问题也可能出在数据视图、权限或时间范围。"],
       [
-        ["所有 ELK 部署都必须运行 Logstash 吗？", "取决于解析、缓冲和路由需求。采集器也可直接向 Elasticsearch 发送数据，并使用 ingest pipeline 转换。需要独立处理流水线时再引入 Logstash。"],
-        ["Java 异常堆栈被拆成多条日志，如何修复？", "在采集端按文件或流设置多行规则，在来源混合前合并，并用相邻异常、超长堆栈和重启场景验证边界。"],
-        ["为什么写入成功后 Kibana 仍查不到？", "先检查索引或数据流是否正确，再核对刷新可见性、数据视图、权限、事件时间和时区。用唯一事件标识直接查 Elasticsearch，区分写入问题和展示问题。"],
+        ["所有 ELK 部署都必须运行 Logstash 吗？", "采集器可以直发 Elasticsearch，由 ingest pipeline 解析和丰富字段。需要独立的缓冲、复杂转换或多目标路由时，可以引入 Logstash。两种方案都应验证失败事件如何重试或隔离。"],
+        ["Java 异常堆栈被拆成多条日志，如何修复？", "在 Filebeat 等采集端按来源合并，在多路日志汇入 Logstash 之前完成。可用稳定的时间戳或日志头识别新事件，把后续堆栈行归到同一事件。用相邻异常、超长堆栈和采集器重启验证边界。"],
+        ["为什么写入成功后 Kibana 仍查不到？", "批量写入返回 HTTP 200 时仍需检查 errors 和对应 item 的状态。确认写入目标和刷新后，用唯一事件标识直接搜索 Elasticsearch。若能搜到，再核对 Kibana 数据视图、时间范围、事件时间字段和权限。"],
         ["怎样让一条日志关联到分布式链路？", "在应用的结构化日志中写入当前请求的 trace ID，采集过程保留相同字段和格式。分别检查日志和追踪后端是否收到了同一标识，采样可能影响追踪记录的可用性。"],
         ["应用突然开始输出凭据，怎么处理？", "先停止凭据继续进入日志并按事件流程轮换已暴露的凭据，再评估已写入数据的访问、清理与留存要求。在应用或采集入口增加字段白名单和脱敏验证。"],
       ],
@@ -27,9 +27,9 @@ export const elk = bilingualGroup("elk", "ELK", "ingestion", {
       ["Prefer structured logs. Distinguish event time from collection time and normalize time zones.", "Standardize field names and types, preserve request or trace IDs, and handle sensitive fields before ingestion."],
       ["Combining multiline stack traces after mixing sources can join unrelated events.", "A missing Kibana result can also come from the data view, access permissions, or time range."],
       [
-        ["Does every ELK deployment require Logstash?", "It depends on parsing, buffering, and routing needs. A collector can send to Elasticsearch directly and use an ingest pipeline for transformation. Add Logstash when a separate processing pipeline is warranted."],
-        ["How do you fix a Java stack trace that arrives as separate events?", "Configure multiline aggregation per file or stream in the collector before sources are merged. Test adjacent exceptions, oversized traces, and restart scenarios to verify event boundaries."],
-        ["Why might a successful write be absent from Kibana?", "Check the target index or data stream, refresh visibility, the data view, permissions, event time, and the time zone. Search Elasticsearch directly with a unique event identifier to distinguish ingestion issues from display issues."],
+        ["Does every ELK deployment require Logstash?", "A collector can send directly to Elasticsearch and use an ingest pipeline for parsing and enrichment. Evaluate Logstash when you need independent buffering, complex transformations, or routing to multiple destinations. With either setup, verify how failures are retried or isolated."],
+        ["How do you fix a Java stack trace that arrives as separate events?", "Merge lines per source in a collector such as Filebeat, before streams converge in Logstash. Use a stable timestamp or log prefix to identify a new event and attach the following stack lines to it. Test consecutive exceptions, oversized traces, and collector restarts."],
+        ["Why might a successful write be absent from Kibana?", "Even when a bulk request returns HTTP 200, inspect errors and the status of the relevant item. Confirm the write target and refresh, then search Elasticsearch directly for a unique event ID. If it is searchable there, check Kibana's data view, time range, event time field, and permissions."],
         ["How can you correlate a log event with a distributed trace?", "Write the current request's trace ID into structured application logs, and preserve the field and format during collection. Check both backends for the same ID. Trace sampling can affect whether a trace is available."],
         ["What if the application starts logging credentials?", "Stop credentials from being written to logs and rotate exposed credentials through the incident process. Assess access, cleanup, and retention requirements for stored data, then verify field allowlists and redaction at the application or collection boundary."],
       ],
@@ -80,9 +80,9 @@ export const elk = bilingualGroup("elk", "ELK", "ingestion", {
       [
         ["Elasticsearch 暂时不可写时先看什么？", "检查写入响应、输出重试和 Elasticsearch 的拒绝率，再比较 Logstash 的输入速率、输出速率与队列增长趋势。恢复时验证积压消退且延迟回落。"],
         ["持久化队列能保证恰好一次吗？", "不能。部分已经输出、尚未记录确认的事件可能在重启后重放。需要结合源端确认、检查点以及目标端的幂等或去重设计来判断实际保证。"],
-        ["映射错误和集群不可达都进死信队列吗？", "应按插件和错误类型判断。已启用的 DLQ 可接收受支持的逐条写入错误；Elasticsearch 输出遇到整个请求的连接失败时通常会重试，DLQ 无法代替缓冲和故障恢复。"],
+        ["映射错误和集群不可达都进死信队列吗？", "按输出插件和错误类型区分。Logstash 的 Elasticsearch 输出可在启用 DLQ 后记录部分逐文档失败，例如映射错误返回的 400。集群不可达导致整个请求失败时，输出通常继续重试，需观察持久化队列和上游背压。"],
         ["怎么验证重放没有制造重复日志？", "在测试中为逻辑事件使用稳定的标识，核对目标索引范围内的数量和冲突响应。跨索引滚动时，还要验证去重的作用范围符合预期。"],
-        ["如何估算缓冲容量？", "用峰值每秒事件数、队列中实测的平均事件大小和目标缓冲时间估算，留出序列化与突发余量，并演练磁盘接近上限及恢复排空。"],
+        ["如何估算缓冲容量？", "用峰值写入事件数乘以每条事件在队列里的实测大小，再乘可容忍的下游停写时间。每秒 2,000 条、每条 1 KiB、停写 10 分钟，约需 1.14 GiB，再给大小波动和突发留余量。演练队列满时的背压和恢复后的排空时间。"],
       ],
     ),
     en: card(
@@ -95,9 +95,9 @@ export const elk = bilingualGroup("elk", "ELK", "ingestion", {
       [
         ["What do you inspect first when Elasticsearch temporarily cannot accept writes?", "Check write responses, output retries, and Elasticsearch rejections. Compare Logstash input and output rates against queue growth. After recovery, verify that the backlog drains and latency returns to normal."],
         ["Can a persistent queue guarantee exactly-once delivery?", "No. Some events may already have been sent when Logstash restarts before persisting their acknowledgments. Assess the actual guarantee using source acknowledgments, checkpoints, and destination idempotency or deduplication."],
-        ["Do mapping errors and cluster connection failures both go to the dead letter queue?", "It depends on the plugin and error. An enabled DLQ can receive supported per-document indexing failures. The Elasticsearch output generally retries request-level connection failures, so DLQ cannot substitute for buffering and recovery."],
+        ["Do mapping errors and cluster connection failures both go to the dead letter queue?", "Distinguish the output plugin and the type of error. With the DLQ enabled, the Logstash Elasticsearch output can record certain document failures, such as a 400 from a mapping error. If the entire request fails because the cluster is unreachable, the output normally retries. Monitor the persistent queue and upstream backpressure."],
         ["How do you verify that replay creates no duplicate logs?", "Use a stable identifier for each logical event in tests, and reconcile event counts and conflicts within the target index scope. When writes can span a rollover, verify that the scope of deduplication meets the requirement."],
-        ["How do you size the buffer?", "Estimate capacity from peak events per second, measured average queued event size, and desired outage coverage. Allow for serialization overhead and bursts, then exercise a nearly full disk and backlog drain."],
+        ["How do you size the buffer?", "Multiply the peak event rate by the measured serialized event size in the queue and the downstream outage budget. At 2,000 events per second, 1 KiB each, and ten minutes of no writes, allow about 1.14 GiB before headroom for size variation and bursts. Test backpressure at capacity and drain time after recovery."],
       ],
     ),
   },
@@ -116,7 +116,7 @@ export const prometheus = bilingualGroup("prometheus", "Prometheus", "scrape", {
       [
         ["服务发现找到了实例，为什么目标页没有它？", "检查目标 relabel 规则是否丢弃该实例，以及路径、端口和标签是否正确。对照发现阶段的原始标签与最终保留的目标。"],
         ["up 为 0 和 up 查不到分别意味着什么？", "0 表示对该目标的抓取失败；查不到可能表示目标未发现、被过滤、序列已过时或查询标签不匹配。对照预期目标清单和目标页确认。"],
-        ["目标 up 为 1，应用指标却不见了，查哪里？", "确认端点确实暴露该指标，再核对 metric relabel 规则、指标名和查询标签；对于只在首次事件后创建的序列，还要确认应用是否已经产生该事件。"],
+        ["目标 up 为 1，应用指标却不见了，查哪里？", "用 Prometheus 配置的路径和鉴权访问指标端点，先确认原始响应里有该序列。若有，检查 metric_relabel_configs 是否丢弃或改名，再用实际标签查询。up 是 Prometheus 生成的序列，样本重标记过滤应用指标时它仍可为 1。"],
         ["什么时候适合用 Pushgateway？", "典型场景是无法等待定期抓取的服务级短生命周期批处理。它保存推送的指标，需管理过期序列；长运行服务通常继续直接抓取，以保留实例生命周期和 up 语义。"],
         ["抓取频繁超时时，是否应直接提高超时时间？", "先查看端点耗时、样本数量和网络或鉴权错误，修复昂贵采集路径。再结合监控时效与目标负载调整超时和抓取周期。"],
       ],
@@ -131,7 +131,7 @@ export const prometheus = bilingualGroup("prometheus", "Prometheus", "scrape", {
       [
         ["Discovery found an instance. Why is it missing from the targets page?", "Check whether target relabeling dropped the instance and whether the path, port, and labels are correct. Compare the raw discovery labels with the final retained targets."],
         ["What is the difference between up=0 and no up result?", "Zero means a scrape failed for that target. An absent result may mean the target was undiscovered, filtered, stale, or unmatched by the query. Compare the expected inventory with the targets page."],
-        ["What do you check when up is 1 but an application metric is missing?", "Confirm the endpoint exposes the metric, then check metric relabeling, the metric name, and query labels. If the application creates the series only after the first event, check whether that event has happened."],
+        ["What do you check when up is 1 but an application metric is missing?", "Read the metrics endpoint with the configured path and credentials and check whether the raw response contains the series. If it does, inspect metric_relabel_configs for a drop or rename and query using the resulting labels. Prometheus generates up separately, so it can still be 1 after metric relabeling drops application samples."],
         ["When is Pushgateway appropriate?", "A typical use is a short-lived service-level batch job that cannot wait for a scheduled scrape. The gateway retains pushed metrics, so stale series need lifecycle management. Direct scraping is usually appropriate for long-running services and preserves instance lifecycle and up semantics."],
         ["Should you immediately raise the timeout for slow scrapes?", "First inspect endpoint latency, sample count, and network or authentication errors. Fix expensive collection paths, then tune timeout and interval against monitoring latency and target load."],
       ],
@@ -149,7 +149,7 @@ export const prometheus = bilingualGroup("prometheus", "Prometheus", "scrape", {
       [
         ["如何计算服务的请求速率？", "对 http_requests_total[5m] 使用 rate，再用 sum by (service) 聚合。窗口应与抓取周期和检测目标匹配，并用重启样本验证查询。"],
         ["经典和原生直方图的全局 p95 怎么查？", "经典直方图使用 histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))，各实例应使用相同桶边界。原生直方图使用 histogram_quantile(0.95, sum(rate(http_request_duration_seconds[5m])))，聚合前应验证桶布局兼容。按服务展示时，两者都在聚合时保留 service。"],
-        ["错误率可以对各实例的错误百分比求平均吗？", "实例流量不均时，这样会给每个实例相同权重。先分别汇总错误与请求速率，再求比值；低流量或分母为零时按业务规则展示或抑制。"],
+        ["错误率可以对各实例的错误百分比求平均吗？", "应该先汇总各实例的错误速率和请求速率，再用两者相除。例如一个实例 1 次请求失败，另一个 99 次全部成功，全局是 1%，而两个实例百分比的平均值是 50%。零请求与数据缺失要单独处理。"],
         ["为什么不应把用户 ID 作为指标标签？", "每个新的标签组合会新增序列，增加内存、存储和查询开销。优先按有界维度聚合，把用户级细节留给日志或追踪。"],
         ["Summary 的客户端分位数能跨实例直接聚合吗？", "通常不能。客户端分位数只描述各自观测到的分布。需要跨实例估算时，使用配置相容、可聚合的直方图。"],
       ],
@@ -165,7 +165,7 @@ export const prometheus = bilingualGroup("prometheus", "Prometheus", "scrape", {
       [
         ["How do you calculate a service's request rate?", "Apply rate to http_requests_total[5m], then aggregate with sum by (service). Choose a window that fits the scrape interval and detection requirements, and test it with a restart."],
         ["How do you query overall p95 from classic and native histograms?", "For classic histograms, use histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m]))). Instances should use the same bucket boundaries. For native histograms, use histogram_quantile(0.95, sum(rate(http_request_duration_seconds[5m]))), and verify bucket layout compatibility before aggregating. Retain service in either aggregation when showing results per service."],
-        ["Can you average per-instance error percentages?", "That gives each instance equal weight even when traffic varies. Aggregate error and request rates separately before dividing. Define how to display or suppress results when traffic is low or the denominator is zero."],
+        ["Can you average per-instance error percentages?", "Sum error rates and request rates across instances separately, then divide. If one instance fails its only request and another succeeds on all 99, the overall error ratio is 1%, while the mean of the two instance ratios is 50%. Handle zero requests and missing data explicitly."],
         ["Why avoid using a user ID as a metric label?", "Every new label combination creates a series, increasing memory, storage, and query cost. Aggregate on bounded dimensions and use logs or traces for user-level detail."],
         ["Can you directly aggregate client-calculated quantiles from a summary?", "Generally no. Each client's quantile describes its own observations. Use compatible, aggregatable histograms when estimating a quantile across instances."],
       ],
